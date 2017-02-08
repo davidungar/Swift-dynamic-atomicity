@@ -52,3 +52,6 @@ compile_commands.json
 4
 SortedCFDatabase.def
 swift-nightly-install/Library/Developer/Toolchains/*
+*.gz
+swift-nightly-install/Library/Developer/Toolchains/swift-LOCAL-2017-02-07-a.xctoolchain/Developer/Platforms/AppleTVSimulator.platform/Developer/Library/Frameworks/PlaygroundSupport.framework/_CodeSignature/CodeResources
+swift-nightly-install/Library/Developer/Toolchains/
