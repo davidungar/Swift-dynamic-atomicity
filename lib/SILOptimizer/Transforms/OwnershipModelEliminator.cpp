@@ -106,8 +106,13 @@ bool OwnershipModelEliminatorVisitor::visitStoreInst(StoreInst *SI) {
   return true;
 }
 
-bool OwnershipModelEliminatorVisitor::visitRefCountStoreBarrierInst(RefCountStoreBarrierInst *RCSBI) { // dmu
-  abort(); // TODO: (dmu urgent) what to do here?
+bool OwnershipModelEliminatorVisitor::visitRefCountStoreBarrierInst(RefCountStoreBarrierInst *RCSBI) { // dmu one-eyed clone
+  // TODO: (dmu check) store version does a lowering, this version does not
+  B.createRefCountStoreBarrier(RCSBI->getLoc(), RCSBI->getSrc(), RCSBI->getDest());
+  
+  // Then remove the ref count store barrier
+  RCSBI->eraseFromParent();
+  return true;
 }
 
 bool OwnershipModelEliminatorVisitor::visitStoreBorrowInst(
