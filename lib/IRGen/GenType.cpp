@@ -400,12 +400,25 @@ namespace {
                 Address addr) const override {}
     void initialize(IRGenFunction &IGF, Explosion &e,
                     Address addr) const override {}
+
+    void makeSourceSafeForConcurrentAccess(IRGenFunction &IGF, Explosion &e) const override { // dmu
+      (void)e.claimAll(); // TODO: (dmu cleanup) should not be needed, should be empty
+    }
+    void ifDestIsSafeForConcurrentAccessMakeSrcSafe(IRGenFunction &IGF, Explosion &e, Address dest) const override { // dmu
+      (void)e.claimAll(); // TODO: (dmu cleanup) should not be needed, should be empty
+    }
+
     void copy(IRGenFunction &IGF, Explosion &src,
               Explosion &dest, Atomicity atomicity) const override {}
     void consume(IRGenFunction &IGF, Explosion &src,
                  Atomicity atomicity) const override {}
     void fixLifetime(IRGenFunction &IGF, Explosion &src) const override {}
     void destroy(IRGenFunction &IGF, Address addr, SILType T) const override {}
+    
+    bool makeContainedReferencesOfElementCountAtomically(IRGenFunction &IGF, Address addr, SILType T) const override { // dmu
+      return true;
+    }
+
     void packIntoEnumPayload(IRGenFunction &IGF, EnumPayload &payload,
                              Explosion &src, unsigned offset) const override {}
     void unpackFromEnumPayload(IRGenFunction &IGF,
@@ -519,6 +532,13 @@ namespace {
       IGF.Builder.CreateStore(explosion.claimNext(), addr);
     }
     
+    void makeSourceSafeForConcurrentAccess(IRGenFunction &IGF, Explosion &e) const override { // dmu
+      (void)e.claimAll(); // TODO: (dmu implementOpaqueStorageTypeInfo)
+    }
+    void ifDestIsSafeForConcurrentAccessMakeSrcSafe(IRGenFunction &IGF, Explosion &e, Address dest) const override { // dmu
+      (void)e.claimAll(); // TODO: (dmu implementOpaqueStorageTypeInfo)
+    }
+    
     void reexplode(IRGenFunction &IGF, Explosion &sourceExplosion,
                    Explosion &targetExplosion) const override {
       targetExplosion.add(sourceExplosion.claimNext());
@@ -540,6 +560,10 @@ namespace {
 
     void destroy(IRGenFunction &IGF, Address address, SILType T) const override {
       /* nop */
+    }
+    
+    bool makeContainedReferencesOfElementCountAtomically(IRGenFunction &IGF, Address addr, SILType T) const override { // dmu
+     return true;
     }
     
     void getSchema(ExplosionSchema &schema) const override {
@@ -601,6 +625,10 @@ namespace {
     void destroy(IRGenFunction &IGF, Address address,
                  SILType T) const override {
       llvm_unreachable("cannot opaquely manipulate immovable types!");
+    }
+      
+    bool makeContainedReferencesOfElementCountAtomically(IRGenFunction &IGF, Address addr, SILType T) const override { // dmu
+        llvm_unreachable("cannot opaquely manipulate immovable types!");
     }
   };
 } // end anonymous namespace

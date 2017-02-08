@@ -398,6 +398,11 @@ public:
   /// Destroy an object of this type in memory.
   virtual void destroy(IRGenFunction &IGF, Address address, SILType T) const = 0;
 
+  /// Output code to visit each reference in this element and make its reference count atomic
+  
+  virtual bool makeContainedReferencesOfElementCountAtomically(IRGenFunction &IGF, Address address, SILType T) const = 0; // dmu
+
+
   /// Should optimizations be enabled which rely on the representation
   /// for this type being a single object pointer?
   ///

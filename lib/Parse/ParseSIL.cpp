@@ -2616,6 +2616,38 @@ bool SILParser::parseSILInstruction(SILBasicBlock *BB, SILBuilder &B) {
     break;
   }
 
+  case ValueKind::RefCountStoreBarrierInst: { // dmu (clone of StoreInst, w/o attribute)
+    UnresolvedValueName From;
+    SourceLoc ToLoc, AddrLoc;
+    Identifier ToToken;
+    SILValue AddrVal;
+    if (parseValueName(From) ||
+        parseSILIdentifier(ToToken, ToLoc, diag::expected_tok_in_sil_instr,
+                           "to"))
+      return true;
+    
+    if (parseTypedValueRef(AddrVal, AddrLoc, B) ||
+        parseSILDebugLocation(InstLoc, B))
+      return true;
+    
+    if (ToToken.str() != "to") {
+      P.diagnose(ToLoc, diag::expected_tok_in_sil_instr, "to");
+      return true;
+    }
+    
+    if (!AddrVal->getType().isAddress()) {
+      P.diagnose(AddrLoc, diag::sil_operand_not_address, "destination",
+                 OpcodeName);
+      return true;
+    }
+    
+    SILType ValType = AddrVal->getType().getObjectType();
+    
+    ResultVal = B.createRefCountStoreBarrier(InstLoc, getLocalValue(From, ValType, InstLoc, B),
+                                                                   AddrVal);
+    break;
+  }
+      
   case ValueKind::EndBorrowInst: {
     UnresolvedValueName BorrowedFromName, BorrowedValueName;
     SourceLoc ToLoc;

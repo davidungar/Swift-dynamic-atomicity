@@ -563,6 +563,14 @@ public:
   }
 };
 
+  // dmu
+  class MakeContainedReferencesCountAtomicallyValues {
+  public:
+    constexpr static void const * const unimplemented = nullptr;
+    // redundant with unimplemented return value in createMakeContainedReferencesCountAtomicallyFn
+    constexpr static char const * const twine = "makeContainedReferencesCountAtomically";
+  };
+
 }
 
 #endif /* SWIFT_ABI_METADATAVALUES_H */

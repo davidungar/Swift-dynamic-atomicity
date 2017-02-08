@@ -1423,6 +1423,16 @@ bool SILDeserializer::readSILInstruction(SILFunction *Fn, SILBasicBlock *BB,
     ResultVal = Builder.createEndBorrow(Loc, BorrowSource, BorrowDest);
     break;
   }
+  // TODO: (dmu cleanup) cloned StoreBorrowInst case below. Factor??
+  case ValueKind::RefCountStoreBarrierInst: {
+    auto Ty = MF->getType(TyID);
+    SILType addrType = getSILType(Ty, (SILValueCategory)TyCategory);
+    SILType ValType = addrType.getObjectType();
+    ResultVal = Builder.createRefCountStoreBarrier(Loc,
+                                                   getLocalValue(ValID,   ValType),
+                                                   getLocalValue(ValID2, addrType));
+    break;
+  }
   case ValueKind::StoreUnownedInst: {
     auto Ty = MF->getType(TyID);
     SILType addrType = getSILType(Ty, (SILValueCategory)TyCategory);

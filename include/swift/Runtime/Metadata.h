@@ -1332,6 +1332,11 @@ struct HeapMetadataHeaderPrefix {
   /// Destroy the object, returning the allocated size of the object
   /// or 0 if the object shouldn't be deallocated.
   void (*destroy)(HeapObject *);
+  
+  void (*makeContainedReferencesCountAtomically)(HeapObject *); // dmu makeContainedReferencesCountAtomicallyLayout
+  
+  constexpr HeapMetadataHeaderPrefix(void (*d)(HeapObject *), void (*bea)(HeapObject*)) :
+  destroy(d), makeContainedReferencesCountAtomically(bea) /*dmu makeContainedReferencesCountAtomicallyLayoutContents */ {}
 };
 
 /// The header present on all heap metadata.

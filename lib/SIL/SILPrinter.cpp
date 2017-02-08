@@ -1101,6 +1101,11 @@ public:
     *this << getIDAndType(SI->getDest());
   }
 
+  void visitRefCountStoreBarrierInst(RefCountStoreBarrierInst *I) { // dmu
+    *this << getID(I->getSrc()) << " to ";
+    *this << getIDAndType(I->getDest());
+  }
+
   void visitStoreBorrowInst(StoreBorrowInst *SI) {
     *this << getID(SI->getSrc()) << " to ";
     *this << getIDAndType(SI->getDest());

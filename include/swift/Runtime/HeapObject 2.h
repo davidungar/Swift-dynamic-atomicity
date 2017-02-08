@@ -333,25 +333,6 @@ SWIFT_RUNTIME_EXPORT
 void (*SWIFT_CC(RegisterPreservingCC)
                      _swift_nonatomic_release_n)(HeapObject *object, uint32_t n);
 
-  
-// dmu storeBarrier sharing
-SWIFT_RT_ENTRY_VISIBILITY
-extern "C"
-void swift_ifDestIsSafeForConcurrentAccessMakeSrcSafe(HeapObject *dst, HeapObject *src)
-      SWIFT_CC(DefaultCC);
-
-SWIFT_RUNTIME_EXPORT
-extern "C" void (*SWIFT_CC(DefaultCC)_swift_ifDestIsSafeForConcurrentAccessMakeSrcSafe)(HeapObject *dst, HeapObject *src);
-
-SWIFT_RT_ENTRY_VISIBILITY
-extern "C"
-void swift_beSafeForConcurrentAccess(HeapObject *object)
-    SWIFT_CC(DefaultCC);
-
-SWIFT_RUNTIME_EXPORT
-  extern "C" void (*SWIFT_CC(DefaultCC)_swift_beSafeForConcurrentAccess)(HeapObject *object);
-
-
 // Refcounting observation hooks for memory tools. Don't use these.
 SWIFT_RUNTIME_EXPORT
 size_t swift_retainCount(HeapObject *object);

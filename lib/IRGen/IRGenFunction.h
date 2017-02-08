@@ -246,6 +246,10 @@ public:
                          Atomicity atomicity);
   llvm::Value *emitLoadRefcountedPtr(Address addr, ReferenceCounting style);
 
+  void emitBeSafeForConcurrentAccess(llvm::Value *objToSet, ReferenceCounting refcounting); // dmu
+  void emitIfDestIsSafeForConcurrentAccessMakeSrcSafe(llvm::Value *objToCheck, llvm::Value *objToSet, ReferenceCounting refcounting); // dmu
+
+
   //   - unowned references
   void emitUnownedRetain(llvm::Value *value, ReferenceCounting style);
   void emitUnownedRelease(llvm::Value *value, ReferenceCounting style);
@@ -299,6 +303,8 @@ public:
   void emitNativeStrongRelease(llvm::Value *value,
                                Atomicity atomicity = Atomicity::Atomic);
   void emitNativeSetDeallocating(llvm::Value *value);
+  void emitNativeBeSafeForConcurrentAccess(llvm::Value *objToSet); // dmu
+  void emitNativeIfDestIsSafeForConcurrentAccessMakeSrcSafe(llvm::Value *objToCheck, llvm::Value *objToSet); // dmu
   //   - unowned references
   void emitNativeUnownedRetain(llvm::Value *value);
   void emitNativeUnownedRelease(llvm::Value *value);

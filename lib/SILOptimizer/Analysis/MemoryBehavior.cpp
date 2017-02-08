@@ -95,6 +95,7 @@ public:
 
   MemBehavior visitLoadInst(LoadInst *LI);
   MemBehavior visitStoreInst(StoreInst *SI);
+  MemBehavior visitRefCountStoreBarrierInst(RefCountStoreBarrierInst *BI); // dmu
   MemBehavior visitApplyInst(ApplyInst *AI);
   MemBehavior visitTryApplyInst(TryApplyInst *AI);
   MemBehavior visitBuiltinInst(BuiltinInst *BI);
@@ -190,6 +191,12 @@ MemBehavior MemoryBehaviorVisitor::visitStoreInst(StoreInst *SI) {
                         "Returning MayWrite.\n");
   return MemBehavior::MayWrite;
 }
+
+// dmu
+MemBehavior MemoryBehaviorVisitor::visitRefCountStoreBarrierInst(RefCountStoreBarrierInst *SI) { // dmu
+  return MemBehavior::MayHaveSideEffects; // TODO: (dmu check) is this right? conservative??
+}
+
 
 MemBehavior MemoryBehaviorVisitor::visitBuiltinInst(BuiltinInst *BI) {
   // If our callee is not a builtin, be conservative and return may have side

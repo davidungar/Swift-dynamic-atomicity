@@ -350,6 +350,14 @@ public:
   void destroy(IRGenFunction &IGF, Address addr, SILType T) const override {
     emitDestroyExistential(IGF, addr, getLayout());
   }
+               
+  bool makeContainedReferencesOfElementCountAtomically(IRGenFunction &IGF, Address addr, SILType T) const override { // dmu
+    // needs an entry in the value witness table?
+//    emitMakeContainedReferenceOfElementCountAtomicallyExistential(IGF, addr, getLayout());
+//    return true;
+    return false;  // TODO: (dmu) implement makeContainedReferencesOfElementCountAtomically
+  }
+
 };
 
 /// A type implementation for address-only reference storage of
@@ -428,6 +436,13 @@ public:
     asDerived().emitValueDestroy(IGF, valueAddr);
   }
 
+  bool makeContainedReferencesOfElementCountAtomically(IRGenFunction &IGF, Address existential, SILType T) const override { // dmu
+    Address valueAddr = projectValue(IGF, existential);
+    asDerived().emitValueBeSafeForConcurrentAccess(IGF, valueAddr);
+    return true;
+  }
+
+
   /// Given an explosion with multiple pointer elements in them, pack them
   /// into an enum payload explosion.
   /// FIXME: Assumes the explosion is broken into word-sized integer chunks.
@@ -503,6 +518,10 @@ public:
 
   void emitValueDestroy(IRGenFunction &IGF, Address addr) const {
     IGF.emitWeakDestroy(addr, Refcounting);
+  }
+
+  void emitValueBeSafeForConcurrentAccess(IRGenFunction &IGF, Address addr) const {
+    // nothing needed for weak's
   }
 
   // These explosions must follow the same schema as
@@ -594,6 +613,11 @@ public:
   void emitValueDestroy(IRGenFunction &IGF, Address addr) const {
     IGF.emitUnownedDestroy(addr, Refcounting);
   }
+
+  void emitValueBeSafeForConcurrentAccess(IRGenFunction &IGF, Address addr) const {
+   // nothing needed for unowned's
+  }
+
 
   bool mayHaveExtraInhabitants(IRGenModule &IGM) const override {
     return true;
@@ -788,6 +812,14 @@ public:
     asDerived().emitStoreOfTables(IGF, e, address);
   }
 
+  // dmu
+  void makeSourceSafeForConcurrentAccess(IRGenFunction &IGF, Explosion &e) const override { // dmu
+    (void)e.claimAll();  // TODO: (dmu implement existentials)
+  }
+  void ifDestIsSafeForConcurrentAccessMakeSrcSafe(IRGenFunction &IGF, Explosion &e, Address dest) const override { // dmu
+    (void)e.claimAll(); // TODO: (dmu implement existentials)
+  }
+  
   void copy(IRGenFunction &IGF, Explosion &src, Explosion &dest,
             Atomicity atomicity)
   const override {
@@ -823,6 +855,13 @@ public:
     llvm::Value *value = asDerived().loadValue(IGF, addr);
     asDerived().emitValueRelease(IGF, value, Atomicity::Atomic);
   }
+
+  bool makeContainedReferencesOfElementCountAtomically(IRGenFunction &IGF, Address addr, SILType T) const override { // dmu
+    llvm::Value *value = asDerived().loadValue(IGF, addr);
+    asDerived().emitValueBeSafeForConcurrentAccess(IGF, value);
+    return true;
+  }
+
 
   void packIntoEnumPayload(IRGenFunction &IGF,
                            EnumPayload &payload,
@@ -945,6 +984,10 @@ public:
     IGF.emitUnownedRelease(value, Refcounting);
   }
 
+  void emitValueBeSafeForConcurrentAccess(IRGenFunction &IGF, llvm::Value *value) const {
+  // Nothing to do be done for weaks, they are atomic
+  }
+
   void emitValueFixLifetime(IRGenFunction &IGF, llvm::Value *value) const {
     IGF.emitFixLifetime(value);
   }
@@ -1018,6 +1061,11 @@ public:
                         Atomicity atomicity) const {
     // do nothing
   }
+
+  void emitValueBeSafeForConcurrentAccess(IRGenFunction &IGF, llvm::Value *value) const {
+   // Nothing to do be done for unmanaged
+  }
+
 
   void emitValueFixLifetime(IRGenFunction &IGF, llvm::Value *value) const {
     // do nothing
@@ -1142,6 +1190,11 @@ public:
     IGF.emitStrongRelease(value, Refcounting, atomicity);
   }
 
+  void emitValueBeSafeForConcurrentAccess(IRGenFunction &IGF, llvm::Value *value) const {
+    IGF.emitBeSafeForConcurrentAccess(value, Refcounting);
+  }
+
+
   void emitValueFixLifetime(IRGenFunction &IGF, llvm::Value *value) const {
     IGF.emitFixLifetime(value);
   }
@@ -1259,6 +1312,11 @@ public:
                         Atomicity atomicity) const {
     // do nothing
   }
+
+  void emitValueBeSafeForConcurrentAccess(IRGenFunction &IGF, llvm::Value *value) const {
+   // do nothing
+  }
+
 
   void emitValueFixLifetime(IRGenFunction &IGF, llvm::Value *value) const {
     // do nothing

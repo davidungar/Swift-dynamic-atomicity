@@ -141,6 +141,11 @@ public:
     emitDestroyCall(IGF, T, addr);
   }
 
+  bool makeContainedReferencesOfElementCountAtomically(IRGenFunction &IGF, Address addr, SILType T) const override { // dmu
+    // needs entry in value witness?
+    return false; // TODO: (dmu) implement makeContainedReferencesOfElementCountAtomically
+  }
+
   void destroyArray(IRGenFunction &IGF, Address addr, llvm::Value *count,
                     SILType T) const override {
     emitDestroyArrayCall(IGF, T, addr, count);

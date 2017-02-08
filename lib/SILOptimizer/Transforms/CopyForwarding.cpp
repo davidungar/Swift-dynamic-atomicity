@@ -225,6 +225,9 @@ public:
   bool visitStoreInst(StoreInst *Store) {
     llvm_unreachable("illegal reinitialization or store of an address");
   }
+  bool visitRefCountStoreBarrierInst(RefCountStoreBarrierInst *UserInst) { // dmu TODO: (dmu) check blind clone
+    llvm_unreachable("illegal reinitialization or store of an address");
+  }
   bool visitDestroyAddrInst(DestroyAddrInst *UserInst) {
     Oper = &UserInst->getOperandRef();
     return true;
@@ -322,6 +325,11 @@ public:
   bool visitStoreInst(StoreInst *Store) {
     Oper = &Store->getAllOperands()[StoreInst::Dest];
     assert(Oper->get() == Address && "illegal store of an address");
+    return true;
+  }
+  bool visitRefCountStoreBarrierInst(RefCountStoreBarrierInst *RefCountStoreBarrier) { // dmu
+    Oper = &RefCountStoreBarrier->getAllOperands()[StoreInst::Dest];
+    assert(Oper->get() == Address && "illegal reference count store barrier of an address");
     return true;
   }
   bool visitExistentialMetatypeInst(ExistentialMetatypeInst *UserInst) {

@@ -1227,6 +1227,18 @@ public:
     }
   }
 
+  void checkRefCountStoreBarrierInst(RefCountStoreBarrierInst *I) { // dmu
+    // TODO: (dmu check) what should this be? Same as checkStoreInst??
+    require(I->getSrc()->getType().isObject(),
+            "Source value should be an object value");
+    require(I->getSrc()->getType().isLoadable(I->getModule()),
+            "Can't store a non loadable type");
+    require(I->getDest()->getType().isAddress(),
+            "Must store to an address dest");
+    require(I->getDest()->getType().getObjectType() == I->getSrc()->getType(),
+            "Store operand type and dest type mismatch");
+  }
+  
   void checkAssignInst(AssignInst *AI) {
     SILValue Src = AI->getSrc(), Dest = AI->getDest();
     require(AI->getModule().getStage() == SILStage::Raw,

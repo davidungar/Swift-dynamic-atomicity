@@ -31,7 +31,7 @@ static void destroyTestObject(HeapObject *_object) {
 }
 
 static const FullMetadata<ClassMetadata> TestClassObjectMetadata = {
-  { { &destroyTestObject }, { &VALUE_WITNESS_SYM(Bo) } },
+  { { &destroyTestObject, MakeContainedReferencesCountAtomicallyFunctionValues::unimplemented /*dmu makeContainedReferencesCountAtomicallyContent */ }, { &VALUE_WITNESS_SYM(Bo) } },
   { { { MetadataKind::Class } }, 0, /*rodata*/ 1,
   ClassFlags::UsesSwift1Refcounting, nullptr, 0, 0, 0, 0, 0 }
 };
@@ -74,8 +74,9 @@ static void releaseALot(TestObject *object, size_t &deallocated,
   }
 }
 
-// 32-2 bits of retain count.
-const uint64_t maxRC = (1ULL << (32 - 2)) - 1;
+// 32-2 bits of retain count. Now 3 bits--dmu storeBarrier sharing
+const int extraBitFor_RC_MIGHT_BE_CONCURRENTLY_ACCESSED_FLAG = 1; // dmu
+const uint64_t maxRC = (1ULL << (32 - 2 - extraBitFor_RC_MIGHT_BE_CONCURRENTLY_ACCESSED_FLAG)) - 1;
 
 TEST(LongRefcountingTest, retain_max) {
   size_t deallocated = 0;

@@ -63,6 +63,13 @@ SWIFT_RT_ENTRY_IMPL(swift_allocObject)(HeapMetadata const *metadata,
   // FIXME: this should be a placement new but that adds a null check
   object->metadata = metadata;
   object->refCount.init();
+  // TODO: (dmu) what about allocating an ObjectiveC object?
+  // TODO: (dmu) two routines, one to just set the bit??
+  void const * const makeContainedReferencesCountAtomically = reinterpret_cast<void*>(asFullMetadata(object->metadata)->makeContainedReferencesCountAtomically);
+  if (    MakeContainedReferencesCountAtomicallyValues::unimplemented
+      ==  makeContainedReferencesCountAtomically ) { 
+    object->refCount.beSafeForConcurrentAccess();
+  }
   object->weakRefCount.init();
 
   // If leak tracking is enabled, start tracking this object.
@@ -125,7 +132,10 @@ public:
   FullMetadata<GenericBoxHeapMetadata> Data;
 
   BoxCacheEntry(const Metadata *type)
-    : Data{HeapMetadataHeader{{destroyGenericBox}, {/*vwtable*/ nullptr}},
+  : Data{HeapMetadataHeader{{
+    destroyGenericBox,
+    (void (*)(HeapObject*))(MakeContainedReferencesCountAtomicallyValues::unimplemented) /*dmu makeContainedReferencesCountAtomicallyContents */
+  }, {/*vwtable*/ nullptr}},
            GenericBoxHeapMetadata{MetadataKind::HeapGenericLocalVariable,
                                   GenericBoxHeapMetadata::getHeaderOffset(type),
                                   type}} {
@@ -285,6 +295,44 @@ void SWIFT_RT_ENTRY_IMPL(swift_release_n)(HeapObject *object, uint32_t n)
 void swift::swift_setDeallocating(HeapObject *object) {
   object->refCount.decrementFromOneAndDeallocateNonAtomic();
 }
+
+
+
+// dmu storeBarrier sharing
+
+void swift::swift_ifDestIsSafeForConcurrentAccessMakeSrcSafe(HeapObject *dst, HeapObject *src)
+SWIFT_CC(DefaultCC_IMPL) {
+  return SWIFT_RT_ENTRY_REF(swift_ifDestIsSafeForConcurrentAccessMakeSrcSafe)(dst, src);
+}
+
+SWIFT_RT_ENTRY_IMPL_VISIBILITY
+extern "C"
+void SWIFT_RT_ENTRY_IMPL(swift_ifDestIsSafeForConcurrentAccessMakeSrcSafe)(HeapObject *dst, HeapObject *src) { // dmu
+  if (dst->refCount.isSafeForConcurrentAccess()) {
+    SWIFT_RT_ENTRY_CALL(swift_beSafeForConcurrentAccess)(src);
+  }
+}
+
+void swift::swift_beSafeForConcurrentAccess(HeapObject *object)
+SWIFT_CC(DefaultCC_IMPL) {
+  return SWIFT_RT_ENTRY_REF(swift_beSafeForConcurrentAccess)(object);
+}
+
+SWIFT_RT_ENTRY_IMPL_VISIBILITY
+extern "C"
+void SWIFT_RT_ENTRY_IMPL(swift_beSafeForConcurrentAccess)(HeapObject *object) { // dmu
+  if (object->refCount.isSafeForConcurrentAccess()) {
+    return; // halt recursion,
+  }
+  object->refCount.beSafeForConcurrentAccess(); // must set this first to break the recursion
+  auto md = object->metadata; // extra var for debugging
+  auto fmd = asFullMetadata(md); // extra var for debugging
+  void (*makeContainedReferencesCountAtomically)(HeapObject*) = fmd->makeContainedReferencesCountAtomically;
+  assert(makeContainedReferencesCountAtomically != nullptr  &&  "if obj is nonatomic, must be a makeContainedReferencesCountAtomically fn");
+  makeContainedReferencesCountAtomically(object);
+}
+
+
 
 void swift::swift_nonatomic_release_n(HeapObject *object, uint32_t n)
     SWIFT_CC(RegisterPreservingCC_IMPL) {

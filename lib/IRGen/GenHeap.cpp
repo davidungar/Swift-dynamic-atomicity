@@ -233,6 +233,56 @@ static llvm::Function *createDtorFn(IRGenModule &IGM,
   return fn;
 }
 
+
+
+/// Create the makeContainedReferencesCountAtomically function for a layout. (dmu)
+/// Cloned from createDtorFn TODO: (dmu) combine this with createDtorFn
+static llvm::Constant *createMakeContainedReferencesCountAtomicallyFn(IRGenModule &IGM,
+                                                                                  const HeapLayout &layout) {
+  llvm::Function *fn =
+  llvm::Function::Create(IGM.MakeContainedReferencesCountAtomicallyTy,
+                         llvm::Function::PrivateLinkage,
+                         MakeContainedReferencesCountAtomicallyValues::twine, &IGM.Module);
+  fn->setAttributes(IGM.constructInitialAttributes());
+  
+  IRGenFunction IGF(IGM, fn);
+  if (IGM.DebugInfo)
+    IGM.DebugInfo->emitArtificialFunction(IGF, fn);
+  
+  Address structAddr = layout.emitCastTo(IGF, &*fn->arg_begin());
+  
+  // Bind necessary bindings, if we have them.
+  if (layout.hasBindings()) {
+    // The type metadata bindings should be at a fixed offset, so we can pass
+    // None for NonFixedOffsets. If we didn't, we'd have a chicken-egg problem.
+    auto bindingsAddr = layout.getElement(0).project(IGF, structAddr, None);
+    layout.getBindings().restore(IGF, bindingsAddr);
+  }
+  
+  // Figure out the non-fixed offsets.
+  HeapNonFixedOffsets offsets(IGF, layout);
+  
+  bool implemented = true;
+  
+  // Traverse the fields.
+  for (unsigned i : indices(layout.getElements())) {
+    auto &field = layout.getElement(i);
+    auto fieldTy = layout.getElementTypes()[i];
+    if (field.isPOD())
+      continue;
+    // dmu entry into makeContainedReferencesOfElementCountAtomically urgent rename
+    implemented = field.getType().makeContainedReferencesOfElementCountAtomically(IGF,
+                                                                    field.project(IGF, structAddr, offsets),
+                                                                    fieldTy)
+    && implemented;
+    }
+  IGF.Builder.CreateRetVoid();
+  return implemented
+  ?  static_cast<llvm::Constant*>(fn)
+  :  llvm::ConstantPointerNull::get(IGM.MakeContainedReferencesCountAtomicallyTy->getPointerTo());
+}
+
+
 /// Create the size function for a layout.
 /// TODO: give this some reasonable name and possibly linkage.
 llvm::Constant *HeapLayout::createSizeFn(IRGenModule &IGM) const {
@@ -258,11 +308,13 @@ llvm::Constant *HeapLayout::createSizeFn(IRGenModule &IGM) const {
 static llvm::Constant *buildPrivateMetadata(IRGenModule &IGM,
                                             const HeapLayout &layout,
                                             llvm::Constant *dtorFn,
+                                            llvm::Constant *makeContainedReferencesCountAtomicallyFn,
                                             llvm::Constant *captureDescriptor,
                                             MetadataKind kind) {
   // Build the fields of the private metadata.
-  SmallVector<llvm::Constant*, 5> fields;
+  SmallVector<llvm::Constant*, 6> fields; // dmu metadata layout changed 5 to 6
   fields.push_back(dtorFn);
+  fields.push_back(makeContainedReferencesCountAtomicallyFn);
   fields.push_back(llvm::ConstantPointerNull::get(IGM.WitnessTablePtrTy));
   fields.push_back(llvm::ConstantStruct::get(IGM.TypeMetadataStructTy,
                                              getMetadataKind(IGM, kind)));
@@ -290,7 +342,7 @@ static llvm::Constant *buildPrivateMetadata(IRGenModule &IGM,
 
   llvm::Constant *indices[] = {
     llvm::ConstantInt::get(IGM.Int32Ty, 0),
-    llvm::ConstantInt::get(IGM.Int32Ty, 2)
+    llvm::ConstantInt::get(IGM.Int32Ty, 3) // TODO: (dmu factor metadata layout) changed 2 to 3
   };
   return llvm::ConstantExpr::getInBoundsGetElementPtr(
       /*Ty=*/nullptr, var, indices);
@@ -301,6 +353,7 @@ HeapLayout::getPrivateMetadata(IRGenModule &IGM,
                                llvm::Constant *captureDescriptor) const {
   if (!privateMetadata)
     privateMetadata = buildPrivateMetadata(IGM, *this, createDtorFn(IGM, *this),
+                                           createMakeContainedReferencesCountAtomicallyFn(IGM, *this), // dmu
                                            captureDescriptor,
                                            MetadataKind::HeapLocalVariable);
   return privateMetadata;
@@ -435,6 +488,15 @@ namespace {
       IGF.emitFixLifetime(value);
     }
     
+    void emitBeSafeForConcurrentAccess(IRGenFunction &IGF, // dmu
+                                       llvm::Value *objToSet) const {
+      IGF.emitBeSafeForConcurrentAccess(objToSet, ReferenceCounting::Native);
+    }
+    void emitIfDestIsSafeForConcurrentAccessMakeSrcSafe(IRGenFunction &IGF, // dmu
+                                       llvm::Value *objToCheck, llvm::Value *objToSet) const {
+      IGF.emitIfDestIsSafeForConcurrentAccessMakeSrcSafe(objToCheck, objToSet, ReferenceCounting::Native);
+    }
+    
     unsigned getFixedExtraInhabitantCount(IRGenModule &IGM) const override {
       return IGM.getUnownedExtraInhabitantCount(ReferenceCounting::Native);
     }
@@ -500,6 +562,10 @@ namespace {
 
     void destroy(IRGenFunction &IGF, Address addr, SILType T) const override {
       IGF.emitNativeWeakDestroy(addr);
+    }
+
+    bool makeContainedReferencesOfElementCountAtomically(IRGenFunction &IGF, Address addr, SILType T) const override { // dmu
+      return true; // weak counts are atomic
     }
 
     llvm::Type *getOptionalIntType() const {
@@ -659,6 +725,10 @@ namespace {
       IGF.emitUnknownUnownedDestroy(addr);
     }
 
+    bool makeContainedReferencesOfElementCountAtomically(IRGenFunction &IGF, Address addr, SILType T) const override { // dmu
+     return true; // since weak counts are all atomic at present
+    }
+
     // Unowned types have the same extra inhabitants as normal pointers.
     // They do not, however, necessarily have any spare bits.
     
@@ -728,6 +798,10 @@ namespace {
 
     void destroy(IRGenFunction &IGF, Address addr, SILType T) const override {
       IGF.emitUnknownWeakDestroy(addr);
+    }
+                                
+    bool makeContainedReferencesOfElementCountAtomically(IRGenFunction &IGF, Address addr, SILType T) const override { // dmu
+     return true; // nothing to do; weak counts are all atomic right now
     }
                                 
     llvm::Type *getOptionalIntType() const {
@@ -851,6 +925,36 @@ static void emitUnaryRefCountCall(IRGenFunction &IGF,
   call->setCallingConv(cc);
   call->setDoesNotThrow();
 }
+
+// TODO: (dmu factor) Evil copying of emitAllocatingCall!
+/// Emit a binary call to perform a ref-counting operation.
+///
+/// \param fn - expected signature 'void (T, T)'
+static void emitBinaryRefCountCall(IRGenFunction &IGF,
+                                   llvm::Constant *fn,
+                                   llvm::Value *value1,
+                                   llvm::Value *value2) {
+  std::initializer_list<llvm::Value*>  values     = {value1,            value2};
+  std::initializer_list<llvm::Type* >  valueTypes = {value1->getType(), value2->getType()};
+  auto cc = IGF.IGM.DefaultCC;
+  if (auto fun = dyn_cast<llvm::Function>(fn))
+    cc = fun->getCallingConv();
+  
+  // Instead of casting the input, we cast the function type.
+  // This tends to produce less IR, but might be evil.
+  if (   value1->getType() != getTypeOfFunction(fn)->getParamType(0)
+      || value2->getType() != getTypeOfFunction(fn)->getParamType(1)) {
+    ArrayRef<llvm::Type*> types = ArrayRef<llvm::Type*>(valueTypes);
+    llvm::FunctionType *fnType = llvm::FunctionType::get(IGF.IGM.VoidTy, types, false);
+    fn = llvm::ConstantExpr::getBitCast(fn, fnType->getPointerTo());
+  }
+  
+  // Emit the call.
+  llvm::CallInst *call = IGF.Builder.CreateCall(fn, values);
+  call->setCallingConv(cc);
+  call->setDoesNotThrow();
+}
+
 
 /// Emit a copy-like call to perform a ref-counting operation.
 ///
@@ -1027,6 +1131,36 @@ void IRGenFunction::emitStrongRetain(llvm::Value *value,
   }
 }
 
+
+void IRGenFunction::emitBeSafeForConcurrentAccess(llvm::Value *objToSet,
+                                                  ReferenceCounting refcounting) { //dmu
+  switch (refcounting) {
+    case ReferenceCounting::Native:
+      return emitNativeBeSafeForConcurrentAccess(objToSet);
+    case ReferenceCounting::ObjC:
+    case ReferenceCounting::Block:
+    case ReferenceCounting::Unknown:
+    case ReferenceCounting::Bridge:
+    case ReferenceCounting::Error:
+      break;
+  }
+}
+void IRGenFunction::emitIfDestIsSafeForConcurrentAccessMakeSrcSafe(llvm::Value *objToCheck,
+                                                                   llvm::Value *objToSet,
+                                                                   ReferenceCounting refcounting) { //dmu
+  switch (refcounting) {
+    case ReferenceCounting::Native:
+      return emitNativeIfDestIsSafeForConcurrentAccessMakeSrcSafe(objToCheck, objToSet);
+    case ReferenceCounting::ObjC:
+    case ReferenceCounting::Block:
+    case ReferenceCounting::Unknown:
+    case ReferenceCounting::Bridge:
+    case ReferenceCounting::Error:
+      break;
+  }
+}
+
+
 llvm::Type *IRGenModule::getReferenceType(ReferenceCounting refcounting) {
   switch (refcounting) {
   case ReferenceCounting::Native:
@@ -1145,6 +1279,22 @@ void IRGenFunction::emitNativeSetDeallocating(llvm::Value *value) {
   if (doesNotRequireRefCounting(value)) return;
   emitUnaryRefCountCall(*this, IGM.getNativeSetDeallocatingFn(), value);
 }
+
+// dmu
+void IRGenFunction::emitNativeBeSafeForConcurrentAccess(llvm::Value *objToSet) {
+  if (doesNotRequireRefCounting(objToSet)) {
+    return;
+  }
+  emitUnaryRefCountCall(*this, IGM.getBeSafeForConcurrentAccessFn(), objToSet);
+}
+// dmu
+void IRGenFunction::emitNativeIfDestIsSafeForConcurrentAccessMakeSrcSafe(llvm::Value *objToCheck, llvm::Value *objToSet) {
+  if (doesNotRequireRefCounting(objToSet)) {
+    return;
+  }
+  emitBinaryRefCountCall(*this, IGM.getIfDestIsSafeForConcurrentAccessMakeSrcSafeFn(), objToCheck, objToSet);
+}
+
 
 void IRGenFunction::emitNativeUnownedInit(llvm::Value *value,
                                           Address dest) {

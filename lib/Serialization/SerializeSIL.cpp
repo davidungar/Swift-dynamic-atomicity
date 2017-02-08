@@ -1322,6 +1322,7 @@ void SILSerializer::writeSILInstruction(const SILInstruction &SI) {
   case ValueKind::AssignInst:
   case ValueKind::CopyAddrInst:
   case ValueKind::StoreInst:
+  case ValueKind::RefCountStoreBarrierInst: // dmu
   case ValueKind::StoreBorrowInst:
   case ValueKind::StoreUnownedInst:
   case ValueKind::StoreWeakInst: {
@@ -1350,6 +1351,9 @@ void SILSerializer::writeSILInstruction(const SILInstruction &SI) {
     } else if (auto *SBI = dyn_cast<StoreBorrowInst>(&SI)) {
       operand = SBI->getDest();
       value = SBI->getSrc();
+    } else if (SI.getKind() == ValueKind::RefCountStoreBarrierInst) { // dmu
+      operand = cast<RefCountStoreBarrierInst>(&SI)->getDest();
+      value = cast<RefCountStoreBarrierInst>(&SI)->getSrc();
     } else {
       llvm_unreachable("switch out of sync");
     }

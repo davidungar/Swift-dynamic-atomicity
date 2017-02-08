@@ -174,22 +174,6 @@ FUNCTION(NativeSetDeallocating, swift_setDeallocating,
          ARGS(RefCountedPtrTy),
          ATTRS(NoUnwind))
 
-// void swift_ifDestIsSafeForConcurrentAccessMakeSrcSafe(HeapObject *dst, HeapObject *src);
-FUNCTION_WITH_GLOBAL_SYMBOL_AND_IMPL(IfDestIsSafeForConcurrentAccessMakeSrcSafe, swift_ifDestIsSafeForConcurrentAccessMakeSrcSafe,
-         _swift_ifDestIsSafeForConcurrentAccessMakeSrcSafe, _swift_ifDestIsSafeForConcurrentAccessMakeSrcSafe_,
-         DefaultCC, // TODO: (dmu optimize) I think this may be conservative
-         RETURNS(VoidTy),
-         ARGS(RefCountedPtrTy, RefCountedPtrTy),
-         ATTRS(NoUnwind))
-
-// void swift_beSafeForConcurrentAccess(void* ptr);
-FUNCTION_WITH_GLOBAL_SYMBOL_AND_IMPL(BeSafeForConcurrentAccess, swift_beSafeForConcurrentAccess,
-        _swift_beSafeForConcurrentAccess, _swift_beSafeForConcurrentAccess_,
-        DefaultCC, // TODO: (dmu optimize) I think this may be conservative
-        RETURNS(VoidTy),
-        ARGS(RefCountedPtrTy),
-        ATTRS(NoUnwind))
-
 // void swift_nonatomic_retain_n(void *ptr, int32_t n);
 FUNCTION_WITH_GLOBAL_SYMBOL_AND_IMPL(NativeNonAtomicStrongRetainN, swift_nonatomic_retain_n,
          _swift_nonatomic_retain_n, _swift_nonatomic_retain_n_, RegisterPreservingCC,

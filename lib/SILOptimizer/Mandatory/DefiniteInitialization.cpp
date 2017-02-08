@@ -101,6 +101,8 @@ static void LowerAssignInstruction(SILBuilder &B, AssignInst *Inst,
     // a known incoming value, we can avoid the load.
     SILValue IncomingVal =
         B.createLoad(Loc, Inst->getDest(), LoadOwnershipQualifier::Unqualified);
+    // TODO: (dmu optimization) use IncomingVal instead of Inst->getDest() below to avoid reloading the destination
+    B.createRefCountStoreBarrier(Inst->getLoc(), Src, Inst->getDest()); // dmu RefCountStoreBarrierInst
     B.createStore(Inst->getLoc(), Src, Inst->getDest(),
                   StoreOwnershipQualifier::Unqualified);
 

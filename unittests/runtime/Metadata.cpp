@@ -291,7 +291,7 @@ TEST(MetadataTest, getGenericMetadata) {
 }
 
 FullMetadata<ClassMetadata> MetadataTest2 = {
-  { { nullptr }, { &VALUE_WITNESS_SYM(Bo) } },
+  { { nullptr, MakeContainedReferencesCountAtomicallyFunctionValues::unimplemented /*dmu makeContainedReferencesCountAtomicallyContents*/ }, { &VALUE_WITNESS_SYM(Bo) } },
   { { { MetadataKind::Class } }, nullptr, /*rodata*/ 1,
     ClassFlags(), nullptr, 0, 0, 0, 0, 0 }
 };
@@ -545,7 +545,7 @@ struct {
   FullMetadata<ClassMetadata> Metadata;
 } SuperclassWithPrefix = {
   { &Global1, &Global3, &Global2, &Global3 },
-  { { { &destroySuperclass }, { &VALUE_WITNESS_SYM(Bo) } },
+  { { { &destroySuperclass, MakeContainedReferencesCountAtomicallyFunctionValues::unimplemented /*dmu makeContainedReferencesCountAtomicallyContents*/ }, { &VALUE_WITNESS_SYM(Bo) } },
     { { { MetadataKind::Class } }, nullptr, /*rodata*/ 1, ClassFlags(), nullptr,
       0, 0, 0, sizeof(SuperclassWithPrefix),
       sizeof(SuperclassWithPrefix.Prefix) + sizeof(HeapMetadataHeader) } }
@@ -577,7 +577,7 @@ struct {
     sizeof(HeapMetadataHeader), // address point
     {} // private data
   },
-  { { { &destroySubclass }, { &VALUE_WITNESS_SYM(Bo) } },
+  { { { &destroySubclass, MakeContainedReferencesCountAtomicallyFunctionValues::unimplemented /*dmu makeContainedReferencesCountAtomicallyContents*/ }, { &VALUE_WITNESS_SYM(Bo) } },
     { { { MetadataKind::Class } }, nullptr, /*rodata*/ 1, ClassFlags(), nullptr,
       0, 0, 0,
       sizeof(GenericSubclass.Pattern) + sizeof(GenericSubclass.Suffix),
@@ -596,14 +596,19 @@ TEST(MetadataTest, getGenericMetadata_SuperclassWithUnexpectedPrefix) {
         swift_getGenericMetadata(metadataTemplate, args));
       void * const *fields = reinterpret_cast<void * const *>(inst);
 
+      int const extraWordCountFor_makeContainedReferencesCountAtomically = 1; // dmu metadata layout
+      // No instance variables that are reference counted
+      void* const expectedValueFor_makeContainedReferencesCountAtomically = reinterpret_cast<void* const>(MakeContainedReferencesCountAtomicallyFunctionValues::unimplemented); // dmu
+      
       // Assert that we copied the extra prefix data from the superclass.
-      EXPECT_EQ(&Global1, fields[-6]);
-      EXPECT_EQ(&Global3, fields[-5]);
-      EXPECT_EQ(&Global2, fields[-4]);
-      EXPECT_EQ(&Global3, fields[-3]);
+      EXPECT_EQ(&Global1, fields[-6 - extraWordCountFor_makeContainedReferencesCountAtomically]); // TODO: (dmu factor extra metadata layotu)
+      EXPECT_EQ(&Global3, fields[-5 - extraWordCountFor_makeContainedReferencesCountAtomically]);
+      EXPECT_EQ(&Global2, fields[-4 - extraWordCountFor_makeContainedReferencesCountAtomically]);
+      EXPECT_EQ(&Global3, fields[-3 - extraWordCountFor_makeContainedReferencesCountAtomically]);
 
       // Assert that we copied the shared prefix data from the subclass.
-      EXPECT_EQ((void*) &destroySubclass, fields[-2]);
+      EXPECT_EQ((void*) &destroySubclass,  fields[-2 - extraWordCountFor_makeContainedReferencesCountAtomically]);
+      EXPECT_EQ(expectedValueFor_makeContainedReferencesCountAtomically, fields[-2]);
       EXPECT_EQ(&VALUE_WITNESS_SYM(Bo), fields[-1]);
 
       // Assert that we set the superclass field.

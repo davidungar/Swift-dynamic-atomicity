@@ -516,6 +516,15 @@ public:
     return lowering.emitStore(*this, Loc, Src, DestAddr, Qualifier);
   }
 
+  // dmu
+  RefCountStoreBarrierInst
+  *createRefCountStoreBarrier(SILLocation Loc,
+                                                    SILValue Src,
+                                                    SILValue Dest) {
+    return insert(new (F.getModule())
+                  RefCountStoreBarrierInst( getSILDebugLocation(Loc), Src, Dest));
+  }
+
   EndBorrowInst *createEndBorrow(SILLocation Loc, SILValue BorrowedValue,
                                  SILValue OriginalValue) {
     return insert(new (F.getModule()) EndBorrowInst(

@@ -213,6 +213,18 @@ public:
                                   field.getType(IGF.IGM, T));
     }
   }
+      
+  bool makeContainedReferencesOfElementCountAtomically(IRGenFunction &IGF, Address addr, SILType T) const override { // dmu
+    auto offsets = asImpl().getNonFixedOffsets(IGF, T);
+    for (auto &field : getFields()) {
+      if (field.isPOD()) continue;
+      
+      bool implemented = field.getTypeInfo().makeContainedReferencesOfElementCountAtomically(IGF, field.projectAddress(IGF, addr, offsets),
+                                                                                             field.getType(IGF.IGM, T));
+      if (!implemented) return false;
+    }
+    return true;
+  }
 };
 
 template <class Impl, class Base, class FieldImpl_,
@@ -453,6 +465,19 @@ private:
     }
   }
 
+  // Just for makeSourceSafeForConcurrentAccess -- dmu
+  template <void (LoadableTypeInfo::*Op)(IRGenFunction &IGF,
+                                         Explosion &in) const>
+  void forAllFields(IRGenFunction &IGF, Explosion &in) const {
+    auto offsets = asImpl().getNonFixedOffsets(IGF);
+    for (auto &field : getFields()) {
+      if (field.isEmpty()) continue;
+      (cast<LoadableTypeInfo>(field.getTypeInfo()).*Op)(IGF, in);
+    }
+  }
+
+
+
 public:
   using super::getFields;
 
@@ -474,6 +499,28 @@ public:
                   Address addr) const override {
     forAllFields<&LoadableTypeInfo::initialize>(IGF, e, addr);
   }
+
+      
+  void makeSourceSafeForConcurrentAccess(IRGenFunction &IGF, Explosion &e) const override { // dmu
+#if 1 // TODO: (dmu check) structs in classes in structs
+    (void)e.claimAll();
+#else
+    // temporary stubbed out above to prevent too much claiming
+    // is dest the same for all, how does this work?
+    forAllFields<&LoadableTypeInfo::makeSourceSafeForConcurrentAccess>(IGF, e, dest, assumeDestIsConcurrentlyAccessed);
+#endif
+
+  }
+  void ifDestIsSafeForConcurrentAccessMakeSrcSafe(IRGenFunction &IGF, Explosion &e, Address dest) const override { // dmu
+#if 1 // TODO: (dmu check) structs in classes in structs
+    (void)e.claimAll();
+#else
+    /// temporary stubbed out above to prevent too much claiming
+    // is dest the same for all, how does this work?
+    forAllFields<&LoadableTypeInfo::makeSourceSafeForConcurrentAccess>(IGF, e, dest, assumeDestIsConcurrentlyAccessed);
+#endif
+  }
+
 
   unsigned getExplosionSize() const override {
     return ExplosionSize;

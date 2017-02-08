@@ -293,6 +293,7 @@ namespace {
                                    const ClangFieldInfo &field) const {
       llvm_unreachable("non-fixed field in Clang type?");
     }
+    bool hasNonFixedOffsets() const { return false; } // dmu needed for what?
   };
 
   /// A type implementation for loadable struct types.
@@ -336,6 +337,7 @@ namespace {
                                    const StructFieldInfo &field) const {
       llvm_unreachable("non-fixed field in loadable type?");
     }
+    bool hasNonFixedOffsets() const { return false; } // dmu
   };
 
   /// A type implementation for non-loadable but fixed-size struct types.
@@ -364,6 +366,7 @@ namespace {
                                    const StructFieldInfo &field) const {
       llvm_unreachable("non-fixed field in fixed struct?");
     }
+    bool hasNonFixedOffsets() const { return false; } // dmu
   };
 
   struct GetStartOfFieldOffsets
@@ -469,6 +472,8 @@ namespace {
       return StructNonFixedOffsets(T).getFieldAccessStrategy(IGM,
                                               field.getNonFixedElementIndex());
     }
+
+    bool hasNonFixedOffsets() const { return true; } // dmu
 
     void initializeMetadata(IRGenFunction &IGF,
                             llvm::Value *metadata,

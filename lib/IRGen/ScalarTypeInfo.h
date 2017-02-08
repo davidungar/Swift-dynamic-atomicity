@@ -157,6 +157,23 @@ public:
     }
   }
 
+  void makeSourceSafeForConcurrentAccess(IRGenFunction &IGF, Explosion &src) const override { // dmu
+    if (Derived::IsScalarPOD) {
+      (void)src.claimAll();
+      return;
+    }
+    asDerived().emitBeSafeForConcurrentAccess(IGF, src.claimNext());
+  }
+  void ifDestIsSafeForConcurrentAccessMakeSrcSafe(IRGenFunction &IGF, Explosion &src, Address dest) const override { // dmu
+    if (Derived::IsScalarPOD) {
+      (void)src.claimAll();
+      return;
+    }
+// TODO: (dmu check) is the getAddress right???
+    asDerived().emitIfDestIsSafeForConcurrentAccessMakeSrcSafe(IGF, dest.getAddress(), src.claimNext());
+  }
+
+
   void copy(IRGenFunction &IGF, Explosion &in, Explosion &out,
             Atomicity atomicity) const override {
     llvm::Value *value = in.claimNext();
@@ -181,6 +198,16 @@ public:
       llvm::Value *value = IGF.Builder.CreateLoad(addr, "toDestroy");
       asDerived().emitScalarRelease(IGF, value, Atomicity::Atomic);
     }
+  }
+  
+  bool makeContainedReferencesOfElementCountAtomically(IRGenFunction &IGF, Address addr, SILType T) const override { // dmu
+    if (!Derived::IsScalarPOD) {
+      addr = asDerived().projectScalar(IGF, addr);
+      llvm::Value *value = IGF.Builder.CreateLoad(addr, "toDestroy");
+      asDerived().emitBeSafeForConcurrentAccess
+      (IGF, value);
+    }
+    return true;
   }
   
   void packIntoEnumPayload(IRGenFunction &IGF,
@@ -232,6 +259,11 @@ private:
 
   void emitScalarFixLifetime(IRGenFunction &IGF, llvm::Value *value) const {
   }
+  
+  void emitBeSafeForConcurrentAccess(IRGenFunction &IGF, // dmu
+                                     llvm::Value *objToSet) const {}
+  void emitIfDestIsSafeForConcurrentAccessMakeSrcSafe(IRGenFunction &IGF, // dmu
+                                                      llvm::Value *objToCheck, llvm::Value *objToSet) const {}
 };
 
 }

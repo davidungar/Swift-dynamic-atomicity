@@ -102,6 +102,18 @@ public:
     IGF.emitStrongRetain(value, asDerived().getReferenceCounting(), atomicity);
   }
 
+  
+  void emitBeSafeForConcurrentAccess(IRGenFunction &IGF, // dmu
+                                     llvm::Value *objToSet) const {
+    IGF.emitBeSafeForConcurrentAccess(objToSet, asDerived().getReferenceCounting());
+  }
+  void emitIfDestIsSafeForConcurrentAccessMakeSrcSafe(IRGenFunction &IGF, // dmu
+                                     llvm::Value *objToCheck, llvm::Value *objToSet) const {
+    IGF.emitIfDestIsSafeForConcurrentAccessMakeSrcSafe(objToCheck, objToSet, asDerived().getReferenceCounting());
+  }
+  
+
+
   // Implement the primary retain/release operations of ReferenceTypeInfo
   // using basic reference counting.
   void strongRetain(IRGenFunction &IGF, Explosion &e,

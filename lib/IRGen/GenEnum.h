@@ -356,6 +356,8 @@ public:
   virtual void getSchema(ExplosionSchema &schema) const = 0;
   virtual void destroy(IRGenFunction &IGF, Address addr, SILType T) const = 0;
 
+  virtual bool makeContainedReferencesOfElementCountAtomically(IRGenFunction &IGF, Address addr, SILType T) const = 0; // dmu
+
   virtual void initializeFromParams(IRGenFunction &IGF, Explosion &params,
                                     Address dest, SILType T) const;
   
@@ -406,6 +408,11 @@ public:
                       Address addr) const = 0;
   virtual void initialize(IRGenFunction &IGF, Explosion &e,
                           Address addr) const = 0;
+  
+  virtual void makeSourceSafeForConcurrentAccess(IRGenFunction &IGF, Explosion &e) const = 0; // dmu
+  virtual void ifDestIsSafeForConcurrentAccessMakeSrcSafe(IRGenFunction &IGF, Explosion &e, // dmu
+                                                 Address dest) const = 0;
+  
   virtual void reexplode(IRGenFunction &IGF, Explosion &src,
                          Explosion &dest) const = 0;
   virtual void copy(IRGenFunction &IGF, Explosion &src,

@@ -804,6 +804,7 @@ public:
 
   void visitLoadInst(LoadInst *i);
   void visitStoreInst(StoreInst *i);
+  void visitRefCountStoreBarrierInst(RefCountStoreBarrierInst *i); // dmu
   void visitAssignInst(AssignInst *i) {
     llvm_unreachable("assign is not valid in canonical SIL");
   }
@@ -3195,15 +3196,61 @@ void IRGenSILFunction::visitStoreInst(swift::StoreInst *i) {
   SILType objType = i->getSrc()->getType().getObjectType();
 
   const auto &typeInfo = cast<LoadableTypeInfo>(getTypeInfo(objType));
-  switch (i->getOwnershipQualifier()) {
-  case StoreOwnershipQualifier::Unqualified:
-  case StoreOwnershipQualifier::Init:
-  case StoreOwnershipQualifier::Trivial:
-    typeInfo.initialize(*this, source, dest);
-    break;
-  case StoreOwnershipQualifier::Assign:
+
+  // TODO: (dmu check) how much of this now redundant with visitRefCountStoreBarrierInst
+  // TODO: (dmu check) what about other store instructions & assign? Does this code need to be there?
+  // TODO: (dmu cleanup) factor this code and what is in visitRefCountStoreBarrierInst
+  // move into typeinfo???, yes, ClassTypeInfo???
+  // cannot be here; could be a record type
+  // seems OK to use only source typeInfo
+  
+  // must always allow for concurrent access to globals
+  bool isDestGlobal = i->getDest()->getKind() == ValueKind::GlobalAddrInst;
+  
+  bool isDestBeingAssigned = i->getOwnershipQualifier() == StoreOwnershipQualifier::Assign;
+
+  if (isDestGlobal) { // TODO: (dmu urgent) maybe also if dest has unimplemented beSafe in metadata? what if dest resilient or unknown?
+    Explosion concurrentAccessSource = getLoweredExplosion(i->getSrc());
+    typeInfo.makeSourceSafeForConcurrentAccess( *this, concurrentAccessSource); // dmu
+  }
+  // This is only here if you run the compiler without the pass that transforms stores -- dmu
+  else if (isDestBeingAssigned) {
+    Explosion concurrentAccessSource = getLoweredExplosion(i->getSrc());
+    typeInfo.ifDestIsSafeForConcurrentAccessMakeSrcSafe( *this, concurrentAccessSource, dest); // dmu
+  }
+  
+  if (isDestBeingAssigned) {
     typeInfo.assign(*this, source, dest);
-    break;
+  }
+  else {
+    typeInfo.initialize(*this, source, dest);
+}
+}
+
+// dmu
+void IRGenSILFunction::visitRefCountStoreBarrierInst(RefCountStoreBarrierInst *i) { //dmu
+  Address dest = getLoweredAddress(i->getDest()); // TODO: (dmu optimization) in DefiniteInitialization.cpp, where createRefCountStoreBarrier is called, could pass in loaded value
+  SILType objType = i->getSrc()->getType().getObjectType();
+  
+  const auto &typeInfo = cast<LoadableTypeInfo>(getTypeInfo(objType));
+  
+  // TODO: (dmu check) how much of this now redundant with visitStoreInst
+  // TODO: (dmu check) what about other store instructions & assign? Does this code need to be there?
+  // TODO: (dmu cleanup) factor this code and what is in visitRefCountStoreBarrierInst
+  // move into typeinfo???, yes, ClassTypeInfo???
+  // cannot be here; could be a record type
+  // seems OK to use only source typeInfo
+  
+  // must always allow for concurrent access to globals
+  bool isDestGlobal = i->getDest()->getKind() == ValueKind::GlobalAddrInst;
+  
+  if (isDestGlobal) { // TODO: (dmu urgent) maybe also if dest has unimplemented beSafe in metadata? what if dest resilient or unknown?
+    Explosion concurrentAccessSource = getLoweredExplosion(i->getSrc());
+    typeInfo.makeSourceSafeForConcurrentAccess( *this, concurrentAccessSource); // dmu
+  }
+  else {
+    Explosion concurrentAccessSource = getLoweredExplosion(i->getSrc());
+    typeInfo.ifDestIsSafeForConcurrentAccessMakeSrcSafe( *this, concurrentAccessSource, dest); // dmu
   }
 }
 
@@ -3318,6 +3365,7 @@ void IRGenSILFunction::visitLoadWeakInst(swift::LoadWeakInst *i) {
 }
 
 void IRGenSILFunction::visitStoreWeakInst(swift::StoreWeakInst *i) {
+  // TODO: (dmu check) add call to makeSourceSafeForConcurrentAccess or ifDestIsSafeForConcurrentAccessMakeSrcSafe ala visitStore or be sure DestSafe node is created for these nodes
   Explosion source = getLoweredExplosion(i->getSrc());
   Address dest = getLoweredAddress(i->getDest());
 
@@ -3439,6 +3487,7 @@ void IRGenSILFunction::visitLoadUnownedInst(swift::LoadUnownedInst *i) {
 }
 
 void IRGenSILFunction::visitStoreUnownedInst(swift::StoreUnownedInst *i) {
+  // TODO: (dmu check) add call to makeSourceSafeForConcurrentAccess or ifDestIsSafeForConcurrentAccessMakeSrcSafe ala visitStore or be sure DestSafe node is created for these nodes
   Explosion source = getLoweredExplosion(i->getSrc());
   Address dest = getLoweredAddress(i->getDest());
 

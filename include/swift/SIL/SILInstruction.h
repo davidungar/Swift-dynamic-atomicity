@@ -1734,6 +1734,36 @@ public:
   }
 };
 
+  
+/// TODO: (dmu cleanup) write better comment: RefCountStoreBarrierInst - Checks bit in dest and if set, tells src to set the bit
+///
+/// Does not really need atomicity in constructor because is never atomic;
+/// bit in ref count must be set BEFORE shared access is possible.
+//  TODO: (dmu factor) Implementation stolen from StoreInst
+//  TODO: (dmu implement enums) is all the machinery with the enums needed?
+class RefCountStoreBarrierInst // dmu
+: public SILInstruction {
+  friend SILBuilder;
+  
+private:
+  FixedOperandList<2> Operands;
+  
+  RefCountStoreBarrierInst(SILDebugLocation DebugLoc, SILValue Src, SILValue Dest);
+  
+public:
+  
+  SILValue getSrc() const { return Operands[StoreInst::Src].get(); }
+  SILValue getDest() const { return Operands[StoreInst::Dest].get(); }
+  
+  ArrayRef<Operand> getAllOperands() const { return Operands.asArray(); }
+  MutableArrayRef<Operand> getAllOperands() { return Operands.asArray(); }
+  
+  static bool classof(const ValueBase *V) {
+    return V->getKind() == ValueKind::RefCountStoreBarrierInst;
+  }
+};
+  
+
 /// Represents a load of a borrowed value. Must be paired with an end_borrow
 /// instruction in its use-def list.
 class LoadBorrowInst : public UnaryInstructionBase<ValueKind::LoadBorrowInst> {

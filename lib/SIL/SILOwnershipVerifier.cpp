@@ -803,6 +803,14 @@ OwnershipCompatibilityUseChecker::visitStoreInst(StoreInst *I) {
   return {true, false};
 }
 
+// TODO: (dmu check) blind clone of store, likely wrong!
+OwnershipUseCheckerResult
+OwnershipCompatibilityUseChecker::visitRefCountStoreBarrierInst(RefCountStoreBarrierInst *I) {
+  if (getValue() == I->getSrc())
+    return {compatibleWithOwnership(ValueOwnershipKind::Owned), true};
+  return {true, false};
+}
+
 OwnershipUseCheckerResult
 OwnershipCompatibilityUseChecker::visitMarkDependenceInst(
     MarkDependenceInst *MDI) {

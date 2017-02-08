@@ -230,6 +230,7 @@ namespace {
     llvm::NoneType getNonFixedOffsets(IRGenFunction &IGF, SILType T) const {
       return None;
     }
+    bool hasNonFixedOffsets() const { return false; } // dmu
   };
 
   /// Type implementation for fixed-size but non-loadable tuples.
@@ -254,6 +255,7 @@ namespace {
     llvm::NoneType getNonFixedOffsets(IRGenFunction &IGF, SILType T) const {
       return None;
     }
+    bool hasNonFixedOffsets() const { return false; } // dmu
   };
 
   /// An accessor for the non-fixed offsets for a tuple type.
@@ -310,6 +312,7 @@ namespace {
       // their metadata. We should never try to initialize one in the compiler.
       llvm_unreachable("initializing value witness table for tuple?!");
     }
+    bool hasNonFixedOffsets() const { return false; } // dmu
   };
 
   class TupleTypeBuilder :

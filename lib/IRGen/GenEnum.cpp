@@ -475,6 +475,13 @@ namespace {
                                          getSingletonType(IGF.IGM, T));
     }
 
+    void makeSourceSafeForConcurrentAccess(IRGenFunction &IGF, Explosion &e) const override { // dmu makeSourceSafeForConcurrentAccess
+      (void)e.claimAll(); // TODO: (dmu implement enums)
+    }
+    void ifDestIsSafeForConcurrentAccessMakeSrcSafe(IRGenFunction &IGF, Explosion &e, Address dest) const override { // dmu
+      (void)e.claimAll(); // TODO: (dmu implement enums)
+    }
+
     void reexplode(IRGenFunction &IGF, Explosion &src, Explosion &dest)
     const override {
       if (getLoadableSingleton()) getLoadableSingleton()->reexplode(IGF, src, dest);
@@ -492,6 +499,11 @@ namespace {
         getLoadableSingleton()->consume(IGF, src, atomicity);
     }
 
+//    void makeContainedReferencesOfElementCountAtomically(IRGenFunction &IGF, Explosion &src) {
+//      if (getLoadableSingleton())
+//        getLoadableSingleton()->makeContainedReferencesOfElementCountAtomically(IGF, src);
+//    }
+    
     void fixLifetime(IRGenFunction &IGF, Explosion &src) const override {
       if (getLoadableSingleton()) getLoadableSingleton()->fixLifetime(IGF, src);
     }
@@ -502,6 +514,17 @@ namespace {
         getSingleton()->destroy(IGF, getSingletonAddress(IGF, addr),
                                 getSingletonType(IGF.IGM, T));
     }
+
+    bool makeContainedReferencesOfElementCountAtomically(IRGenFunction &IGF, Address addr, SILType T) const override { // dmu
+      if (getSingleton() &&
+          !getSingleton()->isPOD(ResilienceExpansion::Maximal)) {
+        getSingleton()->makeContainedReferencesOfElementCountAtomically(
+                                                                        IGF, getSingletonAddress(IGF, addr),
+                                                                        getSingletonType(IGF.IGM, T));
+      }
+      return true;
+    }
+
 
     void packIntoEnumPayload(IRGenFunction &IGF, EnumPayload &payload,
                              Explosion &in, unsigned offset) const override {
@@ -865,6 +888,13 @@ namespace {
                            Atomicity atomicity) const {}
     void emitScalarFixLifetime(IRGenFunction &IGF, llvm::Value *value) const {}
 
+    void emitBeSafeForConcurrentAccess(IRGenFunction &IGF,
+                                       llvm::Value *objToSet) const {}
+
+     // TODO: (dmu implement enums)
+    void emitIfDestIsSafeForConcurrentAccessMakeSrcSafe(IRGenFunction &IGF,
+                                                        llvm::Value *objToCheck, llvm::Value *objToSet) const {}
+    
     void initializeWithTake(IRGenFunction &IGF, Address dest, Address src,
                             SILType T)
     const override {
@@ -1299,6 +1329,13 @@ namespace {
       payload.store(IGF, projectPayload(IGF, addr));
       if (ExtraTagBitCount > 0)
         IGF.Builder.CreateStore(e.claimNext(), projectExtraTagBits(IGF, addr));
+    }
+
+    void makeSourceSafeForConcurrentAccess(IRGenFunction &IGF, Explosion &e) const override { // dmu
+      (void)e.claimAll();  // TODO: (dmu implement enums)
+    }
+    void ifDestIsSafeForConcurrentAccessMakeSrcSafe(IRGenFunction &IGF, Explosion &e, Address dest) const override { // dmu
+      (void)e.claimAll(); // TODO: (dmu implement enums)
     }
 
     void reexplode(IRGenFunction &IGF, Explosion &src, Explosion &dest)
@@ -2238,6 +2275,19 @@ namespace {
       }
     }
 
+    // TODO: (dmu) factor with releaseRefcountedPayload?
+    void beSafeForConcurrentAccessForRefcountedPayload(IRGenFunction &IGF,
+                                  llvm::Value *ptr) const { // dmu
+      switch (CopyDestroyKind) {
+        case NullableRefcounted:
+          IGF.emitBeSafeForConcurrentAccess(ptr, Refcounting);
+          return;
+        case POD:
+        case Normal:
+          llvm_unreachable("not a refcounted payload");
+      }
+    }
+    
     void fillExplosionForOutlinedCall(IRGenFunction &IGF, Explosion &src,
                                       Explosion &out) const {
       assert(out.empty() && "Out explosion must be empty!");
@@ -2387,6 +2437,39 @@ namespace {
         releaseRefcountedPayload(IGF, ptr);
         return;
       }
+      }
+    }
+
+    // TODO: (dmu) factor with destroy above
+    bool makeContainedReferencesOfElementCountAtomically(IRGenFunction &IGF, Address addr, SILType T) const override { // dmu
+      switch (CopyDestroyKind) {
+        case POD:
+          return true;
+          
+        case Normal: {
+          // Check that there is a payload at the address.
+          llvm::BasicBlock *endBB = testEnumContainsPayload(IGF, addr, T);
+          
+          ConditionalDominanceScope condition(IGF);
+          
+          // If there is, project and destroy it.
+          Address payloadAddr = projectPayloadData(IGF, addr);
+          getPayloadTypeInfo().makeContainedReferencesOfElementCountAtomically(IGF, payloadAddr,
+                                                                               getPayloadType(IGF.IGM, T));
+          
+          IGF.Builder.CreateBr(endBB);
+          IGF.Builder.emitBlock(endBB);
+          return true;
+        }
+          
+        case NullableRefcounted: {
+          // Load the value as swift.refcounted, then hand to swift_release.
+          addr = IGF.Builder.CreateBitCast(addr,
+                                           getRefcountedPtrType(IGF.IGM)->getPointerTo());
+          llvm::Value *ptr = IGF.Builder.CreateLoad(addr);
+          beSafeForConcurrentAccessForRefcountedPayload(IGF, ptr);
+          return true;
+        }
       }
     }
 
@@ -2697,6 +2780,10 @@ namespace {
       IGF.Builder.CreateCall(IGF.IGM.getStoreEnumTagSinglePayloadFn(),
                              {opaqueAddr, payload, tag, numEmptyCases});
     }
+
+     // TODO: (dmu implement enums)
+    void emitIfDestIsSafeForConcurrentAccessMakeSrcSafe(IRGenFunction &IGF,
+                                                        llvm::Value *objToCheck, llvm::Value *objToSet) const {}
 
     void initializeMetadata(IRGenFunction &IGF,
                             llvm::Value *metadata,
@@ -4274,6 +4361,48 @@ namespace {
       }
     }
 
+    // TODO: (dmu) factor with destroy
+    bool makeContainedReferencesOfElementCountAtomically(IRGenFunction &IGF, Address addr, SILType T) const override { // dmu
+      switch (CopyDestroyKind) {
+        case POD:
+          return true;
+          
+        case BitwiseTakable:
+        case Normal:
+        case TaggedRefcounted:
+          break;
+      }
+      // If loadable, it's better to do this directly to the value than
+      // in place, so we don't need to RMW out the tag bits in memory.
+//      if (TI->isLoadable()) {
+//        Explosion tmp;
+//        loadAsTake(IGF, addr, tmp);
+//        // TODO: (dmu check) consume uses get LoadableSingleton but makeContained... uses getSingleton
+//        makeContainedReferencesOfElementCountAtomically(IGF, tmp);
+//        return true;
+//      }
+//      auto tag = loadPayloadTag(IGF, addr, T);
+//      
+//      forNontrivialPayloads(IGF, tag,
+//                            [&](unsigned tagIndex,
+//                                EnumImplStrategy::Element elt) {
+//                              no no no
+//        // Clear tag bits out of the payload area, if any.
+//        destructiveProjectDataForLoad(IGF, T, addr);
+//        // Destroy the data.
+//        Address dataAddr = IGF.Builder.CreateBitCast(addr,
+//                                                     elt.ti->getStorageType()->getPointerTo());
+//        SILType payloadT =
+//        T.getEnumElementType(elt.decl, IGF.getSILModule());
+//        elt.ti->destroy(IGF, dataAddr, payloadT);
+//      }
+//      );
+//      return;
+      
+      
+      return false; // TODO: (dmu) implement makeContainedReferencesOfElementCountAtomically
+    }
+
   private:
     void storePayloadTag(IRGenFunction &IGF, Address enumAddr,
                          unsigned index, SILType T) const {
@@ -4766,6 +4895,11 @@ namespace {
       emitDestroyCall(IGF, T, addr);
     }
 
+    bool makeContainedReferencesOfElementCountAtomically(IRGenFunction &IGF, Address addr, SILType T) const override { // dmu
+      return false;
+     // TODO: (dmu) implement ∫
+    }
+
     void getSchema(ExplosionSchema &schema) const override {
       schema.add(ExplosionSchema::Element::forAggregate(getStorageType(),
                                                   TI->getBestKnownAlignment()));
@@ -4848,6 +4982,13 @@ namespace {
 
     void initialize(IRGenFunction &IGF, Explosion &e,
                             Address addr) const override {
+      llvm_unreachable("resilient enums are always indirect");
+    }
+
+    void makeSourceSafeForConcurrentAccess(IRGenFunction &IGF, Explosion &e) const override { // dmu
+      llvm_unreachable("resilient enums are always indirect");
+    }
+    void ifDestIsSafeForConcurrentAccessMakeSrcSafe(IRGenFunction &IGF, Explosion &e, Address dest) const override { // dmu
       llvm_unreachable("resilient enums are always indirect");
     }
 
@@ -5128,6 +5269,9 @@ namespace {
     void destroy(IRGenFunction &IGF, Address addr, SILType T) const override {
       return Strategy.destroy(IGF, addr, T);
     }
+    bool makeContainedReferencesOfElementCountAtomically(IRGenFunction &IGF, Address addr, SILType T) const override { // dmu
+      return Strategy.makeContainedReferencesOfElementCountAtomically(IGF, addr, T);
+    }
     void initializeFromParams(IRGenFunction &IGF, Explosion &params,
                               Address dest, SILType T) const override {
       return Strategy.initializeFromParams(IGF, params, dest, T);
@@ -5232,6 +5376,13 @@ namespace {
     void initialize(IRGenFunction &IGF, Explosion &e,
                     Address addr) const override {
       return Strategy.initialize(IGF, e, addr);
+    }
+    void makeSourceSafeForConcurrentAccess(IRGenFunction &IGF, Explosion &e) const override { // dmu
+      return Strategy.makeSourceSafeForConcurrentAccess(IGF, e);
+    }
+    void ifDestIsSafeForConcurrentAccessMakeSrcSafe(IRGenFunction &IGF, Explosion &e, //dmu
+                                           Address dest) const override {
+      return Strategy.ifDestIsSafeForConcurrentAccessMakeSrcSafe(IGF, e, dest);
     }
     void reexplode(IRGenFunction &IGF, Explosion &src,
                    Explosion &dest) const override {

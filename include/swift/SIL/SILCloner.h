@@ -692,6 +692,14 @@ void SILCloner<ImplClass>::visitStoreInst(StoreInst *Inst) {
                                                getOpValue(Inst->getDest()),
                                                Inst->getOwnershipQualifier()));
 }
+  
+template <typename ImplClass>
+void SILCloner<ImplClass>::visitRefCountStoreBarrierInst(RefCountStoreBarrierInst *Inst) { // dmu
+  getBuilder().setCurrentDebugScope(getOpScope(Inst->getDebugScope()));
+  doPostProcess(Inst, getBuilder().createRefCountStoreBarrier(getOpLocation(Inst->getLoc()),
+                                                              getOpValue(Inst->getSrc()),
+                                                              getOpValue(Inst->getDest())));
+}
 
 template <typename ImplClass>
 void SILCloner<ImplClass>::visitStoreBorrowInst(StoreBorrowInst *Inst) {

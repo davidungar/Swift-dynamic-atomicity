@@ -50,6 +50,7 @@ struct OwnershipModelEliminatorVisitor
   bool visitValueBase(ValueBase *V) { return false; }
   bool visitLoadInst(LoadInst *LI);
   bool visitStoreInst(StoreInst *SI);
+  bool visitRefCountStoreBarrierInst(RefCountStoreBarrierInst *RCSBI);
   bool visitStoreBorrowInst(StoreBorrowInst *SI);
   bool visitCopyValueInst(CopyValueInst *CVI);
   bool visitCopyUnownedValueInst(CopyUnownedValueInst *CVI);
@@ -103,6 +104,10 @@ bool OwnershipModelEliminatorVisitor::visitStoreInst(StoreInst *SI) {
   // Then remove the qualified store.
   SI->eraseFromParent();
   return true;
+}
+
+bool OwnershipModelEliminatorVisitor::visitRefCountStoreBarrierInst(RefCountStoreBarrierInst *RCSBI) { // dmu
+  abort(); // TODO: (dmu urgent) what to do here?
 }
 
 bool OwnershipModelEliminatorVisitor::visitStoreBorrowInst(

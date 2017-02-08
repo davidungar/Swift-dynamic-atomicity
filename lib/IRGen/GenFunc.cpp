@@ -294,6 +294,13 @@ namespace {
         IGF.emitNativeStrongInit(context, dataAddr);
     }
 
+     void makeSourceSafeForConcurrentAccess(IRGenFunction &IGF, Explosion &e) const override { // dmu
+       (void)e.claimAll(); // TODO: (dmu implement funcs)
+     }
+     void ifDestIsSafeForConcurrentAccessMakeSrcSafe(IRGenFunction &IGF, Explosion &e, Address dest) const override { // dmu
+       (void)e.claimAll(); // TODO: (dmu implement funcs)
+     }
+
     void copy(IRGenFunction &IGF, Explosion &src,
               Explosion &dest, Atomicity atomicity) const override {
       src.transferInto(dest, 1);
@@ -373,6 +380,13 @@ namespace {
       auto data = IGF.Builder.CreateLoad(projectData(IGF, addr));
       if (!isPOD(ResilienceExpansion::Maximal))
         IGF.emitNativeStrongRelease(data);
+    }
+
+    bool makeContainedReferencesOfElementCountAtomically(IRGenFunction &IGF, Address addr, SILType T) const override { // dmu
+      auto data = IGF.Builder.CreateLoad(projectData(IGF, addr));
+      if (!isPOD(ResilienceExpansion::Maximal)) // blind clone
+        IGF.emitNativeBeSafeForConcurrentAccess(data);
+      return true;
     }
 
     void packIntoEnumPayload(IRGenFunction &IGF,
@@ -490,6 +504,9 @@ namespace {
     }
     void destroy(IRGenFunction &IGF, Address addr, SILType T) const override {
       IGF.unimplemented(SourceLoc(), "destroying @block_storage");
+    }
+    bool makeContainedReferencesOfElementCountAtomically(IRGenFunction &IGF, Address addr, SILType T) const override { // dmu
+      return true; // nothing to do for an on-stack representation
     }
   };
 } // end anonymous namespace
