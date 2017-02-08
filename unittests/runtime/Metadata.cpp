@@ -291,7 +291,7 @@ TEST(MetadataTest, getGenericMetadata) {
 }
 
 FullMetadata<ClassMetadata> MetadataTest2 = {
-  { { nullptr, MakeContainedReferencesCountAtomicallyFunctionValues::unimplemented /*dmu makeContainedReferencesCountAtomicallyContents*/ }, { &VALUE_WITNESS_SYM(Bo) } },
+  { { nullptr, MakeContainedReferencesCountAtomicallyValues::unimplemented /*dmu makeContainedReferencesCountAtomicallyContents*/ }, { &VALUE_WITNESS_SYM(Bo) } },
   { { { MetadataKind::Class } }, nullptr, /*rodata*/ 1,
     ClassFlags(), nullptr, 0, 0, 0, 0, 0 }
 };
