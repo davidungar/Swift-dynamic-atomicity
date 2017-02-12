@@ -564,9 +564,10 @@ public:
 };
 
   // dmu
-  class MakeContainedReferencesCountAtomicallyValues {
+  class MakeContainedReferencesCountAtomicallyValues { // dmu
   public:
-    constexpr static void const * const unimplemented = nullptr;
+    class HeapObject; // dmu
+    constexpr static void (* const unimplemented)(HeapObject*) = nullptr;
     // redundant with unimplemented return value in createMakeContainedReferencesCountAtomicallyFn
     constexpr static char const * const twine = "makeContainedReferencesCountAtomically";
   };
