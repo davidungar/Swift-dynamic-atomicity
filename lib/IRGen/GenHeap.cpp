@@ -237,7 +237,7 @@ static llvm::Function *createDtorFn(IRGenModule &IGM,
 
 /// Create the makeContainedReferencesCountAtomically function for a layout. (dmu)
 /// Cloned from createDtorFn TODO: (dmu) combine this with createDtorFn
-static llvm::Constant *createMakeContainedReferencesCountAtomicallyFn(IRGenModule &IGM,
+static llvm::Constant *createMakeContainedReferencesCountAtomicallyFn(IRGenModule &IGM, // dmu
                                                                                   const HeapLayout &layout) {
   llvm::Function *fn =
   llvm::Function::Create(IGM.MakeContainedReferencesCountAtomicallyTy,

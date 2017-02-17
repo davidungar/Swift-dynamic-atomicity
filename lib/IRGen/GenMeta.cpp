@@ -3517,7 +3517,7 @@ namespace {
     }
            
     // TODO: (dmu factor) with routine of same name in GenHeap
-    llvm::Constant* createMakeContainedReferencesCountAtomicallyFn() {
+    llvm::Constant* createMakeContainedReferencesCountAtomicallyFn() { // dmu
       llvm::Function *fn =
       llvm::Function::Create(IGM.MakeContainedReferencesCountAtomicallyTy,
                              llvm::Function::PrivateLinkage,

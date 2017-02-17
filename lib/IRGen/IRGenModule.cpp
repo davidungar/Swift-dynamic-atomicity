@@ -241,7 +241,7 @@ IRGenModule::IRGenModule(IRGenerator &irgen,
 
   // dmu MakeContainedReferencesCountAtomicallyTy  // TODO: (dmu factor) metadata layout
   MakeContainedReferencesCountAtomicallyTy = llvm::FunctionType::get(VoidTy, RefCountedPtrTy, false);
-  llvm::Type *countAtomicallyPtrTy = MakeContainedReferencesCountAtomicallyTy->getPointerTo();
+  llvm::Type *countAtomicallyPtrTy = MakeContainedReferencesCountAtomicallyTy->getPointerTo(); // dmu
 
   // A full heap metadata is basically just an additional small prefix
   // on a full metadata, used for metadata corresponding to heap

@@ -1748,7 +1748,7 @@ class RefCountStoreBarrierInst // dmu
 private:
   FixedOperandList<2> Operands;
   
-  RefCountStoreBarrierInst(SILDebugLocation DebugLoc, SILValue Src, SILValue Dest);
+  RefCountStoreBarrierInst(SILDebugLocation DebugLoc, SILValue Src, SILValue Dest); // dmu
   
 public:
   

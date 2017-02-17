@@ -518,9 +518,9 @@ public:
 
   // dmu
   RefCountStoreBarrierInst
-  *createRefCountStoreBarrier(SILLocation Loc,
-                                                    SILValue Src,
-                                                    SILValue Dest) {
+  *createRefCountStoreBarrier(SILLocation Loc, // dmu
+                              SILValue Src,
+                              SILValue Dest) {
     return insert(new (F.getModule())
                   RefCountStoreBarrierInst( getSILDebugLocation(Loc), Src, Dest));
   }
