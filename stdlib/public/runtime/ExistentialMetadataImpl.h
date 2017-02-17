@@ -90,6 +90,13 @@ struct LLVM_LIBRARY_VISIBILITY OpaqueExistentialBoxBase
   static void destroy(Container *value, A... args) {
     value->getType()->vw_destroyBuffer(value->getBuffer(args...));
   }
+      
+      
+  template <class Container, class... A>
+  static void makeContentsSafeForConcurrentAccess(Container *value, A... args) { //; dmu
+    abort(); // TODO: (dmu) implement
+  }
+
   
   
   template <class Container, class... A>
@@ -242,6 +249,11 @@ struct LLVM_LIBRARY_VISIBILITY ClassExistentialBoxBase
   static void destroy(Container *value, A... args) {
     swift_unknownRelease(*value->getValueSlot());
   }
+      
+  template <class Container, class... A>
+  static void makeContentsSafeForConcurrentAccess(Container *value, A... args) { // dmu
+    abort(); // TODO: (dmu) implement
+  }
   
   template <class Container, class... A>
   static Container *initializeWithCopy(Container *dest, Container *src,
@@ -372,6 +384,11 @@ struct LLVM_LIBRARY_VISIBILITY ExistentialMetatypeBoxBase
 
   template <class Container, class... A>
   static void destroy(Container *value, A... args) {
+  }
+      
+  template <class Container, class... A>
+    static void makeContentsSafeForConcurrentAccess(Container *value, A... args) { // dmu
+      abort(); // TODO: (dmu) implement
   }
   
   template <class Container, class... A>

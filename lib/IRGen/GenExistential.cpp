@@ -520,8 +520,8 @@ public:
     IGF.emitWeakDestroy(addr, Refcounting);
   }
 
-  void emitValueBeSafeForConcurrentAccess(IRGenFunction &IGF, Address addr) const {
-    // nothing needed for weak's
+  void emitValueBeSafeForConcurrentAccess(IRGenFunction &IGF, Address addr) const { // dmu
+    abort() // TODO: (dmu) implement
   }
 
   // These explosions must follow the same schema as
@@ -614,8 +614,8 @@ public:
     IGF.emitUnownedDestroy(addr, Refcounting);
   }
 
-  void emitValueBeSafeForConcurrentAccess(IRGenFunction &IGF, Address addr) const {
-   // nothing needed for unowned's
+  void emitValueBeSafeForConcurrentAccess(IRGenFunction &IGF, Address addr) const { // dmu
+    abort(); // TODO: (dmu) implement
   }
 
 
@@ -984,8 +984,8 @@ public:
     IGF.emitUnownedRelease(value, Refcounting);
   }
 
-  void emitValueBeSafeForConcurrentAccess(IRGenFunction &IGF, llvm::Value *value) const {
-  // Nothing to do be done for weaks, they are atomic
+  void emitValueBeSafeForConcurrentAccess(IRGenFunction &IGF, llvm::Value *value) const { // dmu
+    abort(); // TODO: (dmu) implement
   }
 
   void emitValueFixLifetime(IRGenFunction &IGF, llvm::Value *value) const {
@@ -1062,7 +1062,7 @@ public:
     // do nothing
   }
 
-  void emitValueBeSafeForConcurrentAccess(IRGenFunction &IGF, llvm::Value *value) const {
+  void emitValueBeSafeForConcurrentAccess(IRGenFunction &IGF, llvm::Value *value) const { // dmu
    // Nothing to do be done for unmanaged
   }
 
@@ -1190,7 +1190,7 @@ public:
     IGF.emitStrongRelease(value, Refcounting, atomicity);
   }
 
-  void emitValueBeSafeForConcurrentAccess(IRGenFunction &IGF, llvm::Value *value) const {
+  void emitValueBeSafeForConcurrentAccess(IRGenFunction &IGF, llvm::Value *value) const { // dmu
     IGF.emitBeSafeForConcurrentAccess(value, Refcounting);
   }
 
@@ -1313,7 +1313,7 @@ public:
     // do nothing
   }
 
-  void emitValueBeSafeForConcurrentAccess(IRGenFunction &IGF, llvm::Value *value) const {
+  void emitValueBeSafeForConcurrentAccess(IRGenFunction &IGF, llvm::Value *value) const { // dmu
    // do nothing
   }
 

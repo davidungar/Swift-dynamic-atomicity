@@ -605,7 +605,7 @@ static void tuple_destroy(OpaqueValue *tuple, const Metadata *_metadata) {
 
 /// TODO: (dmu) explain
 template <bool IsPOD, bool IsInline>
-static void tuple_makeContentsSafeForConcurrentAccess(OpaqueValue *tuple, const Metadata *_metadata) {
+static void tuple_makeContentsSafeForConcurrentAccess(OpaqueValue *tuple, const Metadata *_metadata) { // dmu
   auto &metadata = *(const TupleTypeMetadata*) _metadata;
   assert(IsPOD == tuple_getValueWitnesses(&metadata)->isPOD());
   assert(IsInline == tuple_getValueWitnesses(&metadata)->isValueInline());

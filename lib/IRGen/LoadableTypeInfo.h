@@ -105,11 +105,11 @@ public:
   /// initializing or assigning it to dest (addr)
   /// TODO: (dmu cleanup) rename to storeBarrier?
   /// TODO: (dmu cleanup) make node names differ from runtime emitter names? (ifDest... only so far)
-  virtual void makeSourceSafeForConcurrentAccess(IRGenFunction &IGF, Explosion &explosion) const = 0;
+  virtual void makeSourceSafeForConcurrentAccess(IRGenFunction &IGF, Explosion &explosion) const = 0; // dmu
   /// TODO: (dmu cleanup) fix this comment:  Set bit in source (explosion)'s reference count if it now can be concurrently accessed after
   /// initializing or assigning it to dest (addr)
   /// rename to storeBarrier?
-  virtual void ifDestIsSafeForConcurrentAccessMakeSrcSafe(IRGenFunction &IGF, Explosion &explosion,
+  virtual void ifDestIsSafeForConcurrentAccessMakeSrcSafe(IRGenFunction &IGF, Explosion &explosion, // dmu
                                                  Address dest) const = 0;
 
   // We can give this a reasonable default implementation.

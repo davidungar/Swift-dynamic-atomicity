@@ -337,19 +337,19 @@ void (*SWIFT_CC(RegisterPreservingCC)
 // dmu storeBarrier sharing
 SWIFT_RT_ENTRY_VISIBILITY
 extern "C"
-void swift_ifDestIsSafeForConcurrentAccessMakeSrcSafe(HeapObject *dst, HeapObject *src)
+void swift_ifDestIsSafeForConcurrentAccessMakeSrcSafe(HeapObject *dst, HeapObject *src) // dmu
       SWIFT_CC(DefaultCC);
 
 SWIFT_RUNTIME_EXPORT
-extern "C" void (*SWIFT_CC(DefaultCC)_swift_ifDestIsSafeForConcurrentAccessMakeSrcSafe)(HeapObject *dst, HeapObject *src);
+extern "C" void (*SWIFT_CC(DefaultCC)_swift_ifDestIsSafeForConcurrentAccessMakeSrcSafe)(HeapObject *dst, HeapObject *src); // dmu
 
 SWIFT_RT_ENTRY_VISIBILITY
 extern "C"
-void swift_beSafeForConcurrentAccess(HeapObject *object)
+void swift_beSafeForConcurrentAccess(HeapObject *object) // dmu
     SWIFT_CC(DefaultCC);
 
 SWIFT_RUNTIME_EXPORT
-  extern "C" void (*SWIFT_CC(DefaultCC)_swift_beSafeForConcurrentAccess)(HeapObject *object);
+  extern "C" void (*SWIFT_CC(DefaultCC)_swift_beSafeForConcurrentAccess)(HeapObject *object); // dmu
 
 
 // Refcounting observation hooks for memory tools. Don't use these.
@@ -717,7 +717,7 @@ void swift_weakTakeAssign(WeakReference *dest, WeakReference *src);
   
 /// Ensure that my reference count and contained references count atomically -- dmu
 SWIFT_RUNTIME_EXPORT
-void swift_weakBeSafeForConcurrentAccess(WeakReference *ref);
+void swift_weakBeSafeForConcurrentAccess(WeakReference *ref); // dmu
 
 /*****************************************************************************/
 /************************* OTHER REFERENCE-COUNTING **************************/
@@ -1172,7 +1172,7 @@ static inline void swift_unknownUnownedTakeAssign(UnownedReference *dest,
   
 #else
   
-  static inline void swift_unknownUnownedBeSafeForConcurrentAccess(UnownedReference *ref) {
+  static inline void swift_unknownUnownedBeSafeForConcurrentAccess(UnownedReference *ref) { // dmu
     swift_unownedBeSafeForConcurrentAccess(ref);
   }
   

@@ -611,7 +611,7 @@ typedef int getExtraInhabitantIndex(const OpaqueValue *src,
                                     const Metadata *self);
   
 /// Given a value, find all its references and (recursively) make them safe for concurrent access -- dmu
-typedef void makeContentsSafeForConcurrentAccess(OpaqueValue *object,
+typedef void makeContentsSafeForConcurrentAccess(OpaqueValue *object, // dmu
                                                  const Metadata *self);
 
 /// Given a valid object of this enum type, extracts the tag value indicating

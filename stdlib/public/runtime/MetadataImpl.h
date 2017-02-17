@@ -205,7 +205,7 @@ template <> struct MakeHeapObjSafeForConcurrentAccess<void*> { // dmu
 
 
 /// A CRTP base class for defining boxes of retainable pointers.
-  template <class Impl, class T> struct RetainableBoxBase:  MakeHeapObjSafeForConcurrentAccess<T> { // dmu
+template <class Impl, class T> struct RetainableBoxBase:  MakeHeapObjSafeForConcurrentAccess<T> { // dmu
   using type = T;
   static constexpr size_t size = sizeof(T);
   static constexpr size_t alignment = alignof(T);
@@ -747,7 +747,7 @@ struct AggregateBox {
   }
   
   // TODO: (dmu) implement
-  static void makeContentsSafeForConcurrentAccess(char* value) {
+  static void makeContentsSafeForConcurrentAccess(char* value) { // dmu
     if (isPOD)
       return;
     abort(); // TODO: (dmu) implement
@@ -1010,7 +1010,7 @@ struct ValueWitnesses : BufferValueWitnesses<ValueWitnesses<Box>,
     return Box::getExtraInhabitantIndex((typename Box::type const *) src);
   }
   
-  static void makeContentsSafeForConcurrentAccess(OpaqueValue *value,
+  static void makeContentsSafeForConcurrentAccess(OpaqueValue *value, // dmu
                                                   const Metadata *self) {
     return Box::makeContentsSafeForConcurrentAccess((typename Box::type *) value );
   }
@@ -1039,6 +1039,10 @@ struct NonFixedValueWitnesses :
 
   static void destroy(OpaqueValue *value, const Metadata *self) {
     return Box::destroy((typename Box::type*) value, self);
+  }
+  
+  static void makeContentsSafeForConcurrentAccess(OpaqueValue *value, const Metadata *self) { // dmu
+    Box::makeContentsSafeForConcurrentAccess((typename Box::type*) value, self);
   }
   
   static void destroyArray(OpaqueValue *array, size_t n,

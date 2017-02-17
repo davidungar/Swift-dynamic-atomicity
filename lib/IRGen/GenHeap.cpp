@@ -1132,8 +1132,8 @@ void IRGenFunction::emitStrongRetain(llvm::Value *value,
 }
 
 
-void IRGenFunction::emitBeSafeForConcurrentAccess(llvm::Value *objToSet,
-                                                  ReferenceCounting refcounting) { //dmu
+void IRGenFunction::emitBeSafeForConcurrentAccess(llvm::Value *objToSet, //dmu
+                                                  ReferenceCounting refcounting) {
   switch (refcounting) {
     case ReferenceCounting::Native:
       return emitNativeBeSafeForConcurrentAccess(objToSet);
@@ -1145,9 +1145,9 @@ void IRGenFunction::emitBeSafeForConcurrentAccess(llvm::Value *objToSet,
       break;
   }
 }
-void IRGenFunction::emitIfDestIsSafeForConcurrentAccessMakeSrcSafe(llvm::Value *objToCheck,
+void IRGenFunction::emitIfDestIsSafeForConcurrentAccessMakeSrcSafe(llvm::Value *objToCheck, //dmu
                                                                    llvm::Value *objToSet,
-                                                                   ReferenceCounting refcounting) { //dmu
+                                                                   ReferenceCounting refcounting) {
   switch (refcounting) {
     case ReferenceCounting::Native:
       return emitNativeIfDestIsSafeForConcurrentAccessMakeSrcSafe(objToCheck, objToSet);
@@ -1280,15 +1280,14 @@ void IRGenFunction::emitNativeSetDeallocating(llvm::Value *value) {
   emitUnaryRefCountCall(*this, IGM.getNativeSetDeallocatingFn(), value);
 }
 
-// dmu
-void IRGenFunction::emitNativeBeSafeForConcurrentAccess(llvm::Value *objToSet) {
+void IRGenFunction::emitNativeBeSafeForConcurrentAccess(llvm::Value *objToSet) { // dmu
   if (doesNotRequireRefCounting(objToSet)) {
     return;
   }
   emitUnaryRefCountCall(*this, IGM.getBeSafeForConcurrentAccessFn(), objToSet);
 }
-// dmu
-void IRGenFunction::emitNativeIfDestIsSafeForConcurrentAccessMakeSrcSafe(llvm::Value *objToCheck, llvm::Value *objToSet) {
+
+void IRGenFunction::emitNativeIfDestIsSafeForConcurrentAccessMakeSrcSafe(llvm::Value *objToCheck, llvm::Value *objToSet) { // dmu
   if (doesNotRequireRefCounting(objToSet)) {
     return;
   }

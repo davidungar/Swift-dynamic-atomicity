@@ -466,7 +466,7 @@ private:
   }
 
   // Just for makeSourceSafeForConcurrentAccess -- dmu
-  template <void (LoadableTypeInfo::*Op)(IRGenFunction &IGF,
+  template <void (LoadableTypeInfo::*Op)(IRGenFunction &IGF, // dmu
                                          Explosion &in) const>
   void forAllFields(IRGenFunction &IGF, Explosion &in) const {
     auto offsets = asImpl().getNonFixedOffsets(IGF);
@@ -502,7 +502,7 @@ public:
 
       
   void makeSourceSafeForConcurrentAccess(IRGenFunction &IGF, Explosion &e) const override { // dmu
-#if 1 // TODO: (dmu check) structs in classes in structs
+#if 1 // TODO: (dmu implement) structs in classes in structs
     (void)e.claimAll();
 #else
     // temporary stubbed out above to prevent too much claiming
@@ -512,7 +512,7 @@ public:
 
   }
   void ifDestIsSafeForConcurrentAccessMakeSrcSafe(IRGenFunction &IGF, Explosion &e, Address dest) const override { // dmu
-#if 1 // TODO: (dmu check) structs in classes in structs
+#if 1 // TODO: (dmu implement) structs in classes in structs
     (void)e.claimAll();
 #else
     /// temporary stubbed out above to prevent too much claiming

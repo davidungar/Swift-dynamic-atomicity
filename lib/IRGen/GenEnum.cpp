@@ -888,11 +888,11 @@ namespace {
                            Atomicity atomicity) const {}
     void emitScalarFixLifetime(IRGenFunction &IGF, llvm::Value *value) const {}
 
-    void emitBeSafeForConcurrentAccess(IRGenFunction &IGF,
+    void emitBeSafeForConcurrentAccess(IRGenFunction &IGF, // dmu
                                        llvm::Value *objToSet) const {}
 
      // TODO: (dmu implement enums)
-    void emitIfDestIsSafeForConcurrentAccessMakeSrcSafe(IRGenFunction &IGF,
+    void emitIfDestIsSafeForConcurrentAccessMakeSrcSafe(IRGenFunction &IGF, // dmu
                                                         llvm::Value *objToCheck, llvm::Value *objToSet) const {}
     
     void initializeWithTake(IRGenFunction &IGF, Address dest, Address src,
@@ -2276,8 +2276,8 @@ namespace {
     }
 
     // TODO: (dmu) factor with releaseRefcountedPayload?
-    void beSafeForConcurrentAccessForRefcountedPayload(IRGenFunction &IGF,
-                                  llvm::Value *ptr) const { // dmu
+    void beSafeForConcurrentAccessForRefcountedPayload(IRGenFunction &IGF, // dmu
+                                  llvm::Value *ptr) const {
       switch (CopyDestroyKind) {
         case NullableRefcounted:
           IGF.emitBeSafeForConcurrentAccess(ptr, Refcounting);
@@ -2782,8 +2782,9 @@ namespace {
     }
 
      // TODO: (dmu implement enums)
-    void emitIfDestIsSafeForConcurrentAccessMakeSrcSafe(IRGenFunction &IGF,
-                                                        llvm::Value *objToCheck, llvm::Value *objToSet) const {}
+    void emitIfDestIsSafeForConcurrentAccessMakeSrcSafe(IRGenFunction &IGF, // dmu
+                                                        llvm::Value *objToCheck,
+                                                        llvm::Value *objToSet) const {}
 
     void initializeMetadata(IRGenFunction &IGF,
                             llvm::Value *metadata,

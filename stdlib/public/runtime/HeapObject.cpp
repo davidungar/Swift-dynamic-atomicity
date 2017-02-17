@@ -300,7 +300,7 @@ void swift::swift_setDeallocating(HeapObject *object) {
 
 // dmu storeBarrier sharing
 
-void swift::swift_ifDestIsSafeForConcurrentAccessMakeSrcSafe(HeapObject *dst, HeapObject *src)
+void swift::swift_ifDestIsSafeForConcurrentAccessMakeSrcSafe(HeapObject *dst, HeapObject *src) // dmu
 SWIFT_CC(DefaultCC_IMPL) {
   return SWIFT_RT_ENTRY_REF(swift_ifDestIsSafeForConcurrentAccessMakeSrcSafe)(dst, src);
 }
@@ -313,7 +313,7 @@ void SWIFT_RT_ENTRY_IMPL(swift_ifDestIsSafeForConcurrentAccessMakeSrcSafe)(HeapO
   }
 }
 
-void swift::swift_beSafeForConcurrentAccess(HeapObject *object)
+void swift::swift_beSafeForConcurrentAccess(HeapObject *object) // dmu
 SWIFT_CC(DefaultCC_IMPL) {
   return SWIFT_RT_ENTRY_REF(swift_beSafeForConcurrentAccess)(object);
 }
@@ -847,7 +847,7 @@ void swift::swift_weakTakeAssign(WeakReference *dest, WeakReference *src) {
   swift_weakTakeInit(dest, src);
 }
 
-void swift::swift_weakBeSafeForConcurrentAccess(WeakReference *ref) {
+void swift::swift_weakBeSafeForConcurrentAccess(WeakReference *ref) { // dmu
   auto tmp = (HeapObject*) (ref->Value & ~WR_NATIVE);
   SWIFT_RT_ENTRY_CALL(swift_beSafeForConcurrentAccess)(tmp);
 }
