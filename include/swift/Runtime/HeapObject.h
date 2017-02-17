@@ -336,20 +336,18 @@ void (*SWIFT_CC(RegisterPreservingCC)
   
 // dmu storeBarrier sharing
 SWIFT_RT_ENTRY_VISIBILITY
-extern "C"
 void swift_ifDestIsSafeForConcurrentAccessMakeSrcSafe(HeapObject *dst, HeapObject *src) // dmu
       SWIFT_CC(DefaultCC);
 
 SWIFT_RUNTIME_EXPORT
-extern "C" void (*SWIFT_CC(DefaultCC)_swift_ifDestIsSafeForConcurrentAccessMakeSrcSafe)(HeapObject *dst, HeapObject *src); // dmu
+void (*SWIFT_CC(DefaultCC)_swift_ifDestIsSafeForConcurrentAccessMakeSrcSafe)(HeapObject *dst, HeapObject *src); // dmu
 
 SWIFT_RT_ENTRY_VISIBILITY
-extern "C"
 void swift_beSafeForConcurrentAccess(HeapObject *object) // dmu
     SWIFT_CC(DefaultCC);
 
 SWIFT_RUNTIME_EXPORT
-  extern "C" void (*SWIFT_CC(DefaultCC)_swift_beSafeForConcurrentAccess)(HeapObject *object); // dmu
+void (*SWIFT_CC(DefaultCC)_swift_beSafeForConcurrentAccess)(HeapObject *object); // dmu
 
 
 // Refcounting observation hooks for memory tools. Don't use these.
@@ -1163,6 +1161,7 @@ static inline void swift_unknownUnownedTakeAssign(UnownedReference *dest,
 }
 
 #endif /* SWIFT_OBJC_INTEROP */
+  
   
 #if SWIFT_OBJC_INTEROP
   

@@ -521,7 +521,7 @@ public:
   }
 
   void emitValueBeSafeForConcurrentAccess(IRGenFunction &IGF, Address addr) const { // dmu
-    abort() // TODO: (dmu) implement
+    abort(); // TODO: (dmu) implement
   }
 
   // These explosions must follow the same schema as
