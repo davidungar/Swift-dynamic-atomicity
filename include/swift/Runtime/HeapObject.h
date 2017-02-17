@@ -630,6 +630,10 @@ static inline void swift_unownedTakeAssign(UnownedReference *dest,
   dest->Value = newValue;
   swift_unownedRelease(oldValue);
 }
+  
+static inline void swift_unownedBeSafeForConcurrentAccess(UnownedReference *ref) { // dmu
+  swift_beSafeForConcurrentAccess(ref->Value);
+}
 
 /*****************************************************************************/
 /****************************** WEAK REFERENCES ******************************/
@@ -710,6 +714,10 @@ void swift_weakCopyAssign(WeakReference *dest, WeakReference *src);
 /// \param src - never null, but can refer to a null object
 SWIFT_RUNTIME_EXPORT
 void swift_weakTakeAssign(WeakReference *dest, WeakReference *src);
+  
+/// Ensure that my reference count and contained references count atomically -- dmu
+SWIFT_RUNTIME_EXPORT
+void swift_weakBeSafeForConcurrentAccess(WeakReference *ref);
 
 /*****************************************************************************/
 /************************* OTHER REFERENCE-COUNTING **************************/
@@ -1087,7 +1095,7 @@ static inline void swift_unknownUnownedDestroy(UnownedReference *ref) {
 }
 
 #endif /* SWIFT_OBJC_INTEROP */
-
+  
 #if SWIFT_OBJC_INTEROP
 
 /// Copy-initialize an unowned reference variable from one that might not
@@ -1154,6 +1162,20 @@ static inline void swift_unknownUnownedTakeAssign(UnownedReference *dest,
   swift_unownedTakeAssign(dest, src);
 }
 
+#endif /* SWIFT_OBJC_INTEROP */
+  
+#if SWIFT_OBJC_INTEROP
+  
+  /// TODO: (dmu) explain
+  SWIFT_RUNTIME_EXPORT
+  void swift_unknownUnownedBeSafeForConcurrentAccess(UnownedReference *ref); // dmu
+  
+#else
+  
+  static inline void swift_unknownUnownedBeSafeForConcurrentAccess(UnownedReference *ref) {
+    swift_unownedBeSafeForConcurrentAccess(ref);
+  }
+  
 #endif /* SWIFT_OBJC_INTEROP */
 
 /// Return the name of a Swift type represented by a metadata object.

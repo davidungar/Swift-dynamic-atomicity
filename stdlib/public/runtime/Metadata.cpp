@@ -603,6 +603,18 @@ static void tuple_destroy(OpaqueValue *tuple, const Metadata *_metadata) {
   }
 }
 
+/// TODO: (dmu) explain
+template <bool IsPOD, bool IsInline>
+static void tuple_makeContentsSafeForConcurrentAccess(OpaqueValue *tuple, const Metadata *_metadata) {
+  auto &metadata = *(const TupleTypeMetadata*) _metadata;
+  assert(IsPOD == tuple_getValueWitnesses(&metadata)->isPOD());
+  assert(IsInline == tuple_getValueWitnesses(&metadata)->isValueInline());
+  
+  if (IsPOD) return;
+
+  abort(); // TODO: (dmu) implement
+}
+
 /// Generic tuple value witness for 'destroyArray'.
 template <bool IsPOD, bool IsInline>
 static void tuple_destroyArray(OpaqueValue *array, size_t n,
@@ -1184,6 +1196,12 @@ static void pod_noop(void *object, const Metadata *self) {
   pointer_function_cast<value_witness_types::destroyBuffer>(pod_noop)
 #define pod_direct_deallocateBuffer \
   pointer_function_cast<value_witness_types::deallocateBuffer>(pod_noop)
+
+#define pod_direct_makeContentsSafeForConcurrentAccess /*dmu*/ \
+ pointer_function_cast<value_witness_types::makeContentsSafeForConcurrentAccess>(pod_noop)
+
+#define pod_indirect_makeContentsSafeForConcurrentAccess /*dmu*/ \
+  pod_direct_makeContentsSafeForConcurrentAccess
 
 static void *pod_noop_return(void *object, const Metadata *self) {
   return object;

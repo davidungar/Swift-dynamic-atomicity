@@ -847,6 +847,12 @@ void swift::swift_weakTakeAssign(WeakReference *dest, WeakReference *src) {
   swift_weakTakeInit(dest, src);
 }
 
+void swift::swift_weakBeSafeForConcurrentAccess(WeakReference *ref) {
+  auto tmp = (HeapObject*) (ref->Value & ~WR_NATIVE);
+  SWIFT_RT_ENTRY_CALL(swift_beSafeForConcurrentAccess)(tmp);
+}
+
+
 void swift::_swift_abortRetainUnowned(const void *object) {
   (void)object;
   swift::crash("attempted to retain deallocated object");

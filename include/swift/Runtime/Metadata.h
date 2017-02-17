@@ -609,6 +609,10 @@ typedef void storeExtraInhabitant(OpaqueValue *dest,
 /// address, or return -1 if there is a valid value at the address.
 typedef int getExtraInhabitantIndex(const OpaqueValue *src,
                                     const Metadata *self);
+  
+/// Given a value, find all its references and (recursively) make them safe for concurrent access -- dmu
+typedef void makeContentsSafeForConcurrentAccess(OpaqueValue *object,
+                                                 const Metadata *self);
 
 /// Given a valid object of this enum type, extracts the tag value indicating
 /// which case of the enum is inhabited. Returned values are in the range
@@ -662,7 +666,8 @@ OpaqueValue *swift_copyPOD(OpaqueValue *dest,
   MACRO(destroyArray) \
   MACRO(initializeArrayWithCopy) \
   MACRO(initializeArrayWithTakeFrontToBack) \
-  MACRO(initializeArrayWithTakeBackToFront)
+  MACRO(initializeArrayWithTakeBackToFront) \
+  MACRO(makeContentsSafeForConcurrentAccess) // dmu
 
 struct TypeLayout;
 

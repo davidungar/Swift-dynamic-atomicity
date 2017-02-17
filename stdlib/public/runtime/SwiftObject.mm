@@ -934,6 +934,17 @@ void swift::swift_unknownUnownedTakeAssign(UnownedReference *dest,
   dest->Value = src->Value;
 }
 
+void swift::swift_unknownUnownedBeSafeForConcurrentAccess(UnownedReference *ref) { // dmu
+    if (!ref->Value) {
+      // Nothing to do.
+      return;
+    } else if (auto objcRef = dyn_cast<ObjCUnownedReference>(ref)) {
+    } else {
+      swift_unownedBeSafeForConcurrentAccess(ref);
+    }
+  }
+}
+
 /*****************************************************************************/
 /****************************** WEAK REFERENCES ******************************/
 /*****************************************************************************/

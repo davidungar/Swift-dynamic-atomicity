@@ -170,6 +170,8 @@ struct NativeBox {
     src->T::~T();
     return dest;
   }
+  
+  static void makeContentsSafeForConcurrentAccess(T *value) {} // dmu
 
 private:
   static T *next(T *ptr, size_t n = 1) {
@@ -179,9 +181,31 @@ private:
     return (T*)((char*)ptr - stride * n);
   }
 };
+  
+template <class T> struct MakeHeapObjSafeForConcurrentAccess; // dmu
+  
+template <> struct MakeHeapObjSafeForConcurrentAccess<HeapObject*> { // dmu
+  static void makeContentsSafeForConcurrentAccess(HeapObject **value) { // dmu
+    swift_beSafeForConcurrentAccess((HeapObject*)*value);
+  }
+};
+template <> struct MakeHeapObjSafeForConcurrentAccess<UnownedReference> { // dmu
+  static void makeContentsSafeForConcurrentAccess(UnownedReference *value) {
+    swift_unknownUnownedBeSafeForConcurrentAccess(value);
+  }
+};
+template <> struct MakeHeapObjSafeForConcurrentAccess<WeakReference> { // dmu
+  static void makeContentsSafeForConcurrentAccess(WeakReference *value) {
+    swift_weakBeSafeForConcurrentAccess(value);
+  }
+};
+template <> struct MakeHeapObjSafeForConcurrentAccess<void*> { // dmu
+  static void makeContentsSafeForConcurrentAccess(void **) {}
+};
+
 
 /// A CRTP base class for defining boxes of retainable pointers.
-template <class Impl, class T> struct RetainableBoxBase {
+  template <class Impl, class T> struct RetainableBoxBase:  MakeHeapObjSafeForConcurrentAccess<T> { // dmu
   using type = T;
   static constexpr size_t size = sizeof(T);
   static constexpr size_t alignment = alignof(T);
@@ -280,6 +304,7 @@ struct SwiftUnownedRetainableBox :
     swift_unownedRelease(obj);
   }
 
+
 #if SWIFT_OBJC_INTEROP
   // The implementation from RetainableBoxBase is valid when interop is
   // disabled.
@@ -298,7 +323,7 @@ struct SwiftUnownedRetainableBox :
 
 /// CRTP base class for weak reference boxes.
 template<typename Impl, typename T>
-struct WeakRetainableBoxBase {
+  struct WeakRetainableBoxBase: MakeHeapObjSafeForConcurrentAccess<T> /*dmu*/ {
   using type = T;
   static constexpr size_t size = sizeof(type);
   static constexpr size_t alignment = alignof(type);
@@ -720,6 +745,13 @@ struct AggregateBox {
     }
     return r;
   }
+  
+  // TODO: (dmu) implement
+  static void makeContentsSafeForConcurrentAccess(char* value) {
+    if (isPOD)
+      return;
+    abort(); // TODO: (dmu) implement
+  }
 };
   
 /// A template for using the Swift allocation APIs with a known size
@@ -976,6 +1008,11 @@ struct ValueWitnesses : BufferValueWitnesses<ValueWitnesses<Box>,
   static int getExtraInhabitantIndex(const OpaqueValue *src,
                                      const Metadata *self) {
     return Box::getExtraInhabitantIndex((typename Box::type const *) src);
+  }
+  
+  static void makeContentsSafeForConcurrentAccess(OpaqueValue *value,
+                                                  const Metadata *self) {
+    return Box::makeContentsSafeForConcurrentAccess((typename Box::type *) value );
   }
 };
 
