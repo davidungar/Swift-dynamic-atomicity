@@ -188,8 +188,11 @@ enum class ValueWitness : unsigned {
   /// The source array becomes invalid.
   /// Returns the dest array.
   InitializeArrayWithTakeBackToFront,
+  
+  ///  TODO: (dmu) comment me
+  MakeContentsSafeForConcurrentAccess, // dmu
 
-  Last_RequiredValueWitnessFunction = InitializeArrayWithTakeBackToFront,
+  Last_RequiredValueWitnessFunction = MakeContentsSafeForConcurrentAccess, // dmu was InitializeArrayWithTakeBackToFront
 
   /// The offset at which type layout witnesses begin.
   First_TypeLayoutWitness,
