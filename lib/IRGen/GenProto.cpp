@@ -639,7 +639,7 @@ namespace {
   /// A class which lays out a witness table in the abstract.
   class WitnessTableLayout : public SILWitnessVisitor<WitnessTableLayout> {
     unsigned NumWitnesses = 0;
-    SmallVector<WitnessTableEntry, 16> Entries;
+    SmallVector<WitnessTableEntry, 16> Entries; // TODO: (dmu) check needs +1???
 
     WitnessIndex getNextIndex() {
       return WitnessIndex(NumWitnesses++, /*isPrefix=*/false);
