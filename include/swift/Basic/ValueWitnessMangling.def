@@ -36,4 +36,6 @@ VALUE_WITNESS(ug, GetEnumTag)
 VALUE_WITNESS(up, DestructiveProjectEnumData)
 VALUE_WITNESS(ui, DestructiveInjectEnumTag)
 
+VALUE_WITNESS(mc, MakeContentsSafeForConcurrentAccess) // dmu
+
 #undef VALUE_WITNESS

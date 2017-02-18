@@ -73,6 +73,7 @@ const char *irgen::getValueWitnessName(ValueWitness witness) {
   CASE(Flags)
   CASE(Stride)
   CASE(ExtraInhabitantFlags)
+  CASE(MakeContentsSafeForConcurrentAccess) // dmu
 #undef CASE
   }
   llvm_unreachable("bad value witness kind");
@@ -629,6 +630,14 @@ static void buildValueWitnessFunction(IRGenModule &IGM,
     IGF.Builder.CreateRetVoid();
     return;
   }
+      
+  case ValueWitness::MakeContentsSafeForConcurrentAccess: {
+    Address object = getArgAs(IGF, argv, type, "object");
+    getArgAsLocalSelfTypeMetadata(IGF, argv, abstractType);
+    type.makeContainedReferencesOfElementCountAtomically(IGF, object, concreteType);
+    IGF.Builder.CreateRetVoid();
+    return;
+  }
 
   case ValueWitness::DestroyArray: {
     Address array = getArgAs(IGF, argv, type, "array");
@@ -965,6 +974,20 @@ static llvm::Constant *getDestroyStrongFunction(IRGenModule &IGM) {
   });
 }
 
+
+/// Return a function which takes two pointer arguments, loads a
+/// pointer from the first, and calls swift_beSafeForConcurrentAccess on it immediately.
+static llvm::Constant *getMakeContentsSafeForConcurrentAccessFunction(IRGenModule &IGM) { // dmu
+  llvm::Type *argTys[] = { IGM.Int8PtrPtrTy, IGM.WitnessTablePtrTy };
+  return IGM.getOrCreateHelperFunction("__swift_beSafeForConcurrentAccess",
+                                       IGM.VoidTy, argTys,
+                                       [&](IRGenFunction &IGF) {
+                                         Address arg(&*IGF.CurFn->arg_begin(), IGM.getPointerAlignment());
+                                         IGF.emitNativeBeSafeForConcurrentAccess(IGF.Builder.CreateLoad(arg));
+                                         IGF.Builder.CreateRetVoid();
+                                       });
+}
+
 /// Return a function which takes two pointer arguments, memcpys
 /// from the second to the first, and returns the first argument.
 static llvm::Constant *getMemCpyFunction(IRGenModule &IGM,
@@ -1120,6 +1143,14 @@ static llvm::Constant *getValueWitness(IRGenModule &IGM,
     }
     goto standard;
 
+  case ValueWitness::MakeContentsSafeForConcurrentAccess: // dmu
+    if (concreteTI.isPOD(ResilienceExpansion::Maximal)) {
+      return asOpaquePtr(IGM, getNoOpVoidFunction(IGM));
+    } else if (concreteTI.isSingleSwiftRetainablePointer(ResilienceExpansion::Maximal)) {
+      return asOpaquePtr(IGM, getMakeContentsSafeForConcurrentAccessFunction(IGM));
+    }
+    goto standard;
+      
   case ValueWitness::DestroyArray:
     if (concreteTI.isPOD(ResilienceExpansion::Maximal)) {
       return asOpaquePtr(IGM, getNoOpVoidFunction(IGM));
