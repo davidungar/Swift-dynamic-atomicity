@@ -35,7 +35,17 @@ struct LLVM_LIBRARY_VISIBILITY ExistentialBoxBase {
       bytes += stride;
     }
   }
-  
+
+  template <class Container, class... A>
+  static void makeContentsOfArraySafeForConcurrentAccess(Container *array, size_t n, A... args) { // dmu blind clone
+    size_t stride = Container::getContainerStride(args...);
+    char *bytes = (char*)array;
+    while (n--) {
+      Impl::makeContentsSafeForConcurrentAccess((Container*)bytes, args...);
+      bytes += stride;
+    }
+  }
+
   template <class Container, class... A>
   static Container *initializeArrayWithCopy(Container *dest,
                                             Container *src,
@@ -94,7 +104,7 @@ struct LLVM_LIBRARY_VISIBILITY OpaqueExistentialBoxBase
       
   template <class Container, class... A>
   static void makeContentsSafeForConcurrentAccess(Container *value, A... args) { //; dmu
-    abort(); // TODO: (dmu) implement
+    value->getType()->vw_mvalue->getType()->vw_makeContentsOfBufferSafeForConcurrentAccess(value->getBuffer(args...));(value->getBuffer(args...));
   }
 
   

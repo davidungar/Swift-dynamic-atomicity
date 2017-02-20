@@ -57,8 +57,10 @@ static llvm::Type *createWitnessType(IRGenModule &IGM, ValueWitness index) {
   switch (index) {
   // void (*deallocateBuffer)(B *buffer, M *self);
   // void (*destroyBuffer)(B *buffer, M *self);
+  // void (*makeContentsOfBufferSafeForConcurrentAccess)(B *buffer, M* self); // dmu blind clone
   case ValueWitness::DeallocateBuffer:
-  case ValueWitness::DestroyBuffer: {
+  case ValueWitness::DestroyBuffer:
+  case ValueWitness::MakeContentsOfBufferSafeForConcurrentAccess: /*dmu*/  {
     llvm::Type *bufPtrTy = IGM.getFixedBufferTy()->getPointerTo(0);
     llvm::Type *args[] = { bufPtrTy, IGM.TypeMetadataPtrTy };
     return llvm::FunctionType::get(IGM.VoidTy, args, /*isVarArg*/ false)
@@ -84,6 +86,13 @@ static llvm::Type *createWitnessType(IRGenModule &IGM, ValueWitness index) {
     llvm::Type *args[] = { IGM.OpaquePtrTy, IGM.SizeTy, IGM.TypeMetadataPtrTy };
     return llvm::FunctionType::get(IGM.VoidTy, args, /*isVarArg*/ false)
       ->getPointerTo();
+  }
+      
+  // void (*makeContentsOfArraySafeForConcurrentAccess)(T *object, size_t n, witness_t *self);
+  case ValueWitness::MakeContentsOfArraySafeForConcurrentAccess: { // dmu blind clone
+    llvm::Type *args[] = { IGM.OpaquePtrTy, IGM.SizeTy, IGM.TypeMetadataPtrTy };
+    return llvm::FunctionType::get(IGM.VoidTy, args, /*isVarArg*/ false)
+    ->getPointerTo();
   }
 
   // T *(*initializeBufferWithCopyOfBuffer)(B *dest, B *src, M *self);
@@ -280,6 +289,8 @@ static StringRef getValueWitnessLabel(ValueWitness index) {
     return "destructiveInjectEnumTag";
   case ValueWitness::MakeContentsSafeForConcurrentAccess: // dmu
     return "makeContentsSafeForConcurrentAccess";
+  case ValueWitness::MakeContentsOfBufferSafeForConcurrentAccess: // dmu
+    return "makeContentsOfBufferSafeForConcurrentAccess";
   }
   llvm_unreachable("bad value witness index");
 }
@@ -687,6 +698,20 @@ void irgen::emitDestroyCall(IRGenFunction &IGF,
   setHelperAttributes(call);
 }
 
+/// Emit a call to do a 'makeContentsSafeForConcurrentAccess' operation.
+void irgen::emitMakeContentsSafeForConcurrentAccessCall(IRGenFunction &IGF, // dmu
+                            SILType T,
+                            Address object) {
+  auto metadata = IGF.emitTypeMetadataRefForLayout(T);
+  llvm::Value *fn = IGF.emitValueWitnessForLayout(T,
+                                                  ValueWitness::MakeContentsSafeForConcurrentAccess);
+  llvm::CallInst *call =
+  IGF.Builder.CreateCall(fn, {object.getAddress(), metadata});
+  call->setCallingConv(IGF.IGM.DefaultCC);
+  setHelperAttributes(call);
+}
+
+
 /// Emit a call to do a 'destroyArray' operation.
 void irgen::emitDestroyArrayCall(IRGenFunction &IGF,
                                  SILType T,
@@ -720,6 +745,30 @@ void irgen::emitDestroyBufferCall(IRGenFunction &IGF,
                                    ValueWitness::DestroyBuffer);
   llvm::CallInst *call =
     IGF.Builder.CreateCall(fn, {buffer.getAddress(), metadata});
+  call->setCallingConv(IGF.IGM.DefaultCC);
+  setHelperAttributes(call);
+}
+
+
+/// Emit a call to do a 'destroyBuffer' operation.
+void irgen::emitMakeContentsOfBufferSafeForConcurrentAccessCall(IRGenFunction &IGF, // dmu blind clone
+                                  SILType T,
+                                  Address buffer) {
+  auto metadata = IGF.emitTypeMetadataRefForLayout(T);
+  llvm::Value *fn = IGF.emitValueWitnessForLayout(T,
+                                                  ValueWitness::MakeContentsOfBufferSafeForConcurrentAccess);
+  llvm::CallInst *call =
+  IGF.Builder.CreateCall(fn, {buffer.getAddress(), metadata});
+  call->setCallingConv(IGF.IGM.DefaultCC);
+  setHelperAttributes(call);
+}
+void irgen::emitMakeContentsOfBufferSafeForConcurrentAccessCall(IRGenFunction &IGF, // dmu blind clone
+                                  llvm::Value *metadata,
+                                  Address buffer) {
+  auto fn = emitLoadOfValueWitnessFromMetadata(IGF, metadata,
+                                               ValueWitness::MakeContentsOfBufferSafeForConcurrentAccess);
+  llvm::CallInst *call =
+  IGF.Builder.CreateCall(fn, {buffer.getAddress(), metadata});
   call->setCallingConv(IGF.IGM.DefaultCC);
   setHelperAttributes(call);
 }

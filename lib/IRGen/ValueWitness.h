@@ -191,8 +191,14 @@ enum class ValueWitness : unsigned {
   
   ///  TODO: (dmu) comment me
   MakeContentsSafeForConcurrentAccess, // dmu
+  
+  ///  TODO: (dmu) comment me
+  MakeContentsOfBufferSafeForConcurrentAccess, // dmu
+  
+  ///  TODO: (dmu) comment me
+  MakeContentsOfArraySafeForConcurrentAccess, // dmu
 
-  Last_RequiredValueWitnessFunction = MakeContentsSafeForConcurrentAccess, // dmu was InitializeArrayWithTakeBackToFront
+  Last_RequiredValueWitnessFunction = MakeContentsOfArraySafeForConcurrentAccess, // dmu was InitializeArrayWithTakeBackToFront
 
   /// The offset at which type layout witnesses begin.
   First_TypeLayoutWitness,

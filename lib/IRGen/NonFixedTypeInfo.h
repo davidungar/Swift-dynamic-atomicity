@@ -84,6 +84,8 @@ public:
     deallocateStack(IGF, stackAddress, T);
   }
 
+  // TODO: (dmu) urgent Do I need a makeContentsSafeForConcurrentAccessCallStack routine?
+
   llvm::Value *getValueWitnessTable(IRGenFunction &IGF, SILType T) const {
     return IGF.emitValueWitnessTableRefForLayout(T);
   }

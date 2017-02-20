@@ -613,6 +613,10 @@ typedef int getExtraInhabitantIndex(const OpaqueValue *src,
 /// Given a value, find all its references and (recursively) make them safe for concurrent access -- dmu
 typedef void makeContentsSafeForConcurrentAccess(OpaqueValue *object, // dmu
                                                  const Metadata *self);
+typedef void makeContentsOfBufferSafeForConcurrentAccess(ValueBuffer* buffer, // dmu
+                                                         const Metadata *self);
+typedef void makeContentsOfArraySafeForConcurrentAccess(OpaqueValue *array, size_t n, // dmu
+                                                        const Metadata *self);
 
 /// Given a valid object of this enum type, extracts the tag value indicating
 /// which case of the enum is inhabited. Returned values are in the range
@@ -667,7 +671,10 @@ OpaqueValue *swift_copyPOD(OpaqueValue *dest,
   MACRO(initializeArrayWithCopy) \
   MACRO(initializeArrayWithTakeFrontToBack) \
   MACRO(initializeArrayWithTakeBackToFront) \
-  MACRO(makeContentsSafeForConcurrentAccess) // dmu
+  MACRO(makeContentsSafeForConcurrentAccess) /*dmu*/ \
+  MACRO(makeContentsOfBufferSafeForConcurrentAccess) /*dmu*/ \
+  MACRO(makeContentsOfArraySafeForConcurrentAccess) /*dmu*/
+  
 
 struct TypeLayout;
 

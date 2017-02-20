@@ -614,6 +614,28 @@ static void tuple_makeContentsSafeForConcurrentAccess(OpaqueValue *tuple, const 
 
   abort(); // TODO: (dmu) implement
 }
+/// TODO: (dmu) explain
+template <bool IsPOD, bool IsInline>
+static void tuple_makeContentsOfBufferSafeForConcurrentAccess(ValueBuffer *buffer, const Metadata *_metadata) { // dmu
+  auto &metadata = *(const TupleTypeMetadata*) _metadata;
+  assert(IsPOD == tuple_getValueWitnesses(&metadata)->isPOD());
+  assert(IsInline == tuple_getValueWitnesses(&metadata)->isValueInline());
+  
+  if (IsPOD) return;
+  
+  abort(); // TODO: (dmu) implement
+}
+/// TODO: (dmu) explain
+template <bool IsPOD, bool IsInline>
+static void tuple_makeContentsOfArraySafeForConcurrentAccess(OpaqueValue *array, size_t n, const Metadata *_metadata) { // dmu
+  auto &metadata = *(const TupleTypeMetadata*) _metadata;
+  assert(IsPOD == tuple_getValueWitnesses(&metadata)->isPOD());
+  assert(IsInline == tuple_getValueWitnesses(&metadata)->isValueInline());
+  
+  if (IsPOD) return;
+  
+  abort(); // TODO: (dmu) implement
+}
 
 /// Generic tuple value witness for 'destroyArray'.
 template <bool IsPOD, bool IsInline>

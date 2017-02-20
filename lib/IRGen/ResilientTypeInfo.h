@@ -142,8 +142,18 @@ public:
   }
 
   bool makeContainedReferencesOfElementCountAtomically(IRGenFunction &IGF, Address addr, SILType T) const override { // dmu
-    // needs entry in value witness?
-    return false; // TODO: (dmu) implement makeContainedReferencesOfElementCountAtomically
+    emitMakeContentsSafeForConcurrentAccessCall(IGF, T, addr);
+    return true;
+  }
+  
+  bool makeContainedReferencesOfElementsOfBufferCountAtomically(IRGenFunction &IGF, Address buffer, SILType T) const override { // dmu
+    emitMakeContentsOfBufferSafeForConcurrentAccessCall(IGF, T, buffer);
+    return true;
+  }
+  
+  bool makeContainedReferencesOfElementsOfArrayCountAtomically(IRGenFunction &IGF, Address array, SILType T) const override { // dmu
+    emitMakeContentsOfArraySafeForConcurrentAccessCall(IGF, T, array);
+    return true;
   }
 
   void destroyArray(IRGenFunction &IGF, Address addr, llvm::Value *count,

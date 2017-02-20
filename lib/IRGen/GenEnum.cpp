@@ -4897,8 +4897,8 @@ namespace {
     }
 
     bool makeContainedReferencesOfElementCountAtomically(IRGenFunction &IGF, Address addr, SILType T) const override { // dmu
-      return false;
-     // TODO: (dmu) implement ∫
+      emitMakeContentsSafeForConcurrentAccessCall(IGF, T, addr);
+      return true;
     }
 
     void getSchema(ExplosionSchema &schema) const override {

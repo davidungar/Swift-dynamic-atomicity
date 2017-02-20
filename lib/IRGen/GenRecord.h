@@ -291,6 +291,16 @@ public:
     }
   }
 
+  bool makeContainedReferencesOfElementsOfBufferCountAtomically(IRGenFunction &IGF, Address buffer, // dmu
+                     SILType type) const override {
+    if (auto field = getUniqueNonEmptyField()) {
+makeContainedReferencesOfElementsOfBufferCountAtomically                                                                       field->getType(IGF.IGM, type));
+    } else {
+      super::makeContainedReferencesOfElementsOfBufferCountAtomically(IGF, buffer, type);
+    }
+    return true;
+  }
+
   void deallocateBuffer(IRGenFunction &IGF, Address buffer,
                         SILType type) const override {
     if (auto field = getUniqueNonEmptyField()) {

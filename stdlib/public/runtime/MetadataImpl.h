@@ -172,6 +172,10 @@ struct NativeBox {
   }
   
   static void makeContentsSafeForConcurrentAccess(T *value) {} // dmu
+  
+  static void makeContentsOfBufferSafeForConcurrentAccess(T *value) {} // dmu
+  
+  static void makeContentsOfArraySafeForConcurrentAccess(T *array, size_t n) {} // dmu
 
 private:
   static T *next(T *ptr, size_t n = 1) {
@@ -794,6 +798,10 @@ template <class Impl> struct BufferValueWitnessesBase {
                                                const Metadata *self) {
     return Impl::initializeWithTake(Impl::allocateBuffer(dest, self), src, self);
   }
+  
+  static void makeContentsOfBufferSafeForConcurrentAccess(ValueBuffer* buffer, const Metadata *self) { // dmu
+    Impl::makeContentsSafeForConcurrentAccess(Impl::projectBuffer(buffer, self), self);
+  }
 };
 
 /// How should a type be packed into a fixed-size buffer?
@@ -943,6 +951,10 @@ struct ValueWitnesses : BufferValueWitnesses<ValueWitnesses<Box>,
     return Box::destroy((typename Box::type*) value);
   }
 
+  static void makeContentsSafeForConcurrentAccess(OpaqueValue *value, const Metadata *self) { // dmu
+    return Box::makeContentsSafeForConcurrentAccess((typename Box::type*) value);
+  }
+
   static OpaqueValue *initializeWithCopy(OpaqueValue *dest, OpaqueValue *src,
                                          const Metadata *self) {
     return (OpaqueValue*) Box::initializeWithCopy((typename Box::type*) dest,
@@ -969,6 +981,10 @@ struct ValueWitnesses : BufferValueWitnesses<ValueWitnesses<Box>,
 
   static void destroyArray(OpaqueValue *array, size_t n, const Metadata *self) {
     return Box::destroyArray((typename Box::type*)array, n);
+  }
+  
+  static void makeContentsOfArraySafeForConcurrentAccess(OpaqueValue *array, size_t n, const Metadata *self) { // dmu
+    return Box::makeContentsOfArraySafeForConcurrentAccess((typename Box::type*)array, n);
   }
   
   static OpaqueValue *initializeArrayWithCopy(OpaqueValue *dest,
@@ -1008,11 +1024,6 @@ struct ValueWitnesses : BufferValueWitnesses<ValueWitnesses<Box>,
   static int getExtraInhabitantIndex(const OpaqueValue *src,
                                      const Metadata *self) {
     return Box::getExtraInhabitantIndex((typename Box::type const *) src);
-  }
-  
-  static void makeContentsSafeForConcurrentAccess(OpaqueValue *value, // dmu
-                                                  const Metadata *self) {
-    return Box::makeContentsSafeForConcurrentAccess((typename Box::type *) value );
   }
 };
 

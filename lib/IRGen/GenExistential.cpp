@@ -129,6 +129,16 @@ static void emitDestroyExistential(IRGenFunction &IGF, Address addr,
   emitDestroyBufferCall(IGF, metadata, object);
 }
 
+/// Given the address of an existential object, make all its contained refs ref count atomically.
+static void emitMakeContentsSafeForConcurrentAccessExistential(IRGenFunction &IGF, // dmu
+                                                               Address addr,
+                                   OpaqueExistentialLayout layout) {
+  llvm::Value *metadata = layout.loadMetadataRef(IGF, addr);
+  
+  Address object = layout.projectExistentialBuffer(IGF, addr);
+  emitMakeContentsOfBufferSafeForConcurrentAccessCall(IGF, metadata, object);
+}
+
 static llvm::Constant *getAssignExistentialsFunction(IRGenModule &IGM,
                                                llvm::Type *objectPtrTy,
                                                OpaqueExistentialLayout layout);
@@ -352,10 +362,8 @@ public:
   }
                
   bool makeContainedReferencesOfElementCountAtomically(IRGenFunction &IGF, Address addr, SILType T) const override { // dmu
-    // needs an entry in the value witness table?
-//    emitMakeContainedReferenceOfElementCountAtomicallyExistential(IGF, addr, getLayout());
-//    return true;
-    return false;  // TODO: (dmu) implement makeContainedReferencesOfElementCountAtomically
+    emitMakeContentsSafeForConcurrentAccessExistential(IGF, addr, getLayout());
+    return true;
   }
 
 };

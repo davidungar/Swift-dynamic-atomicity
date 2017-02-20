@@ -151,6 +151,11 @@ namespace irgen {
   void emitDestroyCall(IRGenFunction &IGF,
                        SILType T,
                        Address object);
+  
+  /// Emit a call to do a 'makeContentsSafeForConcurrentAccess' operation.
+  void emitMakeContentsSafeForConcurrentAccessCall(IRGenFunction &IGF, // dmu
+                                                   SILType T,
+                                                   Address object);
 
   /// Emit a call to do a 'destroyArray' operation.
   void emitDestroyArrayCall(IRGenFunction &IGF,
@@ -165,6 +170,14 @@ namespace irgen {
   void emitDestroyBufferCall(IRGenFunction &IGF,
                              SILType T,
                              Address buffer);
+  
+  /// TODO: (dmu) comment
+  void emitMakeContentsOfBufferSafeForConcurrentAccessCall(IRGenFunction &IGF, // dmu
+                                                           llvm::Value *metadata,
+                                                           Address buffer);
+  void emitMakeContentsOfBufferSafeForConcurrentAccessCall(IRGenFunction &IGF, // dmu
+                                                           SILType T,
+                                                           Address buffer);
   
   /// Emit a call to do a 'deallocateBuffer' operation.
   void emitDeallocateBufferCall(IRGenFunction &IGF,

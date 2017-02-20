@@ -290,8 +290,12 @@ static StringRef toString(ValueWitnessKind k) {
     return "destructiveProjectEnumData";
   case ValueWitnessKind::DestructiveInjectEnumTag:
     return "destructiveInjectEnumTag";
-  case ValueWitnessKind::MakeContentsSafeForConcurrentAccess:
+  case ValueWitnessKind::MakeContentsSafeForConcurrentAccess: // dmu
     return "makeContentsSafeForConcurrentAccess";
+  case ValueWitnessKind::MakeContentsOfBufferSafeForConcurrentAccess: // dmu
+    return "makeContentsOfBufferSafeForConcurrentAccess";
+  case ValueWitnessKind::MakeContentsOfArraySafeForConcurrentAccess: // dmu
+      return "makeContentsOfArraySafeForConcurrentAccess";
   }
   unreachable("bad value witness kind");
 }

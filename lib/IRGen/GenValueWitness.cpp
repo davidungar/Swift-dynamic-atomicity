@@ -74,6 +74,8 @@ const char *irgen::getValueWitnessName(ValueWitness witness) {
   CASE(Stride)
   CASE(ExtraInhabitantFlags)
   CASE(MakeContentsSafeForConcurrentAccess) // dmu
+  CASE(MakeContentsOfBufferSafeForConcurrentAccess) // dmu
+  CASE(MakeContentsOfArraySafeForConcurrentAccess) // dmu
 #undef CASE
   }
   llvm_unreachable("bad value witness kind");
@@ -335,6 +337,21 @@ static void emitDefaultDestroyBuffer(IRGenFunction &IGF, Address buffer,
   emitDefaultDeallocateBuffer(IGF, buffer, T, type, packing);
 }
 
+/// TODO: (dmu) comment check one-eyed clone
+static void emitDefaultMakeContentsOfBufferSafeforConcurrentAccess( IRGenFunction &IGF, // dmu
+                                                                   Address buffer,
+                                                                   SILType T,
+                                                                   const TypeInfo &type,
+                                                                   FixedPacking packing) {
+  // Special-case dynamic packing in order to thread the jumps.
+  if (packing == FixedPacking::Dynamic)
+    return emitForDynamicPacking(IGF, &emitDefaultMakeContentsOfBufferSaveforConcurrentAccess,
+                                 T, type, buffer);
+  
+  Address object = emitDefaultProjectBuffer(IGF, buffer, T, type, packing);
+  type.makeContainedReferencesOfElementCountAtomically(IGF, object, T);
+}
+
 /// Emit an 'initializeBufferWithCopyOfBuffer' operation.
 /// Returns the address of the destination object.
 static Address
@@ -463,6 +480,7 @@ static RESULT emit##TITLE(IRGenFunction &IGF, Address buffer, SILType T,      \
 DEFINE_UNARY_BUFFER_OP(Address, allocateBuffer, AllocateBuffer)
 DEFINE_UNARY_BUFFER_OP(Address, projectBuffer, ProjectBuffer)
 DEFINE_UNARY_BUFFER_OP(void, destroyBuffer, DestroyBuffer)
+DEFINE_UNARY_BUFFER_OP(void, makeContentsOfBufferSafeForConcurrentAccess, MakeContentsOfBufferSafeForConcurrentAccess) // dmu TODO: (dmu) blind clone
 DEFINE_UNARY_BUFFER_OP(void, deallocateBuffer, DeallocateBuffer)
 #undef DEFINE_UNARY_BUFFER_OP
 
@@ -631,13 +649,63 @@ static void buildValueWitnessFunction(IRGenModule &IGM,
     return;
   }
       
-  case ValueWitness::MakeContentsSafeForConcurrentAccess: {
+  case ValueWitness::MakeContentsSafeForConcurrentAccess: { // dmu
     Address object = getArgAs(IGF, argv, type, "object");
     getArgAsLocalSelfTypeMetadata(IGF, argv, abstractType);
     type.makeContainedReferencesOfElementCountAtomically(IGF, object, concreteType);
     IGF.Builder.CreateRetVoid();
     return;
   }
+      
+  case ValueWitness::MakeContentsOfBufferSafeForConcurrentAccess: { // dmu clone TODO: (dmu) factor with destroyBuffer?
+    Address buffer = getArgAsBuffer(IGF, argv, "buffer");
+    getArgAsLocalSelfTypeMetadata(IGF, argv, abstractType);
+    emitMakeContentsOfBufferSafeForConcurrentAccess(IGF, buffer, concreteType, type, packing);
+    IGF.Builder.CreateRetVoid();
+    return;
+  }
+
+  case ValueWitness::MakeContentsOfArraySafeForConcurrentAccess: { // dmu clone TODO: (dmu) factor with destroyArray?
+    Address array = getArgAs(IGF, argv, type, "array");
+    llvm::Value *count = getArg(argv, "count");
+    getArgAsLocalSelfTypeMetadata(IGF, argv, abstractType);
+    
+    auto entry = IGF.Builder.GetInsertBlock();
+    auto iter = IGF.createBasicBlock("iter");
+    auto loop = IGF.createBasicBlock("loop");
+    auto exit = IGF.createBasicBlock("exit");
+    IGF.Builder.CreateBr(iter);
+    IGF.Builder.emitBlock(iter);
+    
+    auto counter = IGF.Builder.CreatePHI(IGM.SizeTy, 2);
+    counter->addIncoming(count, entry);
+    auto elementVal = IGF.Builder.CreatePHI(array.getType(), 2);
+    elementVal->addIncoming(array.getAddress(), entry);
+    Address element(elementVal, array.getAlignment());
+    
+    auto done = IGF.Builder.CreateICmpEQ(counter,
+                                         llvm::ConstantInt::get(IGM.SizeTy, 0));
+    IGF.Builder.CreateCondBr(done, exit, loop);
+    
+    IGF.Builder.emitBlock(loop);
+    ConditionalDominanceScope condition(IGF);
+    type.makeContainedReferencesOfElementCountAtomically(IGF, element, concreteType);
+    auto nextCounter = IGF.Builder.CreateSub(counter,
+                                             llvm::ConstantInt::get(IGM.SizeTy, 1));
+    auto nextElement = type.indexArray(IGF, element,
+                                       llvm::ConstantInt::get(IGM.SizeTy, 1),
+                                       concreteType);
+    auto loopEnd = IGF.Builder.GetInsertBlock();
+    counter->addIncoming(nextCounter, loopEnd);
+    elementVal->addIncoming(nextElement.getAddress(), loopEnd);
+    IGF.Builder.CreateBr(iter);
+    
+    IGF.Builder.emitBlock(exit);
+    IGF.Builder.CreateRetVoid();
+    
+    return;
+  }
+
 
   case ValueWitness::DestroyArray: {
     Address array = getArgAs(IGF, argv, type, "array");
@@ -1151,6 +1219,22 @@ static llvm::Constant *getValueWitness(IRGenModule &IGM,
     }
     goto standard;
       
+  case ValueWitness::MakeContentsOfBufferSafeForConcurrentAccess: // dmu
+    if (concreteTI.isPOD(ResilienceExpansion::Maximal)) {
+      if (isNeverAllocated(packing))
+        return asOpaquePtr(IGM, getNoOpVoidFunction(IGM));
+    } else if (concreteTI.isSingleSwiftRetainablePointer(ResilienceExpansion::Maximal)) {
+      assert(isNeverAllocated(packing));
+      return asOpaquePtr(IGM, getMakeContentsSafeForConcurrentAccessFunction(IGM)); // dmu blind clone
+    }
+    goto standard;
+    
+  case ValueWitness::MakeContentsOfArraySafeForConcurrentAccess: // dmu
+    if (concreteTI.isPOD(ResilienceExpansion::Maximal)) {
+      return asOpaquePtr(IGM, getNoOpVoidFunction(IGM));
+    }
+    goto standard;
+    
   case ValueWitness::DestroyArray:
     if (concreteTI.isPOD(ResilienceExpansion::Maximal)) {
       return asOpaquePtr(IGM, getNoOpVoidFunction(IGM));
@@ -1634,6 +1718,47 @@ void TypeInfo::destroyArray(IRGenFunction &IGF, Address array,
 
   IGF.Builder.emitBlock(exit);
 }
+
+bool TypeInfo::makeContainedReferencesOfElementsOfArrayCountAtomically(IRGenFunction &IGF, Address array, SILType T) { // dmu TODO: (dmu) blind clone
+  if (isPOD(ResilienceExpansion::Maximal))
+    return;
+  
+  auto entry = IGF.Builder.GetInsertBlock();
+  auto iter = IGF.createBasicBlock("iter");
+  auto loop = IGF.createBasicBlock("loop");
+  auto exit = IGF.createBasicBlock("exit");
+  IGF.Builder.CreateBr(iter);
+  IGF.Builder.emitBlock(iter);
+  
+  auto counter = IGF.Builder.CreatePHI(IGF.IGM.SizeTy, 2);
+  counter->addIncoming(count, entry);
+  auto elementVal = IGF.Builder.CreatePHI(array.getType(), 2);
+  elementVal->addIncoming(array.getAddress(), entry);
+  Address element(elementVal, array.getAlignment());
+  
+  auto done = IGF.Builder.CreateICmpEQ(counter,
+                                       llvm::ConstantInt::get(IGF.IGM.SizeTy, 0));
+  IGF.Builder.CreateCondBr(done, exit, loop);
+  
+  IGF.Builder.emitBlock(loop);
+  ConditionalDominanceScope condition(IGF);
+  
+  bool implemented = makeContainedReferencesOfElementsCountAtomically(IGF, element, T);
+  
+  auto nextCounter = IGF.Builder.CreateSub(counter,
+                                           llvm::ConstantInt::get(IGF.IGM.SizeTy, 1));
+  auto nextElement = indexArray(IGF, element,
+                                llvm::ConstantInt::get(IGF.IGM.SizeTy, 1), T);
+  auto loopEnd = IGF.Builder.GetInsertBlock();
+  counter->addIncoming(nextCounter, loopEnd);
+  elementVal->addIncoming(nextElement.getAddress(), loopEnd);
+  IGF.Builder.CreateBr(iter);
+  
+  IGF.Builder.emitBlock(exit);
+  
+  return implemented;
+}
+
 
 /// Build a value witness that initializes an array front-to-back.
 void irgen::emitInitializeArrayFrontToBack(IRGenFunction &IGF,
