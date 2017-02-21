@@ -472,6 +472,12 @@ FUNCTION(UnknownWeakDestroy, swift_unknownWeakDestroy, DefaultCC,
          ARGS(WeakReferencePtrTy),
          ATTRS(NoUnwind))
 
+// void swift_unknownWeakBeSafeForConcurrentAccess(WeakReference *object); // dmu TODO: (dmu) check needed?
+FUNCTION(UnknownWeakBeSafeForConcurrentAccess, swift_unknownWeakBeSafeForConcurrentAccess, DefaultCC,
+          RETURNS(VoidTy),
+          ARGS(WeakReferencePtrTy),
+          ATTRS(NoUnwind))
+
 // void swift_unknownWeakInit(WeakReference *object, void *value);
 FUNCTION(UnknownWeakInit, swift_unknownWeakInit, DefaultCC,
          RETURNS(VoidTy),

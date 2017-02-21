@@ -117,6 +117,8 @@ SWIFT_FUNC(UnknownReleaseN, ModRef, unknownRelease_n)
 /// void __swift_fixLifetime(%swift.refcounted* %P)
 SWIFT_INTERNAL_FUNC_NEVER_NONATOMIC(FixLifetime, NoModRef, fixLifetime)
 
+// TODO: (dmu) do I need to add my routines here??
+
 /// void swift_bridgeObjectRetain(%swift.refcounted* %P)
 SWIFT_FUNC(BridgeRetain, NoModRef, bridgeObjectRetain)
 

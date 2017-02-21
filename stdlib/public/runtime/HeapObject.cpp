@@ -391,6 +391,11 @@ void swift::swift_unownedRetain_n(HeapObject *object, int n)
   object->weakRefCount.increment(n);
 }
 
+void swift::swift_unownedBeSafeForConcurrentAccess(HeapObject *object) // dmu
+SWIFT_CC(RegisterPreservingCC_IMPL) {
+  SWIFT_RT_ENTRY_CALL(swift_beSafeForConcurrentAccess(object));
+}
+
 void swift::swift_unownedRelease_n(HeapObject *object, int n)
     SWIFT_CC(RegisterPreservingCC_IMPL) {
   if (!object)
@@ -847,7 +852,7 @@ void swift::swift_weakTakeAssign(WeakReference *dest, WeakReference *src) {
   swift_weakTakeInit(dest, src);
 }
 
-void swift::swift_weakBeSafeForConcurrentAccess(WeakReference *ref) { // dmu
+void swift::swift_weakMakeContentsSafeForConcurrentAccess(WeakReference *ref) { // dmu
   auto tmp = (HeapObject*) (ref->Value & ~WR_NATIVE);
   SWIFT_RT_ENTRY_CALL(swift_beSafeForConcurrentAccess)(tmp);
 }

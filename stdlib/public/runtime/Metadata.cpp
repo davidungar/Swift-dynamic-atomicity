@@ -1219,11 +1219,22 @@ static void pod_noop(void *object, const Metadata *self) {
 #define pod_direct_deallocateBuffer \
   pointer_function_cast<value_witness_types::deallocateBuffer>(pod_noop)
 
+
 #define pod_direct_makeContentsSafeForConcurrentAccess /*dmu*/ \
  pointer_function_cast<value_witness_types::makeContentsSafeForConcurrentAccess>(pod_noop)
 
 #define pod_indirect_makeContentsSafeForConcurrentAccess /*dmu*/ \
   pod_direct_makeContentsSafeForConcurrentAccess
+
+
+#define pod_direct_makeContentsOfBufferSafeForConcurrentAccess /*dmu*/ \
+pointer_function_cast<value_witness_types::makeContentsOfBufferSafeForConcurrentAccess>(pod_noop)
+
+#define pod_indirect_makeContentsOfBufferSafeForConcurrentAccess /*dmu*/ \
+pod_direct_makeContentsOfBufferSafeForConcurrentAccess
+
+
+
 
 static void *pod_noop_return(void *object, const Metadata *self) {
   return object;
@@ -1275,6 +1286,12 @@ static void pod_direct_destroyArray(OpaqueValue *, size_t, const Metadata *) {
   // noop
 }
 #define pod_indirect_destroyArray pod_direct_destroyArray
+
+static void pod_direct_makeContentsOfArraySafeForConcurrentAccess(OpaqueValue *, size_t, const Metadata *) { // dmu
+  // noop
+}
+#define pod_indirect_makeContentsOfArraySafeForConcurrentAccess pod_direct_makeContentsOfArraySafeForConcurrentAccess //dmu
+
 
 static OpaqueValue *pod_direct_initializeArrayWithCopy(OpaqueValue *dest,
                                                        OpaqueValue *src,

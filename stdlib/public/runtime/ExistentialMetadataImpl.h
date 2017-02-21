@@ -104,7 +104,7 @@ struct LLVM_LIBRARY_VISIBILITY OpaqueExistentialBoxBase
       
   template <class Container, class... A>
   static void makeContentsSafeForConcurrentAccess(Container *value, A... args) { //; dmu
-    value->getType()->vw_mvalue->getType()->vw_makeContentsOfBufferSafeForConcurrentAccess(value->getBuffer(args...));(value->getBuffer(args...));
+    value->getType()->vw_makeContentsOfBufferSafeForConcurrentAccess(value->getBuffer(args...));
   }
 
   
@@ -262,7 +262,7 @@ struct LLVM_LIBRARY_VISIBILITY ClassExistentialBoxBase
       
   template <class Container, class... A>
   static void makeContentsSafeForConcurrentAccess(Container *value, A... args) { // dmu
-    abort(); // TODO: (dmu) implement
+    swift_unknownBeSafeForConcurrentAccess(*value->getValueSlot());
   }
   
   template <class Container, class... A>
@@ -398,7 +398,6 @@ struct LLVM_LIBRARY_VISIBILITY ExistentialMetatypeBoxBase
       
   template <class Container, class... A>
     static void makeContentsSafeForConcurrentAccess(Container *value, A... args) { // dmu
-      abort(); // TODO: (dmu) implement
   }
   
   template <class Container, class... A>

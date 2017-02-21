@@ -185,31 +185,9 @@ private:
     return (T*)((char*)ptr - stride * n);
   }
 };
-  
-template <class T> struct MakeHeapObjSafeForConcurrentAccess; // dmu
-  
-template <> struct MakeHeapObjSafeForConcurrentAccess<HeapObject*> { // dmu
-  static void makeContentsSafeForConcurrentAccess(HeapObject **value) { // dmu
-    swift_beSafeForConcurrentAccess((HeapObject*)*value);
-  }
-};
-template <> struct MakeHeapObjSafeForConcurrentAccess<UnownedReference> { // dmu
-  static void makeContentsSafeForConcurrentAccess(UnownedReference *value) {
-    swift_unknownUnownedBeSafeForConcurrentAccess(value);
-  }
-};
-template <> struct MakeHeapObjSafeForConcurrentAccess<WeakReference> { // dmu
-  static void makeContentsSafeForConcurrentAccess(WeakReference *value) {
-    swift_weakBeSafeForConcurrentAccess(value);
-  }
-};
-template <> struct MakeHeapObjSafeForConcurrentAccess<void*> { // dmu
-  static void makeContentsSafeForConcurrentAccess(void **) {}
-};
-
 
 /// A CRTP base class for defining boxes of retainable pointers.
-template <class Impl, class T> struct RetainableBoxBase:  MakeHeapObjSafeForConcurrentAccess<T> { // dmu
+template <class Impl, class T> struct RetainableBoxBase {
   using type = T;
   static constexpr size_t size = sizeof(T);
   static constexpr size_t alignment = alignof(T);
@@ -219,6 +197,10 @@ template <class Impl, class T> struct RetainableBoxBase:  MakeHeapObjSafeForConc
 
   static void destroy(T *addr) {
     Impl::release(*addr);
+  }
+  
+  static void makeContentsSafeForConcurrentAccess(T *addr) {
+    Impl::beSafeForConcurrentAccess(*addr);
   }
 
   static T *initializeWithCopy(T *dest, T *src) {
@@ -236,6 +218,11 @@ template <class Impl, class T> struct RetainableBoxBase:  MakeHeapObjSafeForConc
       Impl::release(*arr++);
   }
   
+  static void makeContentsOfArraySafeForConcurrentAccess(T *arr, size_t n) { // dmu
+    while (n--)
+      Impl::beSafeForConcurrentAccess(*arr++);
+  }
+
   static T *initializeArrayWithCopy(T *dest, T *src, size_t n) {
     T *r = dest;
     memcpy(dest, src, n * sizeof(T));
@@ -294,6 +281,10 @@ struct SwiftRetainableBox :
   static void release(HeapObject *obj) {
     swift_release(obj);
   }
+      
+  static void beSafeForConcurrentAccess(HeapObject *obj) { // dmu
+    swift_beSafeForConcurrentAccess(obj);
+  }
 };
 
 /// A box implementation class for Swift unowned object pointers.
@@ -308,6 +299,9 @@ struct SwiftUnownedRetainableBox :
     swift_unownedRelease(obj);
   }
 
+  static void beSafeForConcurrentAccess(HeapObject *obj) { // dmu
+    swift_unownedBeSafeForConcurrentAccess(obj);
+  }
 
 #if SWIFT_OBJC_INTEROP
   // The implementation from RetainableBoxBase is valid when interop is
@@ -327,7 +321,7 @@ struct SwiftUnownedRetainableBox :
 
 /// CRTP base class for weak reference boxes.
 template<typename Impl, typename T>
-  struct WeakRetainableBoxBase: MakeHeapObjSafeForConcurrentAccess<T> /*dmu*/ {
+struct WeakRetainableBoxBase {
   using type = T;
   static constexpr size_t size = sizeof(type);
   static constexpr size_t alignment = alignof(type);
@@ -374,6 +368,11 @@ template<typename Impl, typename T>
 
     return r;
   }
+    
+  static void makeContentsOfArraySafeForConcurrentAccess(T *arr, size_t n) { // dmu
+    while (n--)
+      Impl::makeContentsSafeForConcurrentAccess(arr++);
+  }
 };
 
 /// A box implementation class for Swift weak object pointers.
@@ -402,6 +401,9 @@ struct SwiftWeakRetainableBox :
     swift_weakTakeAssign(dest, src);
     return dest;
   }
+  static void makeContentsSafeForConcurrentAccess(WeakReference *value) { // dmu
+    swift_weakMakeContentsSafeForConcurrentAccess(value);
+  }
 };
 
 #if SWIFT_OBJC_INTEROP
@@ -416,6 +418,9 @@ struct ObjCRetainableBox : RetainableBoxBase<ObjCRetainableBox, void*> {
 
   static void release(void *obj) {
     objc_release((id)obj);
+  }
+  
+  static void beSafeForConcurrentAccess(void*) { // dmu
   }
 };
 
@@ -455,6 +460,9 @@ struct ObjCUnownedRetainableBox
     swift_unknownUnownedTakeAssign(dest, src);
     return dest;
   }
+  static void makeContentsSafeForConcurrentAccess(UnownedReference *ref) { // dmu
+    swift_unknownUnownedMakeContentsSafeForConcurrentAccess(ref);
+  }
 };
 
 /// A box implementation class for ObjC weak object pointers.
@@ -483,6 +491,9 @@ struct ObjCWeakRetainableBox :
     swift_unknownWeakTakeAssign(dest, src);
     return dest;
   }
+  static void makeContentsSafeForConcurrentAccess(WeakReference *ref) { // dmu
+    swift_unknownBeSafeForConcurrentAccess(ref); // Note: breaks the symmetry
+  }
 };
 
 #endif
@@ -504,6 +515,14 @@ struct UnknownRetainableBox : RetainableBoxBase<UnknownRetainableBox, void*> {
     swift_unknownRelease(obj);
 #else
     swift_release(static_cast<HeapObject *>(obj));
+#endif
+  }
+  
+  static void beSafeForConcurrentAccess(void *obj) { // dmu
+#if SWIFT_OBJC_INTEROP
+    swift_unknownBeSafeForConcurrentAccess(obj);
+#else
+    swift_beSafeForConcurrentAccess(static_cast<HeapObject *>(obj));
 #endif
   }
 };
@@ -528,6 +547,10 @@ struct BridgeObjectBox :
 
   static int getExtraInhabitantIndex(void* const *src) {
     return *src == nullptr ? 0 : -1;
+  }
+      
+  static void beSafeForConcurrentAccess(void *obj) { // dmu
+    swift_bridgeObjectBeSafeForConcurrentAccess(obj);
   }
 };
   
@@ -612,6 +635,8 @@ public:
 #undef COPY_OP
 
   static void destroy(char *addr) {}
+  
+  static void makeContentsSafeForConcurrentAccess(char* addr) {} // dmu
 };
 
 // Recursive case: add an element to the start.
@@ -659,6 +684,14 @@ public:
     EltBox::destroy((typename EltBox::type*) addr);
     NextHelper::destroy(addr + eltToNextOffset);
   }
+  
+  
+  static void makeContentsSafeForConcurrentAccess(char* addr) { // dmu
+    addr += startToEltOffset;
+    EltBox::makeContentsSafeForConcurrentAccess((typename EltBox::type*) addr);
+    NextHelper::makeContentsSafeForConcurrentAccess(addr + eltToNextOffset);
+  }
+
 };
 
 /// A class which produces a tuple-like box (with Swift layout rules)
@@ -749,12 +782,19 @@ struct AggregateBox {
     }
     return r;
   }
-  
   // TODO: (dmu) implement
   static void makeContentsSafeForConcurrentAccess(char* value) { // dmu
     if (isPOD)
       return;
-    abort(); // TODO: (dmu) implement
+    Helper::makeContentsSafeForConcurrentAccess(value);
+  }
+  static void makeContentsOfArraySafeForConcurrentAccess(char *array, size_t n) { // dmu
+    if (isPOD)
+      return;
+    while (n--) {
+      makeContentsSafeForConcurrentAccess(array);
+      array += stride;
+    }
   }
 };
   
@@ -952,7 +992,7 @@ struct ValueWitnesses : BufferValueWitnesses<ValueWitnesses<Box>,
   }
 
   static void makeContentsSafeForConcurrentAccess(OpaqueValue *value, const Metadata *self) { // dmu
-    return Box::makeContentsSafeForConcurrentAccess((typename Box::type*) value);
+    Box::makeContentsSafeForConcurrentAccess((typename Box::type*) value);
   }
 
   static OpaqueValue *initializeWithCopy(OpaqueValue *dest, OpaqueValue *src,
@@ -1026,6 +1066,10 @@ struct ValueWitnesses : BufferValueWitnesses<ValueWitnesses<Box>,
     return Box::getExtraInhabitantIndex((typename Box::type const *) src);
   }
 };
+  
+  
+
+  
 
 /// A class which provides basic implementations of various function
 /// value witnesses based on a type that is not fixed in size.
@@ -1059,6 +1103,11 @@ struct NonFixedValueWitnesses :
   static void destroyArray(OpaqueValue *array, size_t n,
                            const Metadata *self) {
     return Box::destroyArray((typename Box::type*) array, n, self);
+  }
+  
+  static void makeContentsOfArraySafeForConcurrentAccess(OpaqueValue *array, size_t n,
+                           const Metadata *self) { // dmu
+    return Box::makeContentsOfArraySafeForConcurrentAccess((typename Box::type*) array, n, self);
   }
   
   static OpaqueValue *initializeWithCopy(OpaqueValue *dest, OpaqueValue *src,
@@ -1171,6 +1220,7 @@ template <class Witnesses> struct ValueWitnessTableGenerator<Witnesses, true> {
 template <class Box>
 using ValueWitnessTableForBox = ValueWitnessTableGenerator<ValueWitnesses<Box>>;
 
+  
 } // end namespace metadataimpl
 } // end namespace swift
 

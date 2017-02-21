@@ -463,6 +463,17 @@ void swift::swift_unknownRetain(void *object)
   objc_retain(static_cast<id>(object));
 }
 
+
+void swift::swift_unknownBeSafeForConcurrentAccess(void *object) // dmu TODO: (dmu) are my routines needed in this file?
+SWIFT_CC(DefaultCC_IMPL) {
+  if (isObjCTaggedPointerOrNull(object)) return;
+  if (usesNativeSwiftReferenceCounting_allocated(object)) {
+    swift_beSafeForConcurrentAccess(static_cast<HeapObject *>(object));
+    return;
+  }
+}
+
+
 void swift::swift_unknownRelease(void *object)
     SWIFT_CC(DefaultCC_IMPL) {
   if (isObjCTaggedPointerOrNull(object)) return;
@@ -934,7 +945,7 @@ void swift::swift_unknownUnownedTakeAssign(UnownedReference *dest,
   dest->Value = src->Value;
 }
 
-void swift::swift_unknownUnownedBeSafeForConcurrentAccess(UnownedReference *ref) { // dmu
+void swift::swift_unknownUnownedMakeContentsSafeForConcurrentAccess(UnownedReference *ref) { // dmu
   abort(); // TODO: (dmu) implement
 }
 
@@ -1035,6 +1046,12 @@ void swift::swift_unknownWeakDestroy(WeakReference *addr) {
   id object = (id) addr->Value;
   if (isObjCTaggedPointerOrNull(object)) return;
   objc_destroyWeak((id*) &addr->Value);
+}
+
+void swift::swift_unknownWeakBeSafeForConcurrentAccess(WeakReference *addr) { // dmu
+  if (isNativeSwiftWeakReference(addr)) {
+    swift_weakMakeContentsSafeForConcurrentAccess(addr);
+  }
 }
 
 void swift::swift_unknownWeakCopyInit(WeakReference *dest, WeakReference *src) {
