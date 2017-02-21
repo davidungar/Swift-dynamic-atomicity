@@ -946,7 +946,13 @@ void swift::swift_unknownUnownedTakeAssign(UnownedReference *dest,
 }
 
 void swift::swift_unknownUnownedMakeContentsSafeForConcurrentAccess(UnownedReference *ref) { // dmu
-  abort(); // TODO: (dmu) implement
+  if (!ref->Value) {
+    // Nothing to do.
+    return;
+  } else if (auto objcRef = dyn_cast<ObjCUnownedReference>(ref)) {
+  } else {
+    swift_unownedDestroy(ref);
+  }
 }
 
 /*****************************************************************************/

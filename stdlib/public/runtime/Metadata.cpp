@@ -612,18 +612,22 @@ static void tuple_makeContentsSafeForConcurrentAccess(OpaqueValue *tuple, const 
   
   if (IsPOD) return;
 
-  abort(); // TODO: (dmu) implement
+  
+  for (size_t i = 0, e = metadata.NumElements; i != e; ++i) {
+    auto &eltInfo = metadata.getElements()[i];
+    OpaqueValue *elt = eltInfo.findIn(tuple);
+    auto eltWitnesses = eltInfo.Type->getValueWitnesses();
+    eltWitnesses->makeContentsSafeForConcurrentAccess(elt, eltInfo.Type);
+  }
 }
 /// TODO: (dmu) explain
 template <bool IsPOD, bool IsInline>
-static void tuple_makeContentsOfBufferSafeForConcurrentAccess(ValueBuffer *buffer, const Metadata *_metadata) { // dmu
-  auto &metadata = *(const TupleTypeMetadata*) _metadata;
-  assert(IsPOD == tuple_getValueWitnesses(&metadata)->isPOD());
-  assert(IsInline == tuple_getValueWitnesses(&metadata)->isValueInline());
+static void tuple_makeContentsOfBufferSafeForConcurrentAccess(ValueBuffer *buffer, const Metadata *metatype) { // dmu
+  assert(IsPOD == tuple_getValueWitnesses(metatype)->isPOD());
+  assert(IsInline == tuple_getValueWitnesses(metatype)->isValueInline());
   
-  if (IsPOD) return;
-  
-  abort(); // TODO: (dmu) implement
+  auto tuple = tuple_projectBuffer<IsPOD, IsInline>(buffer, metatype);
+  tuple_makeContentsSafeForConcurrentAccess<IsPOD, IsInline>(tuple, metatype);
 }
 /// TODO: (dmu) explain
 template <bool IsPOD, bool IsInline>
@@ -634,7 +638,13 @@ static void tuple_makeContentsOfArraySafeForConcurrentAccess(OpaqueValue *array,
   
   if (IsPOD) return;
   
-  abort(); // TODO: (dmu) implement
+  size_t stride = tuple_getValueWitnesses(&metadata)->stride;
+  char *bytes = (char*)array;
+  
+  while (n--) {
+    tuple_makeContentsSafeForConcurrentAccess<IsPOD, IsInline>((OpaqueValue*)bytes, _metadata);
+    bytes += stride;
+  }
 }
 
 /// Generic tuple value witness for 'destroyArray'.
