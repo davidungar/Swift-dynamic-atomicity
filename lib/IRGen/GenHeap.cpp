@@ -1217,6 +1217,7 @@ DEFINE_BINARY_OPERATION(WeakAssign, void, llvm::Value *, Address)
 DEFINE_BINARY_OPERATION(WeakLoadStrong, llvm::Value *, Address, llvm::Type *)
 DEFINE_BINARY_OPERATION(WeakTakeStrong, llvm::Value *, Address, llvm::Type *)
 DEFINE_UNARY_OPERATION(WeakDestroy, void, Address)
+DEFINE_UNARY_OPERATION(WeakBeSafeForConcurrentAccess, void, Address) // dmu
 
 DEFINE_BINARY_OPERATION(UnownedCopyInit, void, Address, Address)
 DEFINE_BINARY_OPERATION(UnownedTakeInit, void, Address, Address)
@@ -1820,6 +1821,7 @@ DEFINE_LOAD_WEAK_OP(NativeWeakTakeStrong)
 DEFINE_STORE_WEAK_OP(NativeWeakInit)
 DEFINE_STORE_WEAK_OP(NativeWeakAssign)
 DEFINE_ADDR_OP(NativeWeakDestroy)
+DEFINE_ADDR_OP(NativeWeakBeSafeForConcurrentAccess)  // dmu
 DEFINE_COPY_OP(NativeWeakCopyInit)
 DEFINE_COPY_OP(NativeWeakCopyAssign)
 DEFINE_COPY_OP(NativeWeakTakeInit)
@@ -1838,6 +1840,7 @@ DEFINE_LOAD_WEAK_OP(UnknownWeakTakeStrong)
 DEFINE_STORE_WEAK_OP(UnknownWeakInit)
 DEFINE_STORE_WEAK_OP(UnknownWeakAssign)
 DEFINE_ADDR_OP(UnknownWeakDestroy)
+DEFINE_ADDR_OP(UnknownWeakBeSafeForConcurrentAccess) // dmu
 DEFINE_COPY_OP(UnknownWeakCopyInit)
 DEFINE_COPY_OP(UnknownWeakCopyAssign)
 DEFINE_COPY_OP(UnknownWeakTakeInit)

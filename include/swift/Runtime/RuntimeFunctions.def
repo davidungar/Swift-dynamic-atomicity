@@ -418,6 +418,12 @@ FUNCTION(NativeWeakDestroy, swift_weakDestroy, DefaultCC,
          ARGS(WeakReferencePtrTy),
          ATTRS(NoUnwind))
 
+// void swift_weakBeSafeForConcurrentAccess(WeakReference *object);
+FUNCTION(NativeWeakBeSafeForConcurrentAccess, swift_weakBeSafeForConcurrentAccess, DefaultCC, // dmu
+         RETURNS(VoidTy),
+         ARGS(WeakReferencePtrTy),
+         ATTRS(NoUnwind))
+
 // void swift_weakInit(WeakReference *object, void *value);
 FUNCTION(NativeWeakInit, swift_weakInit, DefaultCC,
          RETURNS(VoidTy),

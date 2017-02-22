@@ -293,6 +293,8 @@ public:
   llvm::Value *emitWeakTakeStrong(Address src, llvm::Type *resultType,
                                   ReferenceCounting style);
   void emitWeakDestroy(Address addr, ReferenceCounting style);
+  
+  void emitWeakBeSafeForConcurrentAccess(Address addr, ReferenceCounting style); // dmu
 
   // Routines for the Swift native reference-counting style.
   //   - strong references
@@ -326,6 +328,7 @@ public:
   llvm::Value *emitNativeWeakLoadStrong(Address src, llvm::Type *type);
   llvm::Value *emitNativeWeakTakeStrong(Address src, llvm::Type *type);
   void emitNativeWeakDestroy(Address addr);
+  void emitNativeWeakBeSafeForConcurrentAccess(Address addr); // dmu
   void emitNativeWeakCopyInit(Address destAddr, Address srcAddr);
   void emitNativeWeakTakeInit(Address destAddr, Address srcAddr);
   void emitNativeWeakCopyAssign(Address destAddr, Address srcAddr);
@@ -362,6 +365,7 @@ public:
   void emitUnknownUnownedDestroy(Address addr);
   //   - weak references
   void emitUnknownWeakDestroy(Address addr);
+  void emitUnknownWeakBeSafeForConcurrentAccess(Address addr); // dmu
   void emitUnknownWeakCopyInit(Address destAddr, Address srcAddr);
   void emitUnknownWeakTakeInit(Address destAddr, Address srcAddr);
   void emitUnknownWeakCopyAssign(Address destAddr, Address srcAddr);
