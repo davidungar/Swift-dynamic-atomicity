@@ -2451,7 +2451,7 @@ namespace {
           
           ConditionalDominanceScope condition(IGF);
           
-          // If there is, project and destroy it.
+          // If there is, project and fix it.
           Address payloadAddr = projectPayloadData(IGF, addr);
           getPayloadTypeInfo().makeContainedReferencesOfElementCountAtomically(IGF, payloadAddr,
                                                                                getPayloadType(IGF.IGM, T));
@@ -2983,6 +2983,8 @@ namespace {
 
     llvm::Function *copyEnumFunction = nullptr;
     llvm::Function *consumeEnumFunction = nullptr;
+    llvm::Function *makeContainedReferencesOfEnumCountAtomicallyFunction = nullptr; // dmu
+
     SmallVector<llvm::Type *, 2> PayloadTypesAndTagType;
 
     llvm::Function *emitCopyEnumFunction(IRGenModule &IGM, EnumDecl *theEnum) {
@@ -3030,6 +3032,29 @@ namespace {
         lti.consume(IGF, value, Atomicity::Atomic);
       });
 
+      IGF.Builder.CreateRetVoid();
+      return func;
+    }
+    
+    llvm::Function *emitMakeContainedReferencesOfEnumCountAtomicallyFunction(IRGenModule &IGM, EnumDecl *theEnum) { // dmu
+      IRGenMangler Mangler;
+      std::string name = Mangler.mangleOutlinedMakeContainedReferencesOfEnumCountAtomicallyFunction(theEnum);
+      auto func = createOutlineLLVMFunction(IGM, name, PayloadTypesAndTagType);
+      
+      IRGenFunction IGF(IGM, func);
+      Explosion src = IGF.collectParameters();
+      
+      auto parts = destructureAndTagLoadableEnumFromOutlined(IGF, src);
+      
+      forNontrivialPayloads(IGF, parts.tag, [&](unsigned tagIndex,
+                                                EnumImplStrategy::Element elt) {
+        auto &lti = cast<LoadableTypeInfo>(*elt.ti);
+        Explosion value;
+        projectPayloadValue(IGF, parts.payload, tagIndex, lti, value);
+        
+        lti.makeSourceSafeForConcurrentAccess(IGF, value);
+      });
+      
       IGF.Builder.CreateRetVoid();
       return func;
     }
@@ -3210,6 +3235,20 @@ namespace {
       case BitwiseTakable:
       case Normal:
         llvm_unreachable("not a refcounted payload");
+      }
+    }
+
+
+    void makeRefcountedPayloadSafeForConcurrentAccess(IRGenFunction &IGF, // dmu
+                                                      llvm::Value *ptr) const {
+      switch (CopyDestroyKind) {
+        case TaggedRefcounted:
+          IGF.emitBeSafeForConcurrentAccess(ptr, Refcounting);
+          return;
+        case POD:
+        case BitwiseTakable:
+        case Normal:
+          llvm_unreachable("not a refcounted payload");
       }
     }
 
@@ -4049,6 +4088,38 @@ namespace {
       }
       }
     }
+    
+    void makeContainedReferencesOfExplosionCountAtomically(IRGenFunction &IGF, Explosion &src) const { // dmu
+      assert(TIK >= Loadable);
+      
+      switch (CopyDestroyKind) {
+        case POD:
+          abort();
+        case BitwiseTakable:
+          abort();
+          
+        case Normal: {
+          assert(makeContainedReferencesOfEnumCountAtomicallyFunction && "Did not create makeContainedReferencesOfEnumCountAtomically function for enum");
+          Explosion tmp;
+          fillExplosionForOutlinedCall(IGF, src, tmp);
+          llvm::CallInst *call = IGF.Builder.CreateCall(makeContainedReferencesOfEnumCountAtomicallyFunction, tmp.getAll());
+          call->setCallingConv(IGF.IGM.DefaultCC);
+          return;
+        }
+        case TaggedRefcounted: {
+          auto parts = destructureLoadableEnum(IGF, src);
+          
+          // Mask the tag bits out of the payload, if any.
+          maskTagBitsFromPayload(IGF, parts.payload);
+          
+          // mak the pointer count atomically
+          auto ptr = parts.payload.extractValue(IGF, getRefcountedPtrType(IGF.IGM), 0);
+          makeRefcountedPayloadSafeForConcurrentAccess(IGF, ptr);
+          return;
+        }
+      }
+    }
+
 
     void consume(IRGenFunction &IGF, Explosion &src,
                  Atomicity atomicity) const override {
@@ -4361,46 +4432,92 @@ namespace {
       }
     }
 
-    // TODO: (dmu) factor with destroy
     void makeContainedReferencesOfElementCountAtomically(IRGenFunction &IGF, Address addr, SILType T) const override { // dmu
+      
+      // assignWithCopy emitIndirectAssign(IGF, dest, src, T, false);
+      
+      // (emitIndirectAssign( 4125
+      auto &C = IGF.IGM.getLLVMContext();
       switch (CopyDestroyKind) {
-        case POD:
-          return;
+        case POD: return;
+        case BitwiseTakable: return;
           
-        case BitwiseTakable:
-        case Normal:
         case TaggedRefcounted:
+        case Normal:
           break;
       }
-      // If loadable, it's better to do this directly to the value than
-      // in place, so we don't need to RMW out the tag bits in memory.
-//      if (TI->isLoadable()) {
-//        Explosion tmp;
-//        loadAsTake(IGF, addr, tmp);
-//        // TODO: (dmu check) consume uses get LoadableSingleton but makeContained... uses getSingleton
-//        makeContainedReferencesOfElementCountAtomically(IGF, tmp);
-//        return true;
-//      }
-//      auto tag = loadPayloadTag(IGF, addr, T);
-//      
-//      forNontrivialPayloads(IGF, tag,
-//                            [&](unsigned tagIndex,
-//                                EnumImplStrategy::Element elt) {
-//                              no no no
-//        // Clear tag bits out of the payload area, if any.
-//        destructiveProjectDataForLoad(IGF, T, addr);
-//        // Destroy the data.
-//        Address dataAddr = IGF.Builder.CreateBitCast(addr,
-//                                                     elt.ti->getStorageType()->getPointerTo());
-//        SILType payloadT =
-//        T.getEnumElementType(elt.decl, IGF.getSILModule());
-//        elt.ti->destroy(IGF, dataAddr, payloadT);
-//      }
-//      );
-//      return;
+      if (TI->isLoadable()) {
+        Explosion tmp;
+        loadAsTake(IGF, addr, tmp);
+        makeContainedReferencesOfExplosionCountAtomically(IGF, tmp);
+        return;
+      }
+      // If the enum is address-only, we better not have any spare bits,
+      // otherwise we have no way of using the original payload without
+      // destructively modifying it in place.
+      assert(PayloadTagBits.none() &&
+             "address-only multi-payload enum layout cannot use spare bits");
+      
+      /// True if the type is trivially copyable or takable by this operation.
+      auto isTrivial = [&](const TypeInfo &ti) -> bool {
+        return ti.isPOD(ResilienceExpansion::Maximal);
+      };
+      
+      llvm::Value *tag = loadPayloadTag(IGF, addr, T);
       
       
-      abort(); // TODO: (dmu) implement makeContainedReferencesOfElementCountAtomically
+      auto *endBB = llvm::BasicBlock::Create(C);
+      
+      /// Nothing to do for trivial payloads
+      auto *trivialBB = endBB;
+      
+      unsigned numNontrivialPayloads
+      = std::count_if(ElementsWithPayload.begin(),
+                      ElementsWithPayload.end(),
+                      [&](Element e) -> bool {
+                        return !isTrivial(*e.ti);
+                      });
+      bool anyTrivial = !ElementsWithNoPayload.empty()
+      || numNontrivialPayloads != ElementsWithPayload.size();
+      
+      auto swi = SwitchBuilder::create(IGF, tag,
+                                       SwitchDefaultDest(trivialBB, anyTrivial ? IsNotUnreachable
+                                                         : IsUnreachable),
+                                       numNontrivialPayloads);
+      auto *tagTy = cast<llvm::IntegerType>(tag->getType());
+      
+      
+      unsigned tagIndex = 0;
+      for (auto &payloadCasePair : ElementsWithPayload) {
+        SILType PayloadT = T.getEnumElementType(payloadCasePair.decl,
+                                                IGF.getSILModule());
+        auto &payloadTI = *payloadCasePair.ti;
+        // Trivial and can all share the default path.
+        if (isTrivial(payloadTI)) {
+          ++tagIndex;
+          continue;
+        }
+
+        // For nontrivial payloads, we need to make payload contents safe for atomic access using its
+        // value semantics.
+        auto *caseBB = llvm::BasicBlock::Create(C);
+        swi->addCase(llvm::ConstantInt::get(tagTy, tagIndex), caseBB);
+        IGF.Builder.emitBlock(caseBB);
+        
+        ConditionalDominanceScope condition(IGF);
+        
+        // Do the take/copy of the payload.
+        Address data = IGF.Builder.CreateBitCast(addr,
+                                                 payloadTI.getStorageType()->getPointerTo());
+        payloadTI.makeContainedReferencesOfElementCountAtomically(IGF, data, PayloadT);
+        
+        IGF.Builder.CreateBr(endBB);
+        
+        ++tagIndex;
+      }
+      
+      IGF.Builder.emitBlock(endBB);
+
     }
 
   private:
@@ -5881,6 +5998,7 @@ MultiPayloadEnumImplStrategy::completeFixedLayout(TypeConverter &TC,
     computePayloadTypesAndTagType(TC.IGM, *TI, PayloadTypesAndTagType);
     copyEnumFunction = emitCopyEnumFunction(TC.IGM, theEnum);
     consumeEnumFunction = emitConsumeEnumFunction(TC.IGM, theEnum);
+    makeContainedReferencesOfEnumCountAtomicallyFunction = emitMakeContainedReferencesOfEnumCountAtomicallyFunction(TC.IGM, theEnum); // dmu
   }
 
   return const_cast<TypeInfo *>(TI);

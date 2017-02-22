@@ -159,6 +159,13 @@ public:
     appendOperator("We");
     return finalize();
   }
+  std::string mangleOutlinedMakeContainedReferencesOfEnumCountAtomicallyFunction(const NominalTypeDecl *Decl) { // dmu
+    beginMangling();
+    appendNominalType(Decl);
+    appendOperator("Wa");
+    return finalize();
+  }
+
 
   std::string manglePartialApplyForwarder(StringRef FuncName);
 
