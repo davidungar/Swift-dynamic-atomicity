@@ -1247,6 +1247,13 @@ void IRGenFunction::emitUnownedRelease(llvm::Value *value,
   emitNativeUnownedRelease(value);
 }
 
+void IRGenFunction::emitUnownedBeSafeForConcurrentAccess(llvm::Value *value, //dmu
+                                       ReferenceCounting style) {
+  assert(style == ReferenceCounting::Native &&
+         "only native references support scalar unowned reference-counting");
+  emitNativeUnownedBeSafeForConcurrentAccess(value);
+}
+
 void IRGenFunction::emitStrongRetainUnowned(llvm::Value *value,
                                             ReferenceCounting style) {
   assert(style == ReferenceCounting::Native &&
@@ -1825,6 +1832,7 @@ DEFINE_VALUE_OP(NativeStrongRetainUnowned)
 DEFINE_VALUE_OP(NativeStrongRetainAndUnownedRelease)
 DEFINE_VALUE_OP(NativeUnownedRelease)
 DEFINE_VALUE_OP(NativeUnownedRetain)
+DEFINE_VALUE_OP(NativeUnownedBeSafeForConcurrentAccess) // dmu
 DEFINE_LOAD_WEAK_OP(NativeWeakLoadStrong)
 DEFINE_LOAD_WEAK_OP(NativeWeakTakeStrong)
 DEFINE_STORE_WEAK_OP(NativeWeakInit)

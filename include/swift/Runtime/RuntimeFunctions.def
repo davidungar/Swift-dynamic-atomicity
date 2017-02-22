@@ -385,6 +385,12 @@ FUNCTION(NativeUnownedRelease, swift_unownedRelease, RegisterPreservingCC,
          ARGS(RefCountedPtrTy),
          ATTRS(NoUnwind))
 
+// void swift_unownedBeSafeForConcurrentAccess(void *ptr);
+FUNCTION(NativeUnownedBeSafeForConcurrentAccess, swift_unownedBeSafeForConcurrentAccess, RegisterPreservingCC, // dmu
+         RETURNS(VoidTy),
+         ARGS(RefCountedPtrTy),
+         ATTRS(NoUnwind))
+
 // void swift_unownedRetain_n(void *ptr, int32_t n);
 FUNCTION(UnownedRetainN, swift_unownedRetain_n,
          RegisterPreservingCC,

@@ -252,6 +252,7 @@ public:
 
   //   - unowned references
   void emitUnownedRetain(llvm::Value *value, ReferenceCounting style);
+  void emitUnownedBeSafeForConcurrentAccess(llvm::Value *value, ReferenceCounting style); // dmu
   void emitUnownedRelease(llvm::Value *value, ReferenceCounting style);
   void emitStrongRetainUnowned(llvm::Value *value, ReferenceCounting style);
   void emitStrongRetainAndUnownedRelease(llvm::Value *value,
@@ -311,6 +312,7 @@ public:
   //   - unowned references
   void emitNativeUnownedRetain(llvm::Value *value);
   void emitNativeUnownedRelease(llvm::Value *value);
+  void emitNativeUnownedBeSafeForConcurrentAccess(llvm::Value *value);
   void emitNativeStrongRetainUnowned(llvm::Value *value);
   void emitNativeStrongRetainAndUnownedRelease(llvm::Value *value);
   void emitNativeUnownedInit(llvm::Value *val, Address dest);

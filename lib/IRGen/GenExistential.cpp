@@ -990,7 +990,7 @@ public:
   }
 
   void emitValueBeSafeForConcurrentAccess(IRGenFunction &IGF, llvm::Value *value) const { // dmu
-    abort(); // TODO: (dmu) implement
+    IGF.emitUnownedBeSafeForConcurrentAccess(value, Refcounting);
   }
 
   void emitValueFixLifetime(IRGenFunction &IGF, llvm::Value *value) const {
