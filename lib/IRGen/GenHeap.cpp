@@ -1228,6 +1228,7 @@ DEFINE_BINARY_OPERATION(UnownedAssign, void, llvm::Value *, Address)
 DEFINE_BINARY_OPERATION(UnownedLoadStrong, llvm::Value *, Address, llvm::Type *)
 DEFINE_BINARY_OPERATION(UnownedTakeStrong, llvm::Value *, Address, llvm::Type *)
 DEFINE_UNARY_OPERATION(UnownedDestroy, void, Address)
+DEFINE_UNARY_OPERATION(UnownedBeSafeForConcurrentAccess, void, Address) // dmu
 
 #undef DEFINE_UNARY_OPERATION
 #undef DEFINE_BINARY_OPERATION
@@ -1332,6 +1333,14 @@ void IRGenFunction::emitNativeUnownedDestroy(Address ref) {
   llvm::Value *value = Builder.CreateLoad(ref);
   emitNativeUnownedRelease(value);
 }
+
+
+void IRGenFunction::emitNativeUnownedBeSafeForConcurrentAccess(Address ref) {
+  ref = Builder.CreateStructGEP(ref, 0, Size(0));
+  llvm::Value *value = Builder.CreateLoad(ref);
+  emitNativeBeSafeForConcurrentAccess(value);
+}
+
 
 void IRGenFunction::emitNativeUnownedCopyInit(Address dest, Address src) {
   src = Builder.CreateStructGEP(src, 0, Size(0));
@@ -1831,6 +1840,7 @@ DEFINE_LOAD_WEAK_OP(UnknownUnownedTakeStrong)
 DEFINE_STORE_WEAK_OP(UnknownUnownedInit)
 DEFINE_STORE_WEAK_OP(UnknownUnownedAssign)
 DEFINE_ADDR_OP(UnknownUnownedDestroy)
+DEFINE_ADDR_OP(UnknownUnownedBeSafeForConcurrentAccess) // dmu
 DEFINE_COPY_OP(UnknownUnownedCopyInit)
 DEFINE_COPY_OP(UnknownUnownedCopyAssign)
 DEFINE_COPY_OP(UnknownUnownedTakeInit)

@@ -621,7 +621,7 @@ public:
   }
 
   void emitValueBeSafeForConcurrentAccess(IRGenFunction &IGF, Address addr) const { // dmu
-    abort(); // TODO: (dmu) implement
+    IGF.emitUnownedBeSafeForConcurrentAccess(addr, Refcounting);
   }
 
 

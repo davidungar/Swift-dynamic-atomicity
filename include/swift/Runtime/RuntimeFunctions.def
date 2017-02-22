@@ -538,6 +538,12 @@ FUNCTION(UnknownUnownedDestroy, swift_unknownUnownedDestroy, DefaultCC,
          ARGS(UnownedReferencePtrTy),
          ATTRS(NoUnwind))
 
+// void swift_unknownUnownedBeSafeForConcurrentAccess(UnownedReference *object);
+FUNCTION(UnknownUnownedBeSafeForConcurrentAccess, swift_unknownUnownedBeSafeForConcurrentAccess, DefaultCC, // dmu
+         RETURNS(VoidTy),
+         ARGS(UnownedReferencePtrTy),
+         ATTRS(NoUnwind))
+
 // void swift_unknownUnownedInit(UnownedReference *object, void *value);
 FUNCTION(UnknownUnownedInit, swift_unknownUnownedInit, DefaultCC,
          RETURNS(VoidTy),

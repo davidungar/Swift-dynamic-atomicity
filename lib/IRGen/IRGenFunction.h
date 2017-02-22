@@ -272,6 +272,7 @@ public:
   llvm::Value *emitUnownedTakeStrong(Address src, llvm::Type *resultType,
                                      ReferenceCounting style);
   void emitUnownedDestroy(Address addr, ReferenceCounting style);
+  void emitUnownedBeSafeForConcurrentAccess(Address addr, ReferenceCounting style);
   llvm::Value *getUnownedExtraInhabitantIndex(Address src,
                                               ReferenceCounting style);
   void storeUnownedExtraInhabitant(llvm::Value *index, Address dest,
@@ -321,6 +322,7 @@ public:
   llvm::Value *emitNativeUnownedLoadStrong(Address src, llvm::Type *resultType);
   llvm::Value *emitNativeUnownedTakeStrong(Address src, llvm::Type *resultType);
   void emitNativeUnownedDestroy(Address addr);
+  void emitNativeUnownedBeSafeForConcurrentAccess(Address addr); // dmu
 
   //   - weak references
   void emitNativeWeakInit(llvm::Value *value, Address dest);
@@ -363,6 +365,7 @@ public:
   llvm::Value *emitUnknownUnownedLoadStrong(Address src, llvm::Type *resultTy);
   llvm::Value *emitUnknownUnownedTakeStrong(Address src, llvm::Type *resultTy);
   void emitUnknownUnownedDestroy(Address addr);
+  void emitUnknownUnownedBeSafeForConcurrentAccess(Address addr); // dmu
   //   - weak references
   void emitUnknownWeakDestroy(Address addr);
   void emitUnknownWeakBeSafeForConcurrentAccess(Address addr); // dmu
