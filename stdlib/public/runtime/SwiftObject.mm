@@ -708,6 +708,24 @@ void swift::swift_nonatomic_bridgeObjectRelease_n(void *object, int n)
 }
 
 
+void swift::swift_bridgeObjectBeSafeForConcurrentAccess(void *object) // dmu
+SWIFT_CC(DefaultCC_IMPL) {
+#if SWIFT_OBJC_INTEROP
+  if (isObjCTaggedPointer(object))
+    return;
+#endif
+  
+  auto const objectRef = toPlainObject_unTagged_bridgeObject(object);
+  
+#if SWIFT_OBJC_INTEROP
+  if (isNonNative_unTagged_bridgeObject(object))
+    return;
+#endif
+  swift::swift_beSafeForConcurrentAccess(static_cast<HeapObject *>(objectRef));
+}
+
+
+
 #if SWIFT_OBJC_INTEROP
 
 /*****************************************************************************/

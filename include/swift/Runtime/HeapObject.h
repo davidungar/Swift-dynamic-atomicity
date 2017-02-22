@@ -748,7 +748,7 @@ void *swift_nonatomic_bridgeObjectRetain_n(void *value, int n)
     SWIFT_CC(DefaultCC);
   
 SWIFT_RUNTIME_EXPORT
-void *swift_bridgeObjectBeSafeForConcurrentAccess(void *value) // dmu
+void swift_bridgeObjectBeSafeForConcurrentAccess(void *value) // dmu
 SWIFT_CC(DefaultCC);
 
 
