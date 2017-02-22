@@ -560,7 +560,7 @@ namespace {
     }
 
     void makeContainedReferencesOfElementCountAtomically(IRGenFunction &IGF, Address addr, SILType T) const override { // dmu
-      abort(); // TODO: (dmu) implement weak refs need to recurse, too
+      IGF.emitNativeWeakBeSafeForConcurrentAccess(addr);
     }
 
     llvm::Type *getOptionalIntType() const {
@@ -721,7 +721,7 @@ namespace {
     }
 
     void makeContainedReferencesOfElementCountAtomically(IRGenFunction &IGF, Address addr, SILType T) const override { // dmu
-      abort(); // TODO: (dmu) implement weak refs need to recurse, too
+      IGF.emitUnknownUnownedBeSafeForConcurrentAccess(addr);
     }
 
     // Unowned types have the same extra inhabitants as normal pointers.
@@ -796,7 +796,7 @@ namespace {
     }
                                 
     void makeContainedReferencesOfElementCountAtomically(IRGenFunction &IGF, Address addr, SILType T) const override { // dmu
-      abort(); // TODO: (dmu) implement weak refs need to recurse, too
+      IGF.emitUnknownWeakBeSafeForConcurrentAccess(addr);
     }
                                 
     llvm::Type *getOptionalIntType() const {
