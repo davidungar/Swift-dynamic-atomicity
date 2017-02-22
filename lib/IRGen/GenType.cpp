@@ -415,8 +415,7 @@ namespace {
     void fixLifetime(IRGenFunction &IGF, Explosion &src) const override {}
     void destroy(IRGenFunction &IGF, Address addr, SILType T) const override {}
     
-    bool makeContainedReferencesOfElementCountAtomically(IRGenFunction &IGF, Address addr, SILType T) const override { // dmu
-      return true;
+    void makeContainedReferencesOfElementCountAtomically(IRGenFunction &IGF, Address addr, SILType T) const override { // dmu
     }
 
     void packIntoEnumPayload(IRGenFunction &IGF, EnumPayload &payload,
@@ -562,8 +561,7 @@ namespace {
       /* nop */
     }
     
-    bool makeContainedReferencesOfElementCountAtomically(IRGenFunction &IGF, Address addr, SILType T) const override { // dmu
-     return true;
+    void makeContainedReferencesOfElementCountAtomically(IRGenFunction &IGF, Address addr, SILType T) const override { // dmu
     }
     
     void getSchema(ExplosionSchema &schema) const override {
@@ -627,7 +625,7 @@ namespace {
       llvm_unreachable("cannot opaquely manipulate immovable types!");
     }
       
-    bool makeContainedReferencesOfElementCountAtomically(IRGenFunction &IGF, Address addr, SILType T) const override { // dmu
+    void makeContainedReferencesOfElementCountAtomically(IRGenFunction &IGF, Address addr, SILType T) const override { // dmu
         llvm_unreachable("cannot opaquely manipulate immovable types!");
     }
   };

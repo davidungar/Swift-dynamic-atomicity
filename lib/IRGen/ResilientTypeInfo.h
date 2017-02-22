@@ -141,19 +141,19 @@ public:
     emitDestroyCall(IGF, T, addr);
   }
 
-  bool makeContainedReferencesOfElementCountAtomically(IRGenFunction &IGF, Address addr, SILType T) const override { // dmu
+  void makeContainedReferencesOfElementCountAtomically(IRGenFunction &IGF, Address addr, SILType T) const override { // dmu
     emitMakeContentsSafeForConcurrentAccessCall(IGF, T, addr);
-    return true;
   }
   
-  bool makeContainedReferencesOfElementsOfBufferCountAtomically(IRGenFunction &IGF, Address buffer, SILType T) const override { // dmu
+  void makeContainedReferencesOfElementsOfBufferCountAtomically(IRGenFunction &IGF, Address buffer, SILType T) const override { // dmu
     emitMakeContentsOfBufferSafeForConcurrentAccessCall(IGF, T, buffer);
-    return true;
   }
   
-  bool makeContainedReferencesOfElementsOfArrayCountAtomically(IRGenFunction &IGF, Address array, SILType T) const override { // dmu
-    emitMakeContentsOfArraySafeForConcurrentAccessCall(IGF, T, array);
-    return true;
+  void makeContainedReferencesOfElementsOfArrayCountAtomically(IRGenFunction &IGF,
+                                                               Address addr,
+                                                               llvm::Value *count,
+                                                               SILType T) const override { // dmu
+    emitMakeContentsOfArraySafeForConcurrentAccessCall(IGF, T, addr, count);
   }
 
   void destroyArray(IRGenFunction &IGF, Address addr, llvm::Value *count,

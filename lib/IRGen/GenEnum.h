@@ -356,7 +356,7 @@ public:
   virtual void getSchema(ExplosionSchema &schema) const = 0;
   virtual void destroy(IRGenFunction &IGF, Address addr, SILType T) const = 0;
 
-  virtual bool makeContainedReferencesOfElementCountAtomically(IRGenFunction &IGF, Address addr, SILType T) const = 0; // dmu
+  virtual void makeContainedReferencesOfElementCountAtomically(IRGenFunction &IGF, Address addr, SILType T) const = 0; // dmu
 
   virtual void initializeFromParams(IRGenFunction &IGF, Explosion &params,
                                     Address dest, SILType T) const;

@@ -163,6 +163,12 @@ namespace irgen {
                             Address object,
                             llvm::Value *count);
 
+  /// Emit a call to do a 'destroyArray' operation.
+  void emitMakeContentsOfArraySafeForConcurrentAccessCall(IRGenFunction &IGF, // dmu xxxxxx
+                                                          SILType T,
+                                                          Address object,
+                                                          llvm::Value *count);
+  
   /// Emit a call to do a 'destroyBuffer' operation.
   void emitDestroyBufferCall(IRGenFunction &IGF,
                              llvm::Value *metadata,

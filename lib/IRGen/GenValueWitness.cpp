@@ -338,14 +338,14 @@ static void emitDefaultDestroyBuffer(IRGenFunction &IGF, Address buffer,
 }
 
 /// TODO: (dmu) comment check one-eyed clone
-static void emitDefaultMakeContentsOfBufferSafeforConcurrentAccess( IRGenFunction &IGF, // dmu
+static void emitDefaultMakeContainedReferencesOfElementsOfBufferCountAtomically( IRGenFunction &IGF, // dmu
                                                                    Address buffer,
                                                                    SILType T,
                                                                    const TypeInfo &type,
                                                                    FixedPacking packing) {
   // Special-case dynamic packing in order to thread the jumps.
   if (packing == FixedPacking::Dynamic)
-    return emitForDynamicPacking(IGF, &emitDefaultMakeContentsOfBufferSaveforConcurrentAccess,
+    return emitForDynamicPacking(IGF, &emitDefaultMakeContainedReferencesOfElementsOfBufferCountAtomically,
                                  T, type, buffer);
   
   Address object = emitDefaultProjectBuffer(IGF, buffer, T, type, packing);
@@ -480,7 +480,7 @@ static RESULT emit##TITLE(IRGenFunction &IGF, Address buffer, SILType T,      \
 DEFINE_UNARY_BUFFER_OP(Address, allocateBuffer, AllocateBuffer)
 DEFINE_UNARY_BUFFER_OP(Address, projectBuffer, ProjectBuffer)
 DEFINE_UNARY_BUFFER_OP(void, destroyBuffer, DestroyBuffer)
-DEFINE_UNARY_BUFFER_OP(void, makeContentsOfBufferSafeForConcurrentAccess, MakeContentsOfBufferSafeForConcurrentAccess) // dmu TODO: (dmu) blind clone
+DEFINE_UNARY_BUFFER_OP(void, makeContainedReferencesOfElementsOfBufferCountAtomically, MakeContainedReferencesOfElementsOfBufferCountAtomically) // dmu TODO: (dmu) blind clone
 DEFINE_UNARY_BUFFER_OP(void, deallocateBuffer, DeallocateBuffer)
 #undef DEFINE_UNARY_BUFFER_OP
 
@@ -660,7 +660,7 @@ static void buildValueWitnessFunction(IRGenModule &IGM,
   case ValueWitness::MakeContentsOfBufferSafeForConcurrentAccess: { // dmu clone TODO: (dmu) factor with destroyBuffer?
     Address buffer = getArgAsBuffer(IGF, argv, "buffer");
     getArgAsLocalSelfTypeMetadata(IGF, argv, abstractType);
-    emitMakeContentsOfBufferSafeForConcurrentAccess(IGF, buffer, concreteType, type, packing);
+    emitMakeContainedReferencesOfElementsOfBufferCountAtomically(IGF, buffer, concreteType, type, packing);
     IGF.Builder.CreateRetVoid();
     return;
   }
@@ -1719,7 +1719,10 @@ void TypeInfo::destroyArray(IRGenFunction &IGF, Address array,
   IGF.Builder.emitBlock(exit);
 }
 
-bool TypeInfo::makeContainedReferencesOfElementsOfArrayCountAtomically(IRGenFunction &IGF, Address array, SILType T) { // dmu TODO: (dmu) blind clone
+void TypeInfo::makeContainedReferencesOfElementsOfArrayCountAtomically(IRGenFunction &IGF,
+                                                                       Address array,
+                                                                       llvm::Value *count,
+                                                                       SILType T) const { // dmu TODO: (dmu) blind clone
   if (isPOD(ResilienceExpansion::Maximal))
     return;
   
@@ -1743,7 +1746,7 @@ bool TypeInfo::makeContainedReferencesOfElementsOfArrayCountAtomically(IRGenFunc
   IGF.Builder.emitBlock(loop);
   ConditionalDominanceScope condition(IGF);
   
-  bool implemented = makeContainedReferencesOfElementsCountAtomically(IGF, element, T);
+  makeContainedReferencesOfElementCountAtomically(IGF, element, T);
   
   auto nextCounter = IGF.Builder.CreateSub(counter,
                                            llvm::ConstantInt::get(IGF.IGM.SizeTy, 1));
@@ -1755,8 +1758,6 @@ bool TypeInfo::makeContainedReferencesOfElementsOfArrayCountAtomically(IRGenFunc
   IGF.Builder.CreateBr(iter);
   
   IGF.Builder.emitBlock(exit);
-  
-  return implemented;
 }
 
 

@@ -3571,9 +3571,10 @@ namespace {
      auto type = vd->getType();
      SILType si = IGF.IGM.getLoweredType(type);
      
-     return ti.makeContainedReferencesOfElementCountAtomically(IGF,
+     ti.makeContainedReferencesOfElementCountAtomically(IGF,
                                                                element.project(IGF, instanceAddr, offsets),
                                                                si);
+     return true; // TODO: (dmu) cleanup used to return true iff implemented, now don't need return value
    }
 
            

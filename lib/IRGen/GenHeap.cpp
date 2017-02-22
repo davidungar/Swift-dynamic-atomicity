@@ -262,8 +262,6 @@ static llvm::Constant *createMakeContainedReferencesCountAtomicallyFn(IRGenModul
   // Figure out the non-fixed offsets.
   HeapNonFixedOffsets offsets(IGF, layout);
   
-  bool implemented = true;
-  
   // Traverse the fields.
   for (unsigned i : indices(layout.getElements())) {
     auto &field = layout.getElement(i);
@@ -271,15 +269,12 @@ static llvm::Constant *createMakeContainedReferencesCountAtomicallyFn(IRGenModul
     if (field.isPOD())
       continue;
     // dmu entry into makeContainedReferencesOfElementCountAtomically urgent rename
-    implemented = field.getType().makeContainedReferencesOfElementCountAtomically(IGF,
+    field.getType().makeContainedReferencesOfElementCountAtomically(IGF,
                                                                     field.project(IGF, structAddr, offsets),
-                                                                    fieldTy)
-    && implemented;
+                                                                    fieldTy);
     }
   IGF.Builder.CreateRetVoid();
-  return implemented
-  ?  static_cast<llvm::Constant*>(fn)
-  :  llvm::ConstantPointerNull::get(IGM.MakeContainedReferencesCountAtomicallyTy->getPointerTo());
+  return static_cast<llvm::Constant*>(fn);
 }
 
 
@@ -564,8 +559,8 @@ namespace {
       IGF.emitNativeWeakDestroy(addr);
     }
 
-    bool makeContainedReferencesOfElementCountAtomically(IRGenFunction &IGF, Address addr, SILType T) const override { // dmu
-      return true; // weak counts are atomic
+    void makeContainedReferencesOfElementCountAtomically(IRGenFunction &IGF, Address addr, SILType T) const override { // dmu
+      abort(); // TODO: (dmu) implement weak refs need to recurse, too
     }
 
     llvm::Type *getOptionalIntType() const {
@@ -725,8 +720,8 @@ namespace {
       IGF.emitUnknownUnownedDestroy(addr);
     }
 
-    bool makeContainedReferencesOfElementCountAtomically(IRGenFunction &IGF, Address addr, SILType T) const override { // dmu
-     return true; // since weak counts are all atomic at present
+    void makeContainedReferencesOfElementCountAtomically(IRGenFunction &IGF, Address addr, SILType T) const override { // dmu
+      abort(); // TODO: (dmu) implement weak refs need to recurse, too
     }
 
     // Unowned types have the same extra inhabitants as normal pointers.
@@ -800,8 +795,8 @@ namespace {
       IGF.emitUnknownWeakDestroy(addr);
     }
                                 
-    bool makeContainedReferencesOfElementCountAtomically(IRGenFunction &IGF, Address addr, SILType T) const override { // dmu
-     return true; // nothing to do; weak counts are all atomic right now
+    void makeContainedReferencesOfElementCountAtomically(IRGenFunction &IGF, Address addr, SILType T) const override { // dmu
+      abort(); // TODO: (dmu) implement weak refs need to recurse, too
     }
                                 
     llvm::Type *getOptionalIntType() const {

@@ -515,14 +515,13 @@ namespace {
                                 getSingletonType(IGF.IGM, T));
     }
 
-    bool makeContainedReferencesOfElementCountAtomically(IRGenFunction &IGF, Address addr, SILType T) const override { // dmu
+    void makeContainedReferencesOfElementCountAtomically(IRGenFunction &IGF, Address addr, SILType T) const override { // dmu
       if (getSingleton() &&
           !getSingleton()->isPOD(ResilienceExpansion::Maximal)) {
         getSingleton()->makeContainedReferencesOfElementCountAtomically(
                                                                         IGF, getSingletonAddress(IGF, addr),
                                                                         getSingletonType(IGF.IGM, T));
       }
-      return true;
     }
 
 
@@ -2441,10 +2440,10 @@ namespace {
     }
 
     // TODO: (dmu) factor with destroy above
-    bool makeContainedReferencesOfElementCountAtomically(IRGenFunction &IGF, Address addr, SILType T) const override { // dmu
+    void makeContainedReferencesOfElementCountAtomically(IRGenFunction &IGF, Address addr, SILType T) const override { // dmu
       switch (CopyDestroyKind) {
         case POD:
-          return true;
+          return;
           
         case Normal: {
           // Check that there is a payload at the address.
@@ -2459,7 +2458,7 @@ namespace {
           
           IGF.Builder.CreateBr(endBB);
           IGF.Builder.emitBlock(endBB);
-          return true;
+          return;
         }
           
         case NullableRefcounted: {
@@ -2468,7 +2467,7 @@ namespace {
                                            getRefcountedPtrType(IGF.IGM)->getPointerTo());
           llvm::Value *ptr = IGF.Builder.CreateLoad(addr);
           beSafeForConcurrentAccessForRefcountedPayload(IGF, ptr);
-          return true;
+          return;
         }
       }
     }
@@ -4363,10 +4362,10 @@ namespace {
     }
 
     // TODO: (dmu) factor with destroy
-    bool makeContainedReferencesOfElementCountAtomically(IRGenFunction &IGF, Address addr, SILType T) const override { // dmu
+    void makeContainedReferencesOfElementCountAtomically(IRGenFunction &IGF, Address addr, SILType T) const override { // dmu
       switch (CopyDestroyKind) {
         case POD:
-          return true;
+          return;
           
         case BitwiseTakable:
         case Normal:
@@ -4401,7 +4400,7 @@ namespace {
 //      return;
       
       
-      return false; // TODO: (dmu) implement makeContainedReferencesOfElementCountAtomically
+      abort(); // TODO: (dmu) implement makeContainedReferencesOfElementCountAtomically
     }
 
   private:
@@ -4896,9 +4895,8 @@ namespace {
       emitDestroyCall(IGF, T, addr);
     }
 
-    bool makeContainedReferencesOfElementCountAtomically(IRGenFunction &IGF, Address addr, SILType T) const override { // dmu
+    void makeContainedReferencesOfElementCountAtomically(IRGenFunction &IGF, Address addr, SILType T) const override { // dmu
       emitMakeContentsSafeForConcurrentAccessCall(IGF, T, addr);
-      return true;
     }
 
     void getSchema(ExplosionSchema &schema) const override {
@@ -5270,8 +5268,8 @@ namespace {
     void destroy(IRGenFunction &IGF, Address addr, SILType T) const override {
       return Strategy.destroy(IGF, addr, T);
     }
-    bool makeContainedReferencesOfElementCountAtomically(IRGenFunction &IGF, Address addr, SILType T) const override { // dmu
-      return Strategy.makeContainedReferencesOfElementCountAtomically(IGF, addr, T);
+    void makeContainedReferencesOfElementCountAtomically(IRGenFunction &IGF, Address addr, SILType T) const override { // dmu
+      Strategy.makeContainedReferencesOfElementCountAtomically(IGF, addr, T);
     }
     void initializeFromParams(IRGenFunction &IGF, Explosion &params,
                               Address dest, SILType T) const override {

@@ -291,6 +291,8 @@ static StringRef getValueWitnessLabel(ValueWitness index) {
     return "makeContentsSafeForConcurrentAccess";
   case ValueWitness::MakeContentsOfBufferSafeForConcurrentAccess: // dmu
     return "makeContentsOfBufferSafeForConcurrentAccess";
+  case ValueWitness::MakeContentsOfArraySafeForConcurrentAccess: // dmu
+    return "makeContentsOfArraySafeForConcurrentAccess";
   }
   llvm_unreachable("bad value witness index");
 }

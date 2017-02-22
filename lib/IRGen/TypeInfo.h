@@ -400,9 +400,12 @@ public:
 
   /// Output code to visit each reference in this element and make its reference count atomic
   
-  virtual bool makeContainedReferencesOfElementCountAtomically(IRGenFunction &IGF, Address address, SILType T) const = 0; // dmu
-  virtual bool makeContainedReferencesOfElementsOfBufferCountAtomically(IRGenFunction &IGF, Address buffer, SILType T) const = 0; // dmu
-  virtual bool makeContainedReferencesOfElementsOfArrayCountAtomically(IRGenFunction &IGF, Address array, SILType T) const = 0; // dmu
+  virtual void makeContainedReferencesOfElementCountAtomically(IRGenFunction &IGF, Address address, SILType T) const = 0; // dmu
+  virtual void makeContainedReferencesOfElementsOfBufferCountAtomically(IRGenFunction &IGF, Address buffer, SILType T) const; // dmu
+  virtual void makeContainedReferencesOfElementsOfArrayCountAtomically(IRGenFunction &IGF,
+                                                                       Address base,
+                                                                       llvm::Value *count,
+                                                                       SILType T) const; // dmu
 
 
   /// Should optimizations be enabled which rely on the representation

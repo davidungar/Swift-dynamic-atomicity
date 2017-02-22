@@ -200,14 +200,13 @@ public:
     }
   }
   
-  bool makeContainedReferencesOfElementCountAtomically(IRGenFunction &IGF, Address addr, SILType T) const override { // dmu
+  void makeContainedReferencesOfElementCountAtomically(IRGenFunction &IGF, Address addr, SILType T) const override { // dmu
     if (!Derived::IsScalarPOD) {
       addr = asDerived().projectScalar(IGF, addr);
       llvm::Value *value = IGF.Builder.CreateLoad(addr, "toDestroy");
       asDerived().emitBeSafeForConcurrentAccess
       (IGF, value);
     }
-    return true;
   }
   
   void packIntoEnumPayload(IRGenFunction &IGF,

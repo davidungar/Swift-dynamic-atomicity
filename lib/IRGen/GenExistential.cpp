@@ -361,9 +361,8 @@ public:
     emitDestroyExistential(IGF, addr, getLayout());
   }
                
-  bool makeContainedReferencesOfElementCountAtomically(IRGenFunction &IGF, Address addr, SILType T) const override { // dmu
+  void makeContainedReferencesOfElementCountAtomically(IRGenFunction &IGF, Address addr, SILType T) const override { // dmu
     emitMakeContentsSafeForConcurrentAccessExistential(IGF, addr, getLayout());
-    return true;
   }
 
 };
@@ -444,10 +443,9 @@ public:
     asDerived().emitValueDestroy(IGF, valueAddr);
   }
 
-  bool makeContainedReferencesOfElementCountAtomically(IRGenFunction &IGF, Address existential, SILType T) const override { // dmu
+  void makeContainedReferencesOfElementCountAtomically(IRGenFunction &IGF, Address existential, SILType T) const override { // dmu
     Address valueAddr = projectValue(IGF, existential);
     asDerived().emitValueBeSafeForConcurrentAccess(IGF, valueAddr);
-    return true;
   }
 
 
@@ -864,10 +862,9 @@ public:
     asDerived().emitValueRelease(IGF, value, Atomicity::Atomic);
   }
 
-  bool makeContainedReferencesOfElementCountAtomically(IRGenFunction &IGF, Address addr, SILType T) const override { // dmu
+  void makeContainedReferencesOfElementCountAtomically(IRGenFunction &IGF, Address addr, SILType T) const override { // dmu
     llvm::Value *value = asDerived().loadValue(IGF, addr);
     asDerived().emitValueBeSafeForConcurrentAccess(IGF, value);
-    return true;
   }
 
 

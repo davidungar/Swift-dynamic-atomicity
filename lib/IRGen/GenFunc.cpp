@@ -382,11 +382,10 @@ namespace {
         IGF.emitNativeStrongRelease(data);
     }
 
-    bool makeContainedReferencesOfElementCountAtomically(IRGenFunction &IGF, Address addr, SILType T) const override { // dmu
+    void makeContainedReferencesOfElementCountAtomically(IRGenFunction &IGF, Address addr, SILType T) const override { // dmu
       auto data = IGF.Builder.CreateLoad(projectData(IGF, addr));
       if (!isPOD(ResilienceExpansion::Maximal)) // blind clone
         IGF.emitNativeBeSafeForConcurrentAccess(data);
-      return true;
     }
 
     void packIntoEnumPayload(IRGenFunction &IGF,
@@ -505,8 +504,8 @@ namespace {
     void destroy(IRGenFunction &IGF, Address addr, SILType T) const override {
       IGF.unimplemented(SourceLoc(), "destroying @block_storage");
     }
-    bool makeContainedReferencesOfElementCountAtomically(IRGenFunction &IGF, Address addr, SILType T) const override { // dmu
-      return true; // nothing to do for an on-stack representation
+    void makeContainedReferencesOfElementCountAtomically(IRGenFunction &IGF, Address addr, SILType T) const override { // dmu
+      IGF.unimplemented(SourceLoc(), "makeContainedReferencesOfElementCountAtomically @block_storage");
     }
   };
 } // end anonymous namespace

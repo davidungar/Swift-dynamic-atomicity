@@ -214,16 +214,14 @@ public:
     }
   }
       
-  bool makeContainedReferencesOfElementCountAtomically(IRGenFunction &IGF, Address addr, SILType T) const override { // dmu
+  void makeContainedReferencesOfElementCountAtomically(IRGenFunction &IGF, Address addr, SILType T) const override { // dmu
     auto offsets = asImpl().getNonFixedOffsets(IGF, T);
     for (auto &field : getFields()) {
-      if (field.isPOD()) continue;
-      
-      bool implemented = field.getTypeInfo().makeContainedReferencesOfElementCountAtomically(IGF, field.projectAddress(IGF, addr, offsets),
+      if (field.isPOD())
+        continue;
+      field.getTypeInfo().makeContainedReferencesOfElementCountAtomically(IGF, field.projectAddress(IGF, addr, offsets),
                                                                                              field.getType(IGF.IGM, T));
-      if (!implemented) return false;
     }
-    return true;
   }
 };
 
@@ -291,14 +289,15 @@ public:
     }
   }
 
-  bool makeContainedReferencesOfElementsOfBufferCountAtomically(IRGenFunction &IGF, Address buffer, // dmu
-                     SILType type) const override {
+  void makeContainedReferencesOfElementsOfBufferCountAtomically(IRGenFunction &IGF, Address buffer, // dmu
+                                                                SILType type) const override {
     if (auto field = getUniqueNonEmptyField()) {
-makeContainedReferencesOfElementsOfBufferCountAtomically                                                                       field->getType(IGF.IGM, type));
+      field->getTypeInfo().makeContainedReferencesOfElementsOfBufferCountAtomically(IGF,
+                                                                                    buffer,
+                                                                                    field->getType(IGF.IGM, type));
     } else {
       super::makeContainedReferencesOfElementsOfBufferCountAtomically(IGF, buffer, type);
     }
-    return true;
   }
 
   void deallocateBuffer(IRGenFunction &IGF, Address buffer,
