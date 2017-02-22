@@ -728,6 +728,23 @@ void irgen::emitDestroyArrayCall(IRGenFunction &IGF,
   setHelperAttributes(call);
 }
 
+
+
+/// Emit a call to do a 'makeContentsOfArraySafeForConcurrentAccessCall' operation.
+void irgen::emitMakeContentsOfArraySafeForConcurrentAccessCall(IRGenFunction &IGF, // dmu
+                                                               SILType T,
+                                                               Address object,
+                                                               llvm::Value *count) {
+  auto metadata = IGF.emitTypeMetadataRefForLayout(T);
+  llvm::Value *fn = IGF.emitValueWitnessForLayout(T,
+                                                  ValueWitness::MakeContentsOfArraySafeForConcurrentAccess);
+  llvm::CallInst *call =
+  IGF.Builder.CreateCall(fn, {object.getAddress(), count, metadata});
+  call->setCallingConv(IGF.IGM.DefaultCC);
+  setHelperAttributes(call);
+}
+
+
 /// Emit a call to do a 'destroyBuffer' operation.
 void irgen::emitDestroyBufferCall(IRGenFunction &IGF,
                                   SILType T,
