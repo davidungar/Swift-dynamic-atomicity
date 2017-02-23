@@ -499,11 +499,6 @@ namespace {
         getLoadableSingleton()->consume(IGF, src, atomicity);
     }
 
-//    void makeContainedReferencesOfElementCountAtomically(IRGenFunction &IGF, Explosion &src) {
-//      if (getLoadableSingleton())
-//        getLoadableSingleton()->makeContainedReferencesOfElementCountAtomically(IGF, src);
-//    }
-    
     void fixLifetime(IRGenFunction &IGF, Explosion &src) const override {
       if (getLoadableSingleton()) getLoadableSingleton()->fixLifetime(IGF, src);
     }
@@ -890,7 +885,6 @@ namespace {
     void emitBeSafeForConcurrentAccess(IRGenFunction &IGF, // dmu
                                        llvm::Value *objToSet) const {}
 
-     // TODO: (dmu implement enums)
     void emitIfDestIsSafeForConcurrentAccessMakeSrcSafe(IRGenFunction &IGF, // dmu
                                                         llvm::Value *objToCheck, llvm::Value *objToSet) const {}
     

@@ -3539,7 +3539,7 @@ namespace {
 //        Layout.getBindings().restore(IGF, bindingsAddr);
 //      }
 
-      // TODO: (dmu urgent) temp hack to avoid this problem
+      // TODO: (dmu urgent implement) temp hack to avoid this problem
       // see addGenericFields in MetadataLayout and addClassMembers in ClassMetadataLayout
       if (!Layout.isFixedLayout()) {
         IGF.Builder.CreateRetVoid();
