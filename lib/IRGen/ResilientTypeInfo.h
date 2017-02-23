@@ -149,10 +149,10 @@ public:
     emitMakeContentsOfBufferSafeForConcurrentAccessCall(IGF, T, buffer);
   }
   
-  void makeContainedReferencesOfElementsOfArrayCountAtomically(IRGenFunction &IGF,
+  void makeContainedReferencesOfElementsOfArrayCountAtomically(IRGenFunction &IGF, // dmu
                                                                Address addr,
                                                                llvm::Value *count,
-                                                               SILType T) const override { // dmu
+                                                               SILType T) const override {
     emitMakeContentsOfArraySafeForConcurrentAccessCall(IGF, T, addr, count);
   }
 
