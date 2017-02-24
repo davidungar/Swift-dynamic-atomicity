@@ -3518,6 +3518,13 @@ namespace {
            
     // TODO: (dmu factor) with routine of same name in GenHeap
     llvm::Constant* createMakeContainedReferencesCountAtomicallyFn() { // dmu
+      
+      
+      auto *selfDecl = ParamDecl::createSelf(Target->getLoc(), Target);
+      auto selfParameter = ParameterList::createWithoutLoc(selfDecl);
+      selfParameter->setDeclContextOfParamDecls(Target);
+      
+      
       llvm::Function *fn =
       llvm::Function::Create(IGM.MakeContainedReferencesCountAtomicallyTy,
                              llvm::Function::PrivateLinkage,
@@ -3572,8 +3579,8 @@ namespace {
      SILType si = IGF.IGM.getLoweredType(type);
      
      ti.makeContainedReferencesOfElementCountAtomically(IGF,
-                                                               element.project(IGF, instanceAddr, offsets),
-                                                               si);
+                                                        element.project(IGF, instanceAddr, offsets),
+                                                        si);
      return true; // TODO: (dmu) cleanup used to return true iff implemented, now don't need return value
    }
 
