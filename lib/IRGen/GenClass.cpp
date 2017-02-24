@@ -435,7 +435,7 @@ static OwnedAddress emitAddressAtOffset(IRGenFunction &IGF,
   return OwnedAddress(addr, base);
 }
 
-OwnedAddress irgen::projectPhysicalClassMemberAddress(IRGenFunction &IGF,
+OwnedAddress irgen::projectPhysicalClassMemberAddress(IRGenFunction &IGF, // yyyyyy dmu
                                                       llvm::Value *base,
                                                       SILType baseType,
                                                       SILType fieldType,

@@ -3147,7 +3147,7 @@ void IRGenSILFunction::visitStructElementAddrInst(
   setLoweredAddress(i, field);
 }
 
-void IRGenSILFunction::visitRefElementAddrInst(swift::RefElementAddrInst *i) {
+void IRGenSILFunction::visitRefElementAddrInst(swift::RefElementAddrInst *i) { ///// yyyyyy dmu
   Explosion base = getLoweredExplosion(i->getOperand());
   llvm::Value *value = base.claimNext();
 
@@ -4711,13 +4711,13 @@ void IRGenSILFunction::visitCopyAddrInst(swift::CopyAddrInst *i) {
 // does not produce any values.
 void IRGenSILFunction::visitBindMemoryInst(swift::BindMemoryInst *) {}
 
-void IRGenSILFunction::visitDestroyAddrInst(swift::DestroyAddrInst *i) {
+void IRGenSILFunction::visitDestroyAddrInst(swift::DestroyAddrInst *i) { // yyyyy
   SILType addrTy = i->getOperand()->getType();
   const TypeInfo &addrTI = getTypeInfo(addrTy);
 
   // Otherwise, do the normal thing.
   Address base = getLoweredAddress(i->getOperand());
-  addrTI.destroy(*this, base, addrTy);
+  addrTI.destroy(*this, base, addrTy); //yyyyyy dmu
 }
 
 void IRGenSILFunction::visitCondFailInst(swift::CondFailInst *i) {

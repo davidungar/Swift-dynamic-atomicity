@@ -18,7 +18,7 @@
 using namespace swift;
 using namespace Lowering;
 
-void SILGenFunction::emitDestroyingDestructor(DestructorDecl *dd) {
+void SILGenFunction::emitDestroyingDestructor(DestructorDecl *dd) { // yyyyyy dmu
   MagicFunctionName = DeclName(SGM.M.getASTContext().getIdentifier("deinit"));
 
   RegularLocation Loc(dd);
@@ -124,7 +124,7 @@ void SILGenFunction::emitIVarDestroyer(SILDeclRef ivarDestroyer) {
 
 void SILGenFunction::emitClassMemberDestruction(SILValue selfValue,
                                                 ClassDecl *cd,
-                                                CleanupLocation cleanupLoc) {
+                                                CleanupLocation cleanupLoc) { // yyyyyy dmu
   for (VarDecl *vd : cd->getStoredProperties()) {
     const TypeLowering &ti = getTypeLowering(vd->getType());
     if (!ti.isTrivial()) {
