@@ -54,7 +54,7 @@
 
 #include "GenMeta.h"
 
-#include "swift/Basic/Fallthrough.h" // dmu for ClassNonFixedOffsets FALLTHROUGH
+#include "swift/AST/ParameterList.h" // dmu for selfParameter in createMakeContainedReferencesCountAtomicallyFn
 
 using namespace swift;
 using namespace irgen;
@@ -3256,167 +3256,6 @@ static llvm::Value *emitInitializeFieldOffsetVector(IRGenFunction &IGF,
 }
 
 namespace {
-  /// Added by dmu for createMakeContainedReferencesCountAtomicallyFn
-  /// Inspired by HeapNonFixedOffsets
-  
-  // TODO: (dmu which ClassNonFixedOffsets)
-  class ClassNonFixedOffsets : public NonFixedOffsetsImpl {
-    SmallVector<llvm::Value *, 1> Offsets;
-    llvm::Value *TotalSize;
-    llvm::Value *TotalAlignMask;
-  public:
-    // TODO: (dmu cleanup) take this function apart into managable pieces. It's too long!
-    // TODO: (dmu factoring) factor with HeapNonFixedOffsets?
-    ClassNonFixedOffsets(IRGenFunction &IGF, const StructLayout &layout, const ClassLayout &fieldLayout) {
-      if (layout.isFixedLayout()) {
-        TotalSize = layout.emitSize(IGF.IGM);
-        TotalAlignMask = layout.emitAlignMask(IGF.IGM);
-        return;
-      }
-      // Calculate all the non-fixed layouts.
-      // TODO: We could be lazier about this.
-      llvm::Value *offset = nullptr;
-      llvm::Value *totalAlign = llvm::ConstantInt::get(IGF.IGM.SizeTy,
-                                                       layout.getAlignment().getMaskValue());
-      
-      const ArrayRef<VarDecl*> storedProperties = fieldLayout.AllStoredProperties;
-      for (unsigned fieldIndex = 0;  fieldIndex < storedProperties.size();  ++fieldIndex) {
-        VarDecl const * const vd = storedProperties[fieldIndex];
-        ElementLayout const &elt = layout.getElement(fieldIndex);
-        Type type = vd->getType();
-        SILType const &eltTy = IGF.IGM.getLoweredType(type);
-        switch (elt.getKind()) {
-          case ElementLayout::Kind::InitialNonFixedSize:
-            // Factor the non-fixed-size field's alignment into the total alignment.
-            totalAlign = IGF.Builder.CreateOr(totalAlign,
-                                              elt.getType().getAlignmentMask(IGF, eltTy));
-            SWIFT_FALLTHROUGH;
-          case ElementLayout::Kind::Empty:
-          case ElementLayout::Kind::Fixed:
-            // Don't need to dynamically calculate this offset.
-            Offsets.push_back(nullptr);
-            break;
-            
-          case ElementLayout::Kind::NonFixed:
-            // Start calculating non-fixed offsets from the end of the first fixed
-            // field.
-            if (fieldIndex == 0) {
-              totalAlign = elt.getType().getAlignmentMask(IGF, eltTy);
-              offset = totalAlign;
-              Offsets.push_back(totalAlign);
-              break;
-            }
-            
-            assert(fieldIndex > 0 && "shouldn't begin with a non-fixed field");
-            
-
-            // Start calculating offsets from the last fixed-offset field.
-            if (!offset) {
-              Size lastFixedOffset = layout.getElement(fieldIndex-1).getByteOffset();
-              ElementLayout const &prevElt = layout.getElement(fieldIndex-1);
-              VarDecl const * const prevVD = storedProperties[fieldIndex-1];
-
-              offset = calculateOffsetsFromLastFixedOffsetField(IGF, lastFixedOffset, prevElt, prevVD);
-            }
-            llvm::Value *alignMask = elt.getType().getAlignmentMask(IGF, eltTy); // TODO (dmu) the killer for this week's recursion bug
-            offset = roundOffsetUpToAlignment(IGF, offset, elt, alignMask);
-            
-            Offsets.push_back(offset);
-            
-            // Advance by the field's size to start the next field.
-            offset = IGF.Builder.CreateAdd(offset,
-                                           elt.getType().getSize(IGF, eltTy));
-            totalAlign = IGF.Builder.CreateOr(totalAlign, alignMask);
-            
-            break;
-        }
-      }
-      TotalSize = offset;
-      TotalAlignMask = totalAlign;
-    }
-    
-  private:
-    static llvm::Value *calculateOffsetsFromLastFixedOffsetField(IRGenFunction &IGF,
-                                                                 Size lastFixedOffset,
-                                                                 ElementLayout const &prevElt,
-                                                                 VarDecl const * const prevVD ) {
-      if (auto *fixedType = dyn_cast<FixedTypeInfo>(&prevElt.getType())) {
-        // If the last fixed-offset field is also fixed-size, we can
-        // statically compute the end of the fixed-offset fields.
-        auto fixedEnd = lastFixedOffset + fixedType->getFixedSize();
-        return llvm::ConstantInt::get(IGF.IGM.SizeTy, fixedEnd.getValue());
-      }
-      // Otherwise, we need to add the dynamic size to the fixed start
-      // offset.
-      llvm::Value* offset
-      = llvm::ConstantInt::get(IGF.IGM.SizeTy,
-                               lastFixedOffset.getValue());
-      SILType const& prevType = IGF.IGM.getLoweredType( prevVD->getType() );
-      return IGF.Builder.CreateAdd(offset,
-                                   prevElt.getType().getSize(IGF, prevType));
-    }
-    static llvm::Value* roundOffsetUpToAlignment(IRGenFunction &IGF, llvm::Value* offset, ElementLayout const &elt, llvm::Value *alignMask) {
-      auto notAlignMask = IGF.Builder.CreateNot(alignMask);
-      offset = IGF.Builder.CreateAdd(offset, alignMask);
-      return IGF.Builder.CreateAnd(offset, notAlignMask);
-    }
-  public:
-    
-    llvm::Value *getOffsetForIndex(IRGenFunction &IGF, unsigned index) override {
-      auto result = Offsets[index];
-      assert(result != nullptr
-             && "fixed-layout field doesn't need NonFixedOffsets");
-      return result;
-    }
-    
-    // The total size of the heap object.
-    llvm::Value *getSize() const {
-      return TotalSize;
-    }
-    
-    // The total alignment of the heap object.
-    llvm::Value *getAlignMask() const {
-      return TotalAlignMask;
-    }
-  };
-  
-  // TODO: (dmu) cleanup
-//  class ClassNonFixedOffsets : public NonFixedOffsetsImpl {
-//    SILType TheStruct;
-//  public:
-//    ClassNonFixedOffsets(SILType type) : TheStruct(type) {
-//      assert(TheStruct.getStructOrBoundGenericStruct());
-//    }
-//    
-//    llvm::Value *getOffsetForIndex(IRGenFunction &IGF, unsigned index) override {
-//      // Get the field offset vector from the struct metadata.
-//      llvm::Value *metadata = IGF.emitTypeMetadataRefForLayout(TheStruct);
-//      Address fieldVector = emitAddressOfFieldOffsetVector(IGF,
-//                                                           TheStruct.getStructOrBoundGenericStruct(),
-//                                                           metadata);
-//      
-//      // Grab the indexed offset.
-//      fieldVector = IGF.Builder.CreateConstArrayGEP(fieldVector, index,
-//                                                    IGF.IGM.getPointerSize());
-//      return IGF.Builder.CreateLoad(fieldVector);
-//    }
-//    
-//    MemberAccessStrategy getFieldAccessStrategy(IRGenModule &IGM,
-//                                                unsigned nonFixedIndex) {
-//      GetStartOfFieldOffsets scanner(IGM,
-//                                     TheStruct.getStructOrBoundGenericStruct());
-//      scanner.layout();
-//      
-//      Size indirectOffset =
-//      scanner.StartOfFieldOffsets + IGM.getPointerSize() * nonFixedIndex;
-//      
-//      return MemberAccessStrategy::getIndirectFixed(indirectOffset,
-//                                                    MemberAccessStrategy::OffsetKind::Bytes_Word);
-//    }
-//  };
-
-
-  
   /// An adapter for laying out class metadata.
   template <class Impl>
   class ClassMetadataBuilderBase
@@ -3517,6 +3356,7 @@ namespace {
     }
            
     // TODO: (dmu factor) with routine of same name in GenHeap
+           // or clean up a lot
     llvm::Constant* createMakeContainedReferencesCountAtomicallyFn() { // dmu
       
       
@@ -3524,67 +3364,44 @@ namespace {
       auto selfParameter = ParameterList::createWithoutLoc(selfDecl);
       selfParameter->setDeclContextOfParamDecls(Target);
       
+//      RegularLocation loc(Target);
+//      loc.markAutoGenerated();
+//      auto cleanupLoc = CleanupLocation::get(loc);
+//      
       
       llvm::Function *fn =
       llvm::Function::Create(IGM.MakeContainedReferencesCountAtomicallyTy,
                              llvm::Function::PrivateLinkage,
                              MakeContainedReferencesCountAtomicallyValues::twine, &IGM.Module);
       fn->setAttributes(IGM.constructInitialAttributes());
-     
+      
       IRGenFunction IGF(IGM, fn);
       if (IGM.DebugInfo)
         IGM.DebugInfo->emitArtificialFunction(IGF, fn);
+
+      auto loweredTy = Target->getDeclaredTypeInContext()->getCanonicalType();
+      SILType clsSILType =  SILType::getPrimitiveObjectType(loweredTy);
       
       Address instanceAddr = Layout.emitCastTo(IGF, &*fn->arg_begin());
+      llvm::Value* instanceAddrValue = instanceAddr.getAddress();
       
-//      // Bind necessary bindings, if we have them.
-//      // Without this, ClassNonFixedOffsets trips an assertion. -- dmu
-//      if (Layout.hasBindings()) {
-//        // The type metadata bindings should be at a fixed offset, so we can pass
-//        // None for NonFixedOffsets. If we didn't, we'd have a chicken-egg problem.
-//        auto bindingsAddr = Layout.getElement(0).project(IGF, instanceAddr, None);
-//        Layout.getBindings().restore(IGF, bindingsAddr);
-//      }
+      for (VarDecl *fieldDecl : FieldLayout.AllStoredProperties) {        Type fieldType = fieldDecl->getType();
+        SILType fieldSILType = IGF.IGM.getLoweredType(fieldType);
 
-      // TODO: (dmu urgent implement) temp hack to avoid this problem
-      // see addGenericFields in MetadataLayout and addClassMembers in ClassMetadataLayout
-      if (!Layout.isFixedLayout()) {
-        IGF.Builder.CreateRetVoid();
-        return llvm::ConstantPointerNull::get(IGM.MakeContainedReferencesCountAtomicallyTy->getPointerTo());
-      }
-      ClassNonFixedOffsets offsets(IGF, Layout, FieldLayout);
-      
-      
-      bool implemented = true;
-      
-      for (auto vd : FieldLayout.AllStoredProperties ) {
-        implemented = addContainedReference(IGF, vd, offsets, fn, instanceAddr) && implemented;
+        Address fieldAddress = projectPhysicalClassMemberAddress(IGF, instanceAddrValue, clsSILType, fieldSILType, fieldDecl);
+        
+        TypeInfo const &fieldTypeInfo = IGF.getTypeInfo(fieldSILType);
+        
+        fieldTypeInfo
+          .makeContainedReferencesOfElementCountAtomically(IGF,
+                                                           fieldAddress,
+                                                           fieldSILType);
       }
       IGF.Builder.CreateRetVoid();
-      return implemented
-      ?  static_cast<llvm::Constant*>(fn)
-      :  llvm::ConstantPointerNull::get(IGM.MakeContainedReferencesCountAtomicallyTy->getPointerTo());
+      return static_cast<llvm::Constant*>(fn);
    }
            
-           
-           
-   bool addContainedReference(IRGenFunction& IGF, VarDecl *vd, NonFixedOffsets offsets, llvm::Function *fn, Address instanceAddr) {
-     unsigned fieldIndex = FieldLayout.getFieldIndex(vd);
-
-     
-     ElementLayout const &element = Layout.getElement(fieldIndex);
-     if (element.isPOD()) return true;
-     TypeInfo const &ti = element.getType();
-     auto type = vd->getType();
-     SILType si = IGF.IGM.getLoweredType(type);
-     
-     ti.makeContainedReferencesOfElementCountAtomically(IGF,
-                                                        element.project(IGF, instanceAddr, offsets),
-                                                        si);
-     return true; // TODO: (dmu) cleanup used to return true iff implemented, now don't need return value
-   }
-
-           
+  
     void addNominalTypeDescriptor() {
       auto descriptor =
         ClassNominalTypeDescriptorBuilder(IGM, Target).emit();
