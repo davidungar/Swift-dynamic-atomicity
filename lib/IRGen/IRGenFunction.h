@@ -574,7 +574,9 @@ public:
   void setLocalSelfMetadata(llvm::Value *value, LocalSelfKind kind);
   
 private:
+public: // TODO: (dmu) temp hack
   LocalTypeDataCache &getOrCreateLocalTypeData();
+private: // TODO: (dmu) temp hack
   void destroyLocalTypeData();
 
   LocalTypeDataCache *LocalTypeData = nullptr;

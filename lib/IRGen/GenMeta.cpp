@@ -3385,12 +3385,44 @@ namespace {
       Address instanceAddr = Layout.emitCastTo(IGF, &*fn->arg_begin());
       llvm::Value* instanceAddrValue = instanceAddr.getAddress();
       
+      
+      IGF.getOrCreateLocalTypeData(); 
+      
+//      // Bind the metadata instance to our local type data so we
+//      // use it to provide metadata for generic parameters in field types.
+//      CanType formalType = Target->getDeclaredTypeInContext()->getCanonicalType();
+//      llvm::Value *metadata = IGF.collectParameters().claimNext();
+//      IGF.bindLocalTypeDataFromTypeMetadata(formalType, IsExact, metadata);
+      
+//      IGF.bindLocalTypeDataFromTypeMetadata(loweredTy, IsExact, this->getInit());
+      
+      // gamble:
+      // Bind necessary bindings, if we have them.
+//      if (Layout.hasBindings()) {
+//        // The type metadata bindings should be at a fixed offset, so we can pass
+//        // None for NonFixedOffsets. If we didn't, we'd have a chicken-egg problem.
+//        auto bindingsAddr = Layout.getElement(0).project(IGF, instanceAddr, None);
+//        Layout.getBindings().restore(IGF, bindingsAddr);
+//      }
+
+
+      
       for (VarDecl *fieldDecl : FieldLayout.AllStoredProperties) {        Type fieldType = fieldDecl->getType();
         SILType fieldSILType = IGF.IGM.getLoweredType(fieldType);
 
         Address fieldAddress = projectPhysicalClassMemberAddress(IGF, instanceAddrValue, clsSILType, fieldSILType, fieldDecl);
         
         TypeInfo const &fieldTypeInfo = IGF.getTypeInfo(fieldSILType);
+        
+ 
+//        // cloned from addLazyFieldTypeAccessor
+//        auto metadataArrayPtrTy = IGM.TypeMetadataPtrTy->getPointerTo();
+//        CanType fieldCanType = fieldType->getCanonicalType();
+//        llvm::Value *metadata = IGF.collectParameters().claimNext();
+//        setTypeMetadataName(IGM, metadata, fieldCanType);
+
+ 
+        
         
         fieldTypeInfo
           .makeContainedReferencesOfElementCountAtomically(IGF,
