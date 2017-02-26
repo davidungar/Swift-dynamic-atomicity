@@ -1719,6 +1719,38 @@ static CanAnyFunctionType getDestructorInterfaceType(DestructorDecl *dd,
   return CanFunctionType::get(classType, resultTy, extInfo);
 }
 
+
+/// Get the type of a make... function.
+/// TODO: (dmu) needed?
+static CanAnyFunctionType getMakeContainedReferencesCountAtomicallyInterfaceType(MakeContainedReferencesCountAtomicallyDecl *dd, // dmu
+                                                                                 ASTContext &C,
+                                                                                 bool isForeign) {
+  auto classType = dd->getDeclContext()->getDeclaredInterfaceType()
+  ->getCanonicalType();
+  
+  assert((!isForeign)
+         && "There are no foreign makeContainedReferencesCountAtomically's");
+  AnyFunctionType::ExtInfo extInfo =
+  AnyFunctionType::ExtInfo(FunctionType::Representation::Thin,
+                           /*throws*/ false);
+  if (isForeign)
+    extInfo = extInfo
+    .withSILRepresentation(SILFunctionTypeRepresentation::ObjCMethod);
+  else
+    extInfo = extInfo
+    .withSILRepresentation(SILFunctionTypeRepresentation::Method);
+  
+  CanType resultTy = TupleType::getEmpty(C)->getCanonicalType();
+  
+  auto sig = dd->getDeclContext()->getGenericSignatureOfContext();
+  if (sig)
+    return cast<GenericFunctionType>(
+                                     GenericFunctionType::get(sig, classType, resultTy, extInfo)
+                                     ->getCanonicalType());
+  return CanFunctionType::get(classType, resultTy, extInfo);
+}
+
+
 /// Retrieve the type of the ivar initializer or destroyer method for
 /// a class.
 static CanAnyFunctionType getIVarInitDestroyerInterfaceType(ClassDecl *cd,
@@ -1865,8 +1897,9 @@ CanAnyFunctionType TypeConverter::makeConstantInterfaceType(SILDeclRef c) {
                              Context,
                              c.isForeign);
       
+  // TODO: (dmu) blind clone
   case SILDeclRef::Kind::MakeContainedReferencesCountAtomically: // dmu
-      return getDestructorInterfaceType(cast<MakeContainedReferencesCountAtomicallyDecl>(vd),
+      return getMakeContainedReferencesCountAtomicallyInterfaceType(cast<MakeContainedReferencesCountAtomicallyDecl>(vd),
                                         Context,
                                         c.isForeign);
   
@@ -1926,7 +1959,9 @@ TypeConverter::getConstantGenericEnvironment(SILDeclRef c) {
   case SILDeclRef::Kind::Allocator:
   case SILDeclRef::Kind::Initializer:
   case SILDeclRef::Kind::Destroyer:
-  case SILDeclRef::Kind::Deallocator: {
+  case SILDeclRef::Kind::Deallocator:
+  case SILDeclRef::Kind::MakeContainedReferencesCountAtomically: // dmu
+    {
     auto *afd = cast<AbstractFunctionDecl>(vd);
     auto captureInfo = getLoweredLocalCaptures(afd);
     return getEffectiveGenericEnvironment(afd, captureInfo);

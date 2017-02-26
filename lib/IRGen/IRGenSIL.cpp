@@ -921,6 +921,7 @@ public:
 
   void visitCopyAddrInst(CopyAddrInst *i);
   void visitDestroyAddrInst(DestroyAddrInst *i);
+  void visitMakeAddrCountAtomicallyInst(MakeAddrCountAtomicallyInst *i); // dmu
 
   void visitBindMemoryInst(BindMemoryInst *i);
 
@@ -4712,14 +4713,25 @@ void IRGenSILFunction::visitCopyAddrInst(swift::CopyAddrInst *i) {
 // does not produce any values.
 void IRGenSILFunction::visitBindMemoryInst(swift::BindMemoryInst *) {}
 
-void IRGenSILFunction::visitDestroyAddrInst(swift::DestroyAddrInst *i) { // yyyyy
+void IRGenSILFunction::visitDestroyAddrInst(swift::DestroyAddrInst *i) {
   SILType addrTy = i->getOperand()->getType();
   const TypeInfo &addrTI = getTypeInfo(addrTy);
 
   // Otherwise, do the normal thing.
   Address base = getLoweredAddress(i->getOperand());
-  addrTI.destroy(*this, base, addrTy); //yyyyyy dmu
+  addrTI.destroy(*this, base, addrTy);
 }
+
+
+void IRGenSILFunction::visitMakeAddrCountAtomicallyInst(swift::MakeAddrCountAtomicallyInst *i) { // dmu
+  SILType addrTy = i->getOperand()->getType();
+  const TypeInfo &addrTI = getTypeInfo(addrTy);
+  
+  // Otherwise, do the normal thing.
+  Address base = getLoweredAddress(i->getOperand());
+  addrTI.makeContainedReferencesOfElementCountAtomically(*this, base, addrTy);
+}
+
 
 void IRGenSILFunction::visitCondFailInst(swift::CondFailInst *i) {
   Explosion e = getLoweredExplosion(i->getOperand());

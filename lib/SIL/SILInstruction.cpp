@@ -204,6 +204,10 @@ namespace {
       return true;
     }
 
+    bool visitMakeAddrCountAtomicallyInst(const MakeAddrCountAtomicallyInst *RHS) { // dmu
+      return true;
+    }
+      
     bool visitReleaseValueInst(const ReleaseValueInst *RHS) {
       return true;
     }

@@ -23,6 +23,7 @@ struct GuaranteedARCOptsVisitor
     : SILInstructionVisitor<GuaranteedARCOptsVisitor, bool> {
   bool visitValueBase(ValueBase *V) { return false; }
   bool visitDestroyAddrInst(DestroyAddrInst *DAI);
+  bool visitMakeAddrCountAtomicallyInst(MakeAddrCountAtomicallyInst *DAI); // dmu
   bool visitStrongReleaseInst(StrongReleaseInst *SRI);
   bool visitDestroyValueInst(DestroyValueInst *DVI);
   bool visitReleaseValueInst(ReleaseValueInst *RVI);
@@ -65,6 +66,11 @@ bool GuaranteedARCOptsVisitor::visitDestroyAddrInst(DestroyAddrInst *DAI) {
   // If we didn't find a copy_addr to fold this into, emit the destroy_addr.
   return false;
 }
+
+bool GuaranteedARCOptsVisitor::visitMakeAddrCountAtomicallyInst(MakeAddrCountAtomicallyInst *DAI) { //dmu
+  return false;
+}
+
 
 static bool couldReduceStrongRefcount(SILInstruction *Inst) {
   // Simple memory accesses cannot reduce refcounts.

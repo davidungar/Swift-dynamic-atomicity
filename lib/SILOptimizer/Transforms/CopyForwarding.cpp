@@ -232,6 +232,10 @@ public:
     Oper = &UserInst->getOperandRef();
     return true;
   }
+  bool visitMakeAddrCountAtomicallyInst(MakeAddrCountAtomicallyInst *UserInst) { // dmu
+    Oper = &UserInst->getOperandRef();
+    return true;
+  }
   bool visitUncheckedTakeEnumDataAddrInst(
     UncheckedTakeEnumDataAddrInst *UserInst) {
     Oper = &UserInst->getOperandRef();
@@ -349,6 +353,9 @@ public:
     return false;
   }
   bool visitDestroyAddrInst(DestroyAddrInst *UserInst) {
+    llvm_unreachable("illegal deinitialization");
+  }
+  bool visitMakeAddrCountAtomicallyInst(DestroyAddrInst *MakeAddrCountAtomicallyInst) { // dmu
     llvm_unreachable("illegal deinitialization");
   }
   bool visitUncheckedTakeEnumDataAddrInst(

@@ -239,6 +239,7 @@ bool swift::emitReferenceDependencies(DiagnosticEngine &diags,
     case DeclKind::Subscript:
     case DeclKind::Constructor:
     case DeclKind::Destructor:
+    case DeclKind::MakeContainedReferencesCountAtomically: // dmu
     case DeclKind::EnumElement:
       llvm_unreachable("cannot appear at the top level of a file");
     }
