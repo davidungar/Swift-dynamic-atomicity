@@ -138,13 +138,12 @@ void SILGenFunction::emitClassMemberDestruction(SILValue selfValue,
 void SILGenFunction::emitMakeContainedReferencesCountAtomically(SILValue selfValue, // dmu
                                                 ClassDecl *cd,
                                                 CleanupLocation cleanupLoc) { // yyyyyy dmu
-#error dmu here
   for (VarDecl *vd : cd->getStoredProperties()) {
     const TypeLowering &ti = getTypeLowering(vd->getType());
     if (!ti.isTrivial()) {
       SILValue addr = B.createRefElementAddr(cleanupLoc, selfValue, vd,
                                              ti.getLoweredType().getAddressType());
-      B.createDestroyAddr(cleanupLoc, addr);
+      B.createMakeAddrCountAtomically(cleanupLoc, addr);
     }
   }
 }

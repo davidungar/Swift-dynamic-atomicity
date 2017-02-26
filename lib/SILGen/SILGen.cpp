@@ -965,16 +965,13 @@ void SILGenModule::emitMakeContainedReferencesCountAtomically(ClassDecl *cd,  //
                                                               MakeContainedReferencesCountAtomicallyDecl *md) {
   emitAbstractFuncDecl(md);
   
-#error dmu here
-  {
-    SILDeclRef mdref(md, SILDeclRef::Kind::MakeContainedReferencesCountAtomically);
-    SILFunction *f = getFunction(mdref, ForDefinition);
-    preEmitFunction(mdref, md, f, md);
-    PrettyStackTraceSILFunction X("silgen emitMakeContainedReferencesCountAtomically", f);
-    SILGenFunction(*this, *f).emitMakeContainedReferencesCountAtomically(md);
-    f->setDebugScope(new (M) SILDebugScope(md, f));
-    postEmitFunction(mdref, f);
-  }
+  SILDeclRef mdref(md, SILDeclRef::Kind::MakeContainedReferencesCountAtomically);
+  SILFunction *f = getFunction(mdref, ForDefinition);
+  preEmitFunction(mdref, md, f, md);
+  PrettyStackTraceSILFunction X("silgen emitMakeContainedReferencesCountAtomically", f);
+  SILGenFunction(*this, *f).emitMakeContainedReferencesCountAtomically(md);
+  f->setDebugScope(new (M) SILDebugScope(md, f));
+  postEmitFunction(mdref, f);
 }
 
 

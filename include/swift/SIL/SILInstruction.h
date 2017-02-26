@@ -4505,6 +4505,19 @@ class DestroyAddrInst : public UnaryInstructionBase<ValueKind::DestroyAddrInst,
   DestroyAddrInst(SILDebugLocation DebugLoc, SILValue Operand)
       : UnaryInstructionBase(DebugLoc, Operand) {}
 };
+  
+/// TODO: (dmu) comment
+class MakeAddrCountAtomicallyInst // dmu
+  : public UnaryInstructionBase<ValueKind::MakeAddrCountAtomicallyInst,
+SILInstruction,
+/*HAS_RESULT*/ false>
+{
+  friend SILBuilder;
+  
+  MakeAddrCountAtomicallyInst(SILDebugLocation DebugLoc, SILValue Operand)
+  : UnaryInstructionBase(DebugLoc, Operand) {}
+};
+
 
 /// Project out the address of the value
 /// stored in the given Builtin.UnsafeValueBuffer.
