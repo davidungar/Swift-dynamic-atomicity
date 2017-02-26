@@ -106,6 +106,9 @@ struct SILDeclRef {
     /// destructor for the DestructorDecl in loc.
     Deallocator,
     
+    /// TODO: (dmu) comment
+    ContainedReferenceVisitor, // TODO: (dmu) rename yyyyyy
+    
     /// GlobalAccessor - this constant references the lazy-initializing
     /// accessor for the global VarDecl in loc.
     GlobalAccessor,

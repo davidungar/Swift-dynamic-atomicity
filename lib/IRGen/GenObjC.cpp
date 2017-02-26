@@ -525,6 +525,10 @@ namespace {
         Text = "dealloc";
         break;
           
+      case SILDeclRef::Kind::ContainedReferenceVisitor: // dmu
+        Text = "refVisitor";
+        break;
+          
       case SILDeclRef::Kind::Func:
         Text = cast<FuncDecl>(ref.getDecl())->getObjCSelector()
                  .getString(Buffer);

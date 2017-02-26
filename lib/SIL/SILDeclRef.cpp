@@ -681,6 +681,14 @@ static std::string mangleConstantOld(SILDeclRef c,
     mangler.mangleDestructorEntity(cast<DestructorDecl>(c.getDecl()),
                                    /*isDeallocating*/ false);
     return mangler.finalize();
+      
+  //   entity ::= context 'v'
+  case SILDeclRef::Kind::ContainedReferenceVisitor: // dmu
+    mangler.append(introducer);
+    mangler.mangleRefVisitortEntity(cast<DestructorDecl>(c.getDecl()));
+
+    return mangler.finalize();
+
 
   //   entity ::= context 'C' type                // allocating constructor
   case SILDeclRef::Kind::Allocator:
