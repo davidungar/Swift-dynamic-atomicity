@@ -7072,6 +7072,8 @@ DeclContext *ClangImporter::Implementation::importDeclContextImpl(
     return constructor;
   if (auto destructor = dyn_cast<DestructorDecl>(swiftDecl))
     return destructor;
+  if (auto maker = dyn_cast<MakeContainedReferencesCountAtomicallyDecl>(swiftDecl)) // dmu
+    return maker;
   return nullptr;
 }
 

@@ -1417,6 +1417,8 @@ bool swift::shouldPrint(const Decl *D, PrintOptions &Options) {
   if (Options.SkipDeinit && isa<DestructorDecl>(D)) {
     return false;
   }
+  
+  // TODO: (dmu) add for MakeContainedReferencesCountAtomicallyDecl
 
   if (Options.SkipImports && isa<ImportDecl>(D)) {
     return false;
@@ -2875,6 +2877,24 @@ void PrintAST::visitDestructorDecl(DestructorDecl *decl) {
   Printer << " ";
   visit(decl->getBody());
 }
+
+
+void PrintAST::visitMakeContainedReferencesCountAtomicallyDecl(MakeContainedReferencesCountAtomicallyDecl *decl) { // dmu
+  printDocumentationComment(decl);
+  printAttributes(decl);
+  recordDeclLoc(decl,
+                [&]{
+                  Printer << "mcrca";
+                });
+  
+  if (!Options.FunctionDefinitions || !decl->getBody()) {
+    return;
+  }
+  
+  Printer << " ";
+  visit(decl->getBody());
+}
+
 
 void PrintAST::visitInfixOperatorDecl(InfixOperatorDecl *decl) {
   Printer.printKeyword("infix");

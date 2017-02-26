@@ -830,7 +830,8 @@ void swift::lookupVisibleDecls(VisibleDeclConsumer &Consumer,
         namelookup::FindLocalVal(SM, Loc, Consumer).checkParameterList(P);
 
       // Constructors and destructors don't have 'self' in parameter patterns.
-      if (isa<ConstructorDecl>(AFD) || isa<DestructorDecl>(AFD))
+      if (isa<ConstructorDecl>(AFD) || isa<DestructorDecl>(AFD)
+          || is<MakeContainedReferencesCountAtomicallyDecl>(AFD)) // dmu
         if (auto *selfParam = AFD->getImplicitSelfDecl())
           Consumer.foundDecl(const_cast<ParamDecl*>(selfParam),
                              DeclVisibilityKind::FunctionParameter);

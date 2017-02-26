@@ -1434,6 +1434,9 @@ namespace {
       }
     }
 
+    void visitMakeContainedReferencesCountAtomicallyDecl(MakeContainedReferencesCountAtomicallyDecl *maker) { // dmu
+    }
+
     void addIVarInitializer() {
       if (auto entry = emitObjCIVarInitDestroyDescriptor(IGM, getClass(),
                                                          false)) {

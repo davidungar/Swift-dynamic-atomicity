@@ -1864,6 +1864,11 @@ CanAnyFunctionType TypeConverter::makeConstantInterfaceType(SILDeclRef c) {
                              c.kind == SILDeclRef::Kind::Deallocator,
                              Context,
                              c.isForeign);
+      
+  case SILDeclRef::Kind::MakeContainedReferencesCountAtomically: // dmu
+      return getDestructorInterfaceType(cast<MakeContainedReferencesCountAtomicallyDecl>(vd),
+                                        Context,
+                                        c.isForeign);
   
   case SILDeclRef::Kind::GlobalAccessor: {
     VarDecl *var = cast<VarDecl>(vd);

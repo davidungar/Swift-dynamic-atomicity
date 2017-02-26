@@ -2903,6 +2903,24 @@ void Serializer::writeDecl(const Decl *D) {
     writeParameterList(dtor->getParameterLists()[0]);
     break;
   }
+      
+  case DeclKind::MakeContainedReferencesCountAtomically: { // dmu
+    auto maker = cast<MakeContainedReferencesCountAtomicallyDecl>(D);
+    verifyAttrSerializable(maker);
+    
+    auto contextID = addDeclContextRef(maker->getDeclContext());
+    
+    unsigned abbrCode = DeclTypeAbbrCodes[MakeContainedReferencesCountAtomicallyLayout::Code];
+    MakeContainedReferencesCountAtomicallyLayout::emitRecord(Out, ScratchRecord, abbrCode,
+                                 contextID,
+                                 addGenericEnvironmentRef(
+                                                          maker->getGenericEnvironment()),
+                                 addTypeRef(maker->getInterfaceType()));
+    assert(maker->getParameterLists().size() == 1);
+    // Why is this writing out the param list for self?
+    writeParameterList(maker->getParameterLists()[0]);
+    break;
+  }
 
   case DeclKind::Module: {
     llvm_unreachable("FIXME: serialize these");

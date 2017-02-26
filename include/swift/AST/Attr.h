@@ -286,6 +286,7 @@ public:
 
     OnConstructor      = 1 << 24,
     OnDestructor       = 1 << 25,
+    OnMakeContainedReferencesCountAtomically = OnDestructor, // TODO: (dmu) likely wrong urgent
     OnFunc             = 1 << 26,
     OnEnumElement      = 1 << 27,
 

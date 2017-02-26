@@ -1016,14 +1016,22 @@ namespace decls_block {
     // conformance info (if any).
   >;
 
-  using DestructorLayout = BCRecordLayout<
-    DESTRUCTOR_DECL,
+  using MakeContainedReferencesCountAtomicallyLayout = BCRecordLayout<
+    MAKE_CONTAINED_REFERENCES_COUNT_ATOMICALLY_DECL,
     DeclContextIDField, // context decl
-    BCFixed<1>,  // implicit?
-    BCFixed<1>,  // objc?
     GenericEnvironmentIDField, // generic environment
     TypeIDField  // interface type
     // Trailed by a pattern for self.
+  >;
+  
+  using DestructorLayout = BCRecordLayout<
+  DESTRUCTOR_DECL,
+  DeclContextIDField, // context decl
+  BCFixed<1>,  // implicit?
+  BCFixed<1>,  // objc?
+  GenericEnvironmentIDField, // generic environment
+  TypeIDField  // interface type
+  // Trailed by a pattern for self.
   >;
 
   using ParameterListLayout = BCRecordLayout<

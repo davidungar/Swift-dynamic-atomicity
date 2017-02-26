@@ -1040,6 +1040,9 @@ public:
   bool typeCheckDestructorBodyUntil(DestructorDecl *DD,
                                     SourceLoc EndTypeCheckLoc);
 
+  bool typeCheckMakeContainedReferencesCountAtomicallyBodyUntil(MakeContainedReferencesCountAtomicallyDecl *MD, // dmu
+                                    SourceLoc EndTypeCheckLoc);
+
   void typeCheckClosureBody(ClosureExpr *closure);
 
   void typeCheckTopLevelCodeDecl(TopLevelCodeDecl *TLCD);
@@ -1232,6 +1235,9 @@ public:
   /// user-provided destructor.
   void addImplicitDestructor(ClassDecl *CD);
 
+  /// \brief Add function to visit all refs and make them count atomically
+  void addMakeContainedReferencesCountAtomically(ClassDecl *CD); // dmu
+  
   /// \brief Add the RawOptionSet (todo:, Equatable, and Hashable) methods to an
   /// imported NS_OPTIONS struct.
   void addImplicitStructConformances(StructDecl *ED);

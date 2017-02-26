@@ -1495,7 +1495,11 @@ SourceRange ASTScope::getSourceRangeImpl() const {
       SourceLoc startLoc;
       if (isa<DestructorDecl>(abstractFunctionParams.decl)) {
         startLoc = abstractFunctionParams.decl->getNameLoc();
-      } else {
+      }
+      if (isa<MakeContainedReferencesCountAtomicallyDecl>(abstractFunctionParams.decl)) { // dmu
+        startLoc = abstractFunctionParams.decl->getNameLoc();
+      }
+      else {
         startLoc = abstractFunctionParams.decl->getParameterList(1)
                      ->getLParenLoc();
       }

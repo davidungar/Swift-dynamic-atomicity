@@ -263,6 +263,10 @@ SILDeclRef::SILDeclRef(ValueDecl *vd, SILDeclRef::Kind kind,
     assert((kind == Kind::Destroyer || kind == Kind::Deallocator)
            && "can only create destroyer/deallocator SILDeclRef for dtor");
     naturalUncurryLevel = 0;
+  } else if (isa<MakeContainedReferencesCountAtomicallyDecl>(vd)) { // dmu
+    assert((kind == Kind::MakeContainedReferencesCountAtomically)
+           && "can only create makeContainedReferencesCountAtomicallyDecl SILDeclRef for maker");
+    naturalUncurryLevel = 0;
   } else if (isa<ClassDecl>(vd)) {
     assert((kind == Kind::IVarInitializer || kind == Kind::IVarDestroyer) &&
            "can only create ivar initializer/destroyer SILDeclRef for class");
@@ -325,6 +329,11 @@ SILDeclRef::SILDeclRef(SILDeclRef::Loc baseLoc,
     else if (auto dtor = dyn_cast<DestructorDecl>(vd)) {
       loc = dtor;
       kind = Kind::Deallocator;
+      naturalUncurryLevel = 0;
+    }
+    else if (auto maker = dyn_cast<MakeContainedReferencesCountAtomicallyDecl>(vd)) { // dmu
+      loc = maker;
+      kind = Kind::MakeContainedReferencesCountAtomically;
       naturalUncurryLevel = 0;
     }
     else {
@@ -683,13 +692,19 @@ static std::string mangleConstantOld(SILDeclRef c,
     return mangler.finalize();
       
   //   entity ::= context 'v'
-  case SILDeclRef::Kind::ContainedReferenceVisitor: // dmu
+  case SILDeclRef::Kind::MakeContainedReferencesCountAtomically: // dmu
     mangler.append(introducer);
     mangler.mangleRefVisitortEntity(cast<DestructorDecl>(c.getDecl()));
 
     return mangler.finalize();
 
 
+    //   entity ::= context 'm'                     // dmu
+  case SILDeclRef::Kind::MakeContainedReferencesCountAtomically: // dmu
+    mangler.append(introducer);
+    mangler.mangleMakeContainedReferencesCountAtomicallyEntity(cast<MakeContainedReferencesCountAtomicallyDecl>(c.getDecl()));
+    return mangler.finalize();
+      
   //   entity ::= context 'C' type                // allocating constructor
   case SILDeclRef::Kind::Allocator:
     mangler.append(introducer);
@@ -829,6 +844,10 @@ static std::string mangleConstant(SILDeclRef c, SILDeclRef::ManglingKind Kind) {
     return mangler.mangleDestructorEntity(cast<DestructorDecl>(c.getDecl()),
                                           /*isDeallocating*/ false,
                                           SKind);
+
+  case SILDeclRef::Kind::MakeContainedReferencesCountAtomically: // dmu
+    assert(!c.isCurried);
+    return mangler.mangleDestructorEntity(cast<MakeContainedReferencesCountAtomicallyDecl>(c.getDecl()));
 
   case SILDeclRef::Kind::Allocator:
     return mangler.mangleConstructorEntity(cast<ConstructorDecl>(c.getDecl()),

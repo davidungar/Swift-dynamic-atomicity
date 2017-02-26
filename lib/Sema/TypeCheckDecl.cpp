@@ -2558,7 +2558,7 @@ void swift::markAsObjC(TypeChecker &TC, ValueDecl *D,
   }
 
   // Make sure we have the appropriate bridging operations.
-  if (!isa<DestructorDecl>(D))
+  if (!isa<DestructorDecl>(D)  &&  !isa<MakeContainedReferencesCountAtomicallyDecl>(D)) // dmu
     checkBridgedFunctions(TC);
   TC.useObjectiveCBridgeableConformances(D->getInnermostDeclContext(),
                                          D->getInterfaceType());
@@ -4234,6 +4234,7 @@ public:
       TC.addImplicitConstructors(CD);
 
     TC.addImplicitDestructor(CD);
+    TC.addMakeContainedReferencesCountAtomically(CD); //dmu
 
     if (!IsFirstPass && !CD->isInvalid())
       TC.checkConformancesInContext(CD, CD);
@@ -6662,6 +6663,63 @@ public:
 
     TC.checkDeclAttributes(DD);
   }
+  
+  void visitMakeContainedReferencesCountAtomicallyDecl(MakeContainedReferencesCountAtomicallyDecl *MD) { // dmu TODO: (dmu) check
+    if (MD->isInvalid()) {
+      MD->setInterfaceType(ErrorType::get(TC.Context));
+      return;
+    }
+    
+    if (!IsFirstPass) {
+      if (MD->getBody())
+        TC.definedFunctions.push_back(MD);
+    }
+    
+    if (IsSecondPass ||
+        MD->hasInterfaceType() ||
+        MD->isBeingValidated()) {
+      return;
+    }
+    
+    MD->setIsBeingValidated();
+    
+    assert(MD->getDeclContext()->isTypeContext()
+           && "Decl parsing must prevent destructors outside of types!");
+    
+    TC.checkDeclAttributesEarly(MD);
+    if (!DD->hasAccessibility()) {
+      auto enclosingClass = cast<ClassDecl>(MD->getParent());
+      MD->setAccessibility(enclosingClass->getFormalAccess());
+    }
+    
+    configureImplicitSelf(TC, MD);
+    
+    if (MD->getDeclContext()->getGenericSignatureOfContext()) {
+      (void)TC.validateGenericFuncSignature(MD);
+      MD->setGenericEnvironment(
+                                DD->getDeclContext()->getGenericEnvironmentOfContext());
+    }
+    
+    // Set the context type of 'self'.
+    recordSelfContextType(MD);
+    
+    GenericTypeToArchetypeResolver resolver(MD);
+    if (semaFuncParamPatterns(MD, resolver)) {
+      MD->setInterfaceType(ErrorType::get(TC.Context));
+      MD->setInvalid();
+    }
+    
+    if (!MD->getGenericSignatureOfContext())
+      TC.configureInterfaceType(MD, MD->getGenericSignature());
+    
+    MD->setIsBeingValidated(false);
+    
+    // Do this before markAsObjC() to diagnose @nonobjc better
+    validateAttributes(TC, MD);
+    
+    TC.checkDeclAttributes(MD);
+  }
+
 };
 } // end anonymous namespace
 
@@ -8139,6 +8197,7 @@ static void validateAttributes(TypeChecker &TC, Decl *D) {
         error = diag::objc_observing_accessor;
     } else if (isa<ConstructorDecl>(D) ||
                isa<DestructorDecl>(D) ||
+               isa<MakeContainedReferencesCountAtomicallyDecl>(D) || // dmu
                isa<SubscriptDecl>(D) ||
                isa<VarDecl>(D)) {
       if (!checkObjCDeclContext(D))
@@ -8174,7 +8233,7 @@ static void validateAttributes(TypeChecker &TC, Decl *D) {
             ObjCSelector(TC.Context, 0, objcName->getSelectorPieces()[0]),
             /*implicit=*/false);
         }
-      } else if (isa<SubscriptDecl>(D) || isa<DestructorDecl>(D)) {
+      } else if (isa<SubscriptDecl>(D) || isa<DestructorDecl>(D) || isa<MakeContainedReferencesCountAtomicallyDecl>(D)) { // dmu
         TC.diagnose(objcAttr->getLParenLoc(),
                     isa<SubscriptDecl>(D)
                       ? diag::objc_name_subscript
@@ -8229,6 +8288,7 @@ static void validateAttributes(TypeChecker &TC, Decl *D) {
     auto func = dyn_cast<FuncDecl>(D);
     if (func &&
         (isa<DestructorDecl>(func) ||
+         isa<MakeContainedReferencesCountAtomicallyDecl>(func) || // TODO: (dmu) check
          !checkObjCDeclContext(func) ||
          (func->isAccessor() && !func->isGetterOrSetter()))) {
       error = diag::invalid_nonobjc_decl;

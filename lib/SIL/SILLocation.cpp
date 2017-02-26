@@ -136,6 +136,7 @@ DeclContext *SILLocation::getAsDeclContext() const {
     case DeclKind::Constructor: return cast<ConstructorDecl>(D);
     case DeclKind::Extension:   return cast<ExtensionDecl>(D);
     case DeclKind::Destructor:  return cast<DestructorDecl>(D);
+    case DeclKind::MakeContainedReferencesCountAtomically:  return cast<MakeContainedReferencesCountAtomicallyDecl>(D); // dmu
     default:                    return D->getDeclContext();
     }
   if (auto *E = getAsASTNode<Expr>())

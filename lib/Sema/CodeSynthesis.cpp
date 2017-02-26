@@ -2169,3 +2169,21 @@ void TypeChecker::addImplicitDestructor(ClassDecl *CD) {
   CD->addMember(DD);
   CD->setHasDestructor();
 }
+
+// factor with above?
+void TypeChecker::addMakeContainedReferencesCountAtomically(ClassDecl *CD) { // dmu
+  auto *selfDecl = ParamDecl::createSelf(CD->getLoc(), CD);
+  
+  auto *MCRCD = new (Context) MakeContainedReferencesCountAtomicallyDecl(Context.Id_mcrca,
+                                                                  CD->getLoc(),
+                                                                  selfDecl, CD);
+  MCRCD->setImplicit();
+  
+  // Type-check the declaration.
+  typeCheckDecl(MCRCD, /*isFirstPass=*/true);
+  
+  // Create an empty body for the destructor.
+  MCRCD->setBody(BraceStmt::create(Context, CD->getLoc(), { }, CD->getLoc(), true));
+  CD->addMember(MCRCD);
+}
+

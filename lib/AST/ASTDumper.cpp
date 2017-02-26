@@ -979,6 +979,12 @@ namespace {
       printAbstractFunctionDecl(DD);
       PrintWithColorRAII(OS, ParenthesisColor) << ')';
     }
+    
+    void visitMakeContainedReferencesCountAtomicallyDecl(MakeContainedReferencesCountAtomicallyDecl *MD) { // dmu
+      printCommonAFD(MD, "makeContainedReferencesCountAtomically_decl");
+      printAbstractFunctionDecl(MD);
+      PrintWithColorRAII(OS, ParenthesisColor) << ')';
+    }
 
     void visitTopLevelCodeDecl(TopLevelCodeDecl *TLCD) {
       printCommon(TLCD, "top_level_code_decl");
@@ -1179,6 +1185,8 @@ void swift::printContext(raw_ostream &os, DeclContext *dc) {
       os << "init";
     if (isa<DestructorDecl>(AFD))
       os << "deinit";
+    if (isa<MakeContainedReferencesCountAtomicallyDecl>(AFD)) // dmu
+      os << "makeContainedreferencesCountAtomically";
     break;
   }
   case DeclContextKind::SubscriptDecl:

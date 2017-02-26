@@ -3350,15 +3350,16 @@ namespace {
     void addMakeContainedReferencesCountAtomicallyFunction() { // dmu
       
       auto expansion = ResilienceExpansion::Minimal;
-      auto visitorRef = SILDeclRef(Target->getDestructor(),
-                                SILDeclRef::Kind::ContainedReferenceVisitor,
+      auto makeRef = SILDeclRef(Target->getDestructor(),
+                                SILDeclRef::Kind::MakeContainedReferencesCountAtomically,
                                 expansion);
-      SILFunction *visitorFunc = IGM.getSILModule().lookUpFunction(visitorRef);
+      SILFunction *makeFunc = IGM.getSILModule().lookUpFunction(makeRef);
       
-      if (visitorFunc) {
-        addWord(IGM.getAddrOfSILFunction(visitorFunc, NotForDefinition));
+      if (makeFunc) {
+        addWord(IGM.getAddrOfSILFunction(makeFunc, NotForDefinition));
       } else {
         // In case it is unimplemented
+
         addWord(llvm::ConstantPointerNull::get(IGM.FunctionPtrTy));
       }
    }

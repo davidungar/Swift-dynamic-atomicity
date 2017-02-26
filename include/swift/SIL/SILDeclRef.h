@@ -107,7 +107,7 @@ struct SILDeclRef {
     Deallocator,
     
     /// TODO: (dmu) comment
-    ContainedReferenceVisitor, // TODO: (dmu) rename yyyyyy
+    MakeContainedReferencesCountAtomically,
     
     /// GlobalAccessor - this constant references the lazy-initializing
     /// accessor for the global VarDecl in loc.
@@ -187,6 +187,7 @@ struct SILDeclRef {
   ///   SILDeclRef for the enum element.
   /// - If 'loc' is a DestructorDecl, this returns the Destructor SILDeclRef
   ///   for the containing ClassDecl.
+  /// TODO: (dmu) comment for MakeContainedReferencesCountAtomicallyDecl // dmu
   /// - If 'loc' is a global VarDecl, this returns its GlobalAccessor
   ///   SILDeclRef.
   /// If the uncurry level is unspecified or specified as NaturalUncurryLevel,

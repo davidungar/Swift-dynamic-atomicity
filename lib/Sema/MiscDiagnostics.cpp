@@ -3572,7 +3572,8 @@ Optional<DeclName> TypeChecker::omitNeedlessWords(AbstractFunctionDecl *afd) {
   if (!afd->hasInterfaceType())
     validateDecl(afd);
 
-  if (afd->isInvalid() || isa<DestructorDecl>(afd))
+  if (afd->isInvalid() || isa<DestructorDecl>(afd)
+      || isa<MakeContainedReferencesCountAtomicallyDecl>(afd)) // dmu
     return None;
 
   DeclName name = afd->getFullName();

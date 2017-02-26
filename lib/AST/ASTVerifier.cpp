@@ -547,6 +547,7 @@ struct ASTNodeBase {};
     FUNCTION_LIKE(AbstractClosureExpr)
     FUNCTION_LIKE(ConstructorDecl)
     FUNCTION_LIKE(DestructorDecl)
+    FUNCTION_LIKE(MakeContainedReferencesCountAtomicallyDecl) // dmu
     FUNCTION_LIKE(FuncDecl)
     SCOPE_LIKE(NominalTypeDecl)
     SCOPE_LIKE(ExtensionDecl)
@@ -2091,7 +2092,9 @@ struct ASTNodeBase {};
       PrettyStackTraceDecl debugStack("verifying AbstractFunctionDecl", AFD);
 
       // All of the parameter names should match.
-      if (!isa<DestructorDecl>(AFD)) { // Destructor has no non-self params.
+      if (!isa<DestructorDecl>(AFD)
+          && !isa<MakeContainedReferencesCountAtomicallyDecl>(AFD) // dmu
+          ) { // Destructor has no non-self params.
         auto paramNames = AFD->getFullName().getArgumentNames();
         bool checkParamNames = (bool)AFD->getFullName();
         bool hasSelf =
@@ -2209,6 +2212,25 @@ struct ASTNodeBase {};
 
       verifyParsedBase(DD);
     }
+    
+    void verifyParsed(MakeContainedReferencesCountAtomicallyDecl *DD) { // dmu
+      PrettyStackTraceDecl debugStack("verifying MakeContainedReferencesCountAtomicallyDecl", DD);
+      
+      if (DD->isGeneric()) {
+        Out << "MakeContainedReferencesCountAtomicallyDecl cannot be generic";
+        abort();
+      }
+      
+      auto *DC = DD->getDeclContext();
+      if (!isa<NominalTypeDecl>(DC) && !isa<ExtensionDecl>(DC) &&
+          !DD->isInvalid()) {
+        Out << "MakeContainedReferencesCountAtomicallyDecls outside nominal types and extensions "
+        "should be marked invalid";
+        abort();
+      }
+      
+      verifyParsedBase(DD);
+    }
 
     void verifyChecked(AbstractFunctionDecl *AFD) {
       PrettyStackTraceDecl debugStack("verifying AbstractFunctionDecl", AFD);
@@ -2312,6 +2334,17 @@ struct ASTNodeBase {};
       }
       verifyCheckedBase(DD);
     }
+    
+    void verifyChecked(MakeContainedReferencesCountAtomicallyDecl *DD) { // dmu
+      PrettyStackTraceDecl debugStack("verifying MakeContainedReferencesCountAtomicallyDecl", DD);
+      
+      auto *ND = DD->getDeclContext()->getAsNominalTypeOrNominalTypeExtensionContext();
+      if (!isa<ClassDecl>(ND) && !DD->isInvalid()) {
+        Out << "MakeContainedReferencesCountAtomicallyDecls outside classes should be marked invalid";
+        abort();
+      }
+      verifyCheckedBase(DD);
+    }
 
     void verifyChecked(FuncDecl *FD) {
       PrettyStackTraceDecl debugStack("verifying FuncDecl", FD);
@@ -2411,6 +2444,17 @@ struct ASTNodeBase {};
         if (NumDestructors != 1) {
           Out << "every class should have exactly one destructor, "
                  "explicitly provided or created by the type checker\n";
+          abort();
+        }
+        unsigned NumMakeContainedReferencesCountAtomicallys = 0;  // dmu
+        for (auto Member : CD->getMembers()) {
+          if (isa<MakeContainedReferencesCountAtomicallyDecl>(Member)) {
+            NumMakeContainedReferencesCountAtomicallys++;
+          }
+        }
+        if (NumMakeContainedReferencesCountAtomicallys != 1) {
+          Out << "every class should have exactly one makeContainedReferencesCountAtomically, "
+          "explicitly provided or created by the type checker\n";
           abort();
         }
       }

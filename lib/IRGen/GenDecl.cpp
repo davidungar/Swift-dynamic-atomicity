@@ -178,6 +178,8 @@ public:
   // Can't be added in an extension.
   void visitDestructorDecl(DestructorDecl *dtor) {}
 
+  void visitMakeContainedReferencesCountAtomicallyDecl(DestructorDecl *) {} // dmu
+
   void visitConstructorDecl(ConstructorDecl *constructor) {
     if (!requiresObjCMethodDescriptor(constructor)) return;
     llvm::Constant *name, *imp, *types;

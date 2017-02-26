@@ -2419,6 +2419,16 @@ DestructorDecl *ClassDecl::getDestructor() {
   return cast<DestructorDecl>(results.front());
 }
 
+
+MakeContainedReferencesCountAtomicallyDecl *ClassDecl::getMakeContainedReferencesCountAtomically() { // dmu
+  auto name = getASTContext().Id_makeContainedReferencesCountAtomically;
+  auto results = lookupDirect(name);
+  assert(!results.empty() && "Class without makeContainedReferencesCountAtomically?");
+  assert(results.size() == 1 && "More than one makeContainedReferencesCountAtomically?");
+  return cast<MakeContainedReferencesCountAtomicallyDecl>(results.front());
+}
+
+
 bool ClassDecl::inheritsSuperclassInitializers(LazyResolver *resolver) {
   // Check whether we already have a cached answer.
   switch (static_cast<StoredInheritsSuperclassInits>(
@@ -4147,6 +4157,10 @@ Type AbstractFunctionDecl::computeInterfaceSelfType(bool isInitializingCtor,
     // destructors of value types always have an implicitly inout self.
     isMutating = true;
   }
+} else if (isa<MakeContainedReferencesCountAtomicallyDecl>(this)) { // dmu
+  // traversal of value types always have an implicitly inout self. TODO: (dmu) really?
+  isMutating = true;
+}
 
   // 'static' functions have 'self' of type metatype<T>.
   if (isStatic)
@@ -4272,7 +4286,8 @@ bool AbstractFunctionDecl::argumentNameIsAPIByDefault() const {
     return true;
   }
 
-  assert(isa<DestructorDecl>(this));
+  assert(isa<DestructorDecl>(this)
+         || isa<MakeContainedReferencesCountAtomicallyDecl>(this)); // dmu
   return false;
 }
 
@@ -4660,6 +4675,26 @@ void DestructorDecl::setSelfDecl(ParamDecl *selfDecl) {
   }
 }
 
+// TODO: (dmu) factor with above??
+MakeContainedReferencesCountAtomicallyDecl::MakeContainedReferencesCountAtomicallyDecl(Identifier NameHack, // dmu
+                                                                                       SourceLoc makeLoc,                                                                            ParamDecl *selfDecl,
+                                                                                       DeclContext *Parent)
+: AbstractFunctionDecl(DeclKind::MakeContainedReferencesCountAtomically, Parent, NameHack, makeLoc,
+                       /*Throws=*/false, /*ThrowsLoc=*/SourceLoc(),
+                       /*NumParameterLists=*/1, nullptr) {
+  setSelfDecl(selfDecl);
+}
+
+void MakeContainedReferencesCountAtomicallyDecl::setSelfDecl(ParamDecl *selfDecl) { // dmu
+  if (selfDecl) {
+    SelfParameter = ParameterList::createWithoutLoc(selfDecl);
+    SelfParameter->setDeclContextOfParamDecls(this);
+  } else {
+    SelfParameter = nullptr;
+  }
+}
+
+
 SourceRange FuncDecl::getSourceRange() const {
   SourceLoc StartLoc = getStartLoc();
   if (StartLoc.isInvalid() ||
@@ -4942,6 +4977,11 @@ SourceRange DestructorDecl::getSourceRange() const {
     return getDestructorLoc();
 
   return { getDestructorLoc(), getBody()->getEndLoc() };
+}
+
+
+SourceRange MakeContainedReferencesCountAtomicallyDecl::getSourceRange() const { // dmu
+  return { SourceLoc(), SourceLoc() };
 }
 
 PrecedenceGroupDecl *

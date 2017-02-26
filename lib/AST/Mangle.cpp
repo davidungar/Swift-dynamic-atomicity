@@ -300,7 +300,10 @@ void Mangler::mangleContext(const DeclContext *ctx) {
     
     if (auto dtor = dyn_cast<DestructorDecl>(fn))
       return mangleDestructorEntity(dtor, /*deallocating*/ false);
-    
+
+    if (auto maker = dyn_cast<MakeContainedReferencesCountAtomicallyDecl>(fn)) // dmu
+      return mangleMakeContainedReferencesCountAtomicallyEntity(maker);
+
     return mangleEntity(fn, /*uncurry*/ 0);
   }
 
@@ -1591,6 +1594,12 @@ void Mangler::mangleDestructorEntity(const DestructorDecl *dtor,
   Buffer << (isDeallocating ? 'D' : 'd');
 }
 
+void Mangler::mangleMakeContainedReferencesCountAtomicallyEntity(const MakeContainedReferencesCountAtomicallyDecl *maker) { // dmu
+  Buffer << 'F';
+  mangleContextOf(maker);
+  Buffer << "M";
+}
+
 void Mangler::mangleIVarInitDestroyEntity(const ClassDecl *decl,
                                           bool isDestroyer) {
   Buffer << 'F';
@@ -1677,6 +1686,7 @@ void Mangler::mangleEntity(const ValueDecl *decl,
                            unsigned uncurryLevel) {
   assert(!isa<ConstructorDecl>(decl));
   assert(!isa<DestructorDecl>(decl));
+  assert(!isa<MakeContainedReferencesCountAtomicallyDecl>(decl)); // dmu
 
   // entity ::= static? entity-kind context entity-name
   if (decl->isStatic())

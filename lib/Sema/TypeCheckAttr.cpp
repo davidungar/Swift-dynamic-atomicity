@@ -574,7 +574,8 @@ bool AttributeEarlyChecker::visitAbstractAccessibilityAttr(
   }
 
   // And not on certain value decls.
-  if (isa<DestructorDecl>(D) || isa<EnumElementDecl>(D)) {
+  if (isa<DestructorDecl>(D) || isa<EnumElementDecl>(D)
+      ||  isa<MakeContainedReferencesCountAtomicallyDecl>(D)) { // dmu
     diagnoseAndRemoveAttr(attr, diag::invalid_decl_modifier, attr);
     return true;
   }

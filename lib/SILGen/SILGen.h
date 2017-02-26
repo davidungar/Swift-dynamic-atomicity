@@ -223,6 +223,7 @@ public:
   void visitSubscriptDecl(SubscriptDecl *d) {}
   void visitConstructorDecl(ConstructorDecl *d) {}
   void visitDestructorDecl(DestructorDecl *d) {}
+  void visitMakeContainedReferencesCountAtomicallyDecl(MakeContainedReferencesCountAtomicallyDecl *d) {} // dmu
   void visitModuleDecl(ModuleDecl *d) { }
 
   void visitFuncDecl(FuncDecl *fd);
@@ -257,6 +258,13 @@ public:
   /// the SILFunction to the current SILModule under the name
   /// SILDeclRef(cd, Destructor).
   void emitDestructor(ClassDecl *cd, DestructorDecl *dd);
+  
+  /// TODO (dmu): fix comment
+  /// Generates code for the given class's ... and adds
+  /// the SILFunction to the current SILModule under the name
+  /// SILDeclRef(cd, Destructor).
+  void emitMakeContainedReferencesCountAtomically(ClassDecl *cd, MakeContainedReferencesCountAtomicallyDecl *md); // dmu
+
 
   /// Generates the enum constructor for the given
   /// EnumElementDecl under the name SILDeclRef(decl).

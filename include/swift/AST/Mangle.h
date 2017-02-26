@@ -80,6 +80,7 @@ public:
   void mangleConstructorEntity(const ConstructorDecl *ctor, bool isAllocating,
                                unsigned uncurryingLevel);
   void mangleDestructorEntity(const DestructorDecl *decl, bool isDeallocating);
+  void mangleMakeContainedReferencesCountAtomicallyEntity(const MakeContainedReferencesCountAtomicallyDecl *decl, bool isDeallocating); // dmu
   void mangleIVarInitDestroyEntity(const ClassDecl *decl, bool isDestroyer);
   void mangleAccessorEntity(AccessorKind kind, AddressorKind addressorKind,
                             const AbstractStorageDecl *decl);

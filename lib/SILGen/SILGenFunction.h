@@ -472,6 +472,10 @@ public:
   /// emits the body code from the DestructorDecl, calls the base class 
   /// destructor, then implicitly releases the elements of the class.
   void emitDestroyingDestructor(DestructorDecl *dd);
+  
+  /// Generates code for a TODO: (dmu) comment
+  void emitMakeContainedReferencesCountAtomically(MakeContainedReferencesCountAtomicallyDecl *dd); // dmu
+
 
   /// Generates code for an artificial top-level function that starts an
   /// application based on a main class.
@@ -518,6 +522,13 @@ public:
   /// \param cd The class declaration whose members are being destroyed.
   void emitClassMemberDestruction(SILValue selfValue, ClassDecl *cd,
                                   CleanupLocation cleanupLoc);
+  
+  /// TODO: (dmu) comment
+  void emitMakeContainedReferencesCountAtomically(SILValue selfValue,
+                                                  ClassDecl *cd,
+                                                  CleanupLocation cleanupLoc);
+  
+  
   /// Generates code for a curry thunk from one uncurry level
   /// of a function to another.
   void emitCurryThunk(ValueDecl *fd,

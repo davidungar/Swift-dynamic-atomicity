@@ -2959,7 +2959,7 @@ performMemberLookup(ConstraintKind constraintKind, DeclName memberName,
   auto addChoice = [&](ValueDecl *cand, bool isBridged,
                        bool isUnwrappedOptional) {
     // Destructors cannot be referenced manually
-    if (isa<DestructorDecl>(cand)) {
+    if (isa<DestructorDecl>(cand) || isa<MakeContainedReferencesCountAtomicallyDecl>(cand)) { // dmu
       result.addUnviable(cand, MemberLookupResult::UR_DestructorInaccessible);
       return;
     }

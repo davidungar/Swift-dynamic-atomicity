@@ -87,6 +87,16 @@ std::string ASTMangler::mangleDestructorEntity(const DestructorDecl *decl,
   return finalize();
 }
 
+
+std::string ASTMangler::mangleMakeContainedReferencesCountAtomicallyEntity(const MakeContainedReferencesCountAtomicallyDecl *decl, // dmu
+                                               SymbolKind SKind) {
+  beginMangling();
+  appendMakeContainedReferencesCountAtomicallyEntity(decl);
+  appendSymbolKind(SKind);
+  return finalize();
+}
+
+
 std::string ASTMangler::mangleConstructorEntity(const ConstructorDecl *ctor,
                                                 bool isAllocating,
                                                 bool isCurried,
@@ -290,6 +300,8 @@ std::string ASTMangler::mangleDeclAsUSR(ValueDecl *Decl, StringRef USRPrefix) {
     appendConstructorEntity(Ctor, /*isAllocating=*/false);
   } else if (auto Dtor = dyn_cast<DestructorDecl>(Decl)) {
     appendDestructorEntity(Dtor, /*isDeallocating=*/false);
+  } else if (auto Maker = dyn_cast<MakeContainedReferencesCountAtomicallyDecl>(Decl)) { // dmu
+    appendMakeContainedReferencesCountAtomicallyEntity(Maker);
   } else if (auto NTD = dyn_cast<NominalTypeDecl>(Decl)) {
     appendNominalType(NTD);
   } else if (isa<TypeAliasDecl>(Decl) || isa<AssociatedTypeDecl>(Decl)) {
@@ -1074,6 +1086,9 @@ void ASTMangler::appendContext(const DeclContext *ctx) {
     
     if (auto dtor = dyn_cast<DestructorDecl>(fn))
       return appendDestructorEntity(dtor, /*deallocating*/ false);
+
+    if (auto maker = dyn_cast<MakeContainedReferencesCountAtomicallyDecl>(fn)) // dmu
+      return appendMakeContainedReferencesCountAtomicallyEntity(maker);
     
     return appendEntity(fn);
   }
@@ -1612,6 +1627,11 @@ void ASTMangler::appendDestructorEntity(const DestructorDecl *dtor,
   appendOperator(isDeallocating ? "fD" : "fd");
 }
 
+void ASTMangler::appendMakeContainedReferencesCountAtomicallyEntity(const MakeContainedReferencesCountAtomicallyDecl *maker ) {  // dmu
+  appendContextOf(maker);
+  appendOperator("ma");
+}
+
 static StringRef getCodeForAccessorKind(AccessorKind kind,
                                         AddressorKind addressorKind) {
   switch (kind) {
@@ -1673,6 +1693,7 @@ void ASTMangler::appendEntity(const ValueDecl *decl) {
   if (!DeclCtx) DeclCtx = decl->getInnermostDeclContext();
   assert(!isa<ConstructorDecl>(decl));
   assert(!isa<DestructorDecl>(decl));
+  assert(!isa<MakeContainedReferencesCountAtomicallyDecl>(decl)); // dmu
   
   // Handle accessors specially, they are mangled as modifiers on the accessed
   // declaration.

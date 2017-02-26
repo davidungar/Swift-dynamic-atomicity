@@ -873,6 +873,15 @@ public:
     // ResultDD->Attributes = ?;
     Result.Deinitializers.emplace_back(std::move(ResultDD));
   }
+
+  
+  void visitMakeContainedReferencesCountAtomicallyDecl(MakeContainedReferencesCountAtomicallyDecl *DD) { // dmu
+    auto ResultDD = std::make_shared<sma::MakeContainedReferencesCountAtomicallyDecl>();
+    ResultDD->Name.Name = "makeContainedReferencesCountAtomicallyDecl";
+    // FIXME
+    // ResultDD->Attributes = ?;
+    Result.Makers.emplace_back(std::move(ResultDD));
+  }
 };
 
 std::shared_ptr<sma::Module> createSMAModel(ModuleDecl *M) {

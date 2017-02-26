@@ -45,6 +45,7 @@ namespace swift {
   class ASTWalker;
   class ConstructorDecl;
   class DestructorDecl;
+  class MakeContainedReferencesCountAtomicallyDecl; // dmu
   class DiagnosticEngine;
   class DynamicSelfType;
   class Type;
@@ -3256,6 +3257,9 @@ public:
   
   /// Retrieve the destructor for this class.
   DestructorDecl *getDestructor();
+  
+  MakeContainedReferencesCountAtomicallyDecl *getMakeContainedReferencesCountAtomically(); // dmu
+
 
   /// Determine whether this class inherits the convenience initializers
   /// from its superclass.
@@ -5697,6 +5701,41 @@ public:
     return false;
   }
 };
+  
+class MakeContainedReferencesCountAtomicallyDecl : public AbstractFunctionDecl { // dmu
+  ParameterList *SelfParameter;
+public:
+  MakeContainedReferencesCountAtomicallyDecl(Identifier NameHack, // dmu
+                 SourceLoc makeLoc, ParamDecl *selfDecl, DeclContext *Parent);
+  
+  void setSelfDecl(ParamDecl *selfDecl);
+  
+  MutableArrayRef<ParameterList *> getParameterLists() {
+    return { &SelfParameter, 1 };
+  }
+  ArrayRef<const ParameterList *> getParameterLists() const {
+    return { &SelfParameter, 1 };
+  }
+  
+  
+  
+  SourceLoc getDestructorLoc() const { return getNameLoc(); }
+  SourceLoc getStartLoc() const { return getDestructorLoc(); }
+  SourceRange getSourceRange() const;
+  
+  static bool classof(const Decl *D) {
+    return D->getKind() == DeclKind::Destructor;
+  }
+  static bool classof(const AbstractFunctionDecl *D) {
+    return classof(static_cast<const Decl*>(D));
+  }
+  static bool classof(const DeclContext *DC) {
+    if (auto fn = dyn_cast<AbstractFunctionDecl>(DC))
+      return classof(fn);
+    return false;
+  }
+};
+
 
 /// Declares a precedence group.  For example:
 ///
@@ -6059,6 +6098,8 @@ AbstractFunctionDecl::getParameterLists() {
     return cast<ConstructorDecl>(this)->getParameterLists();
   case DeclKind::Destructor:
     return cast<DestructorDecl>(this)->getParameterLists();
+  case DeclKind::MakeContainedReferencesCountAtomically: // dmu
+    return cast<MakeContainedReferencesCountAtomicallyDecl>(this)->getParameterLists();
   case DeclKind::Func:
     return cast<FuncDecl>(this)->getParameterLists();
   }

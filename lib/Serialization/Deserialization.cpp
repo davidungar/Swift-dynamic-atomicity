@@ -3526,6 +3526,44 @@ Decl *ModuleFile::getDecl(DeclID DID, Optional<DeclContext *> ForcedContext) {
 
     break;
   }
+      
+      
+  case decls_block::MAKE_CONTAINED_REFERENCES_COUNT_ATOMICALLY_DECL: {
+    DeclContextID contextID;
+    GenericEnvironmentID genericEnvID;
+    TypeID interfaceID;
+    
+    decls_block::MakeContainedReferencesCountAtomicallyLayout::readRecord(scratch, contextID,
+                                                                          genericEnvID,
+                                                                          interfaceID);
+    
+    DeclContext *MC = getDeclContext(contextID);
+    if (declOrOffset.isComplete())
+      return declOrOffset;
+    
+    auto make = createDecl<MakeContainedReferencesCountAtomicallyDecl>(ctx.Id_mcrca, // dmu
+                                                                       SourceLoc(),
+                                                                       /*selfpat*/nullptr, MC);
+    declOrOffset = make;
+    
+    configureGenericEnvironment(make, genericEnvID);
+    
+    make->setAccessibility(std::max(cast<ClassDecl>(MC)->getFormalAccess(),
+                                    Accessibility::Internal));
+    auto *selfParams = readParameterList();
+    selfParams->get(0)->setImplicit();  // self is implicit.
+    
+    assert(selfParams && "Didn't get self pattern?");
+    make->setSelfDecl(selfParams->get(0));
+    
+    auto interfaceType = getType(interfaceID);
+    make->setInterfaceType(interfaceType);
+    
+    make->setImplicit();
+    
+    break;
+  }
+
 
   case decls_block::XREF: {
     assert(DAttrs == nullptr);

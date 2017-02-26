@@ -292,6 +292,16 @@ public:
         addEntry(SILDeclRef(theClass, SILDeclRef::Kind::IVarDestroyer));
     }
   }
+  
+  void visitMakeContainedReferencesCountAtomicallyDecl(MakeContainedReferencesCountAtomicallyDecl *md) { // dmu
+    if (md->getParent()->getAsClassOrClassExtensionContext() == theClass) {
+      // Add the ... to the vtable just for the purpose
+      // that it is referenced and cannot be eliminated by dead function removal.
+      // In reality, the ... is referenced directly from
+      // the HeapMetadata for the class.
+      addEntry(SILDeclRef(md, SILDeclRef::Kind::MakeContainedReferencesCountAtomically));
+    }
+  }
 
   void visitSubscriptDecl(SubscriptDecl *sd) {
     // Note: dynamically-dispatched properties have their getter and setter
@@ -382,6 +392,12 @@ public:
     assert(isa<ClassDecl>(theType) && "destructor in a non-class type");
     ProfilerRAII Profiler(SGM, dd);
     SGM.emitDestructor(cast<ClassDecl>(theType), dd);
+  }
+
+  void visitMakeContainedReferencesCountAtomicallyDecl(MakeContainedReferencesCountAtomicallyDecl *md) { // dmu
+    assert(isa<ClassDecl>(theType) && "makeContainedReferencesCountAtomicallyDecl in a non-class type");
+    ProfilerRAII Profiler(SGM, md);
+    SGM.emitMakeContainedReferencesCountAtomically(cast<ClassDecl>(theType), md);
   }
 
   void visitEnumCaseDecl(EnumCaseDecl *ecd) {}
@@ -475,6 +491,9 @@ public:
       SGM.emitObjCConstructorThunk(cd);
   }
   void visitDestructorDecl(DestructorDecl *dd) {
+    llvm_unreachable("destructor in extension?!");
+  }
+  void visitMakeContainedReferencesCountAtomicallyDecl(MakeContainedReferencesCountAtomicallyDecl *) {  // dmu
     llvm_unreachable("destructor in extension?!");
   }
 
