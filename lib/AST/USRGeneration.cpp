@@ -111,8 +111,10 @@ bool ide::printDeclUSR(const ValueDecl *D, raw_ostream &OS) {
     return true;
 
   // FIXME: mangling 'self' in destructors crashes in mangler.
-  if (isa<ParamDecl>(VD) && (isa<DestructorDecl>(VD->getDeclContext()))
-      || isa<MakeContainedReferencesCountAtomicallyDecl>(VD->getDeclContext())) // dmu
+  if (isa<ParamDecl>(VD)
+      && (
+          isa<DestructorDecl>(VD->getDeclContext())
+          || isa<MakeContainedReferencesCountAtomicallyDecl>(VD->getDeclContext()))) // dmu
     return true;
 
   std::string Old = getUSRSpacePrefix().str();
@@ -126,7 +128,7 @@ bool ide::printDeclUSR(const ValueDecl *D, raw_ostream &OS) {
   } else if (auto Dtor = dyn_cast<DestructorDecl>(VD)) {
     Mangler.mangleDestructorEntity(Dtor, /*isDeallocating=*/false);
   } else if (auto Maker = dyn_cast<MakeContainedReferencesCountAtomicallyDecl>(VD)) { // dmu
-    Mangler.mangleDestructorEntity(Maker);
+    Mangler.mangleMakeContainedReferencesCountAtomicallyEntity(Maker);
   } else if (auto NTD = dyn_cast<NominalTypeDecl>(VD)) {
     Mangler.mangleNominalType(NTD);
   } else if (isa<TypeAliasDecl>(VD) || isa<AssociatedTypeDecl>(VD)) {

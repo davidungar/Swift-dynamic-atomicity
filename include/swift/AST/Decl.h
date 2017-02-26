@@ -123,6 +123,7 @@ enum class DescriptiveDeclKind : uint8_t {
   Subscript,
   Constructor,
   Destructor,
+  MakeContainedReferencesCountAtomically, // dmu
   LocalFunction,
   GlobalFunction,
   OperatorFunction,

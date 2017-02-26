@@ -1776,6 +1776,8 @@ static void checkAccessibility(TypeChecker &TC, const Decl *D) {
   case DeclKind::Destructor:
     // Always correct.
     return;
+  case DeclKind::MakeContainedReferencesCountAtomically: // dmu
+      return;
 
   case DeclKind::PatternBinding: {
     auto PBD = cast<PatternBindingDecl>(D);
@@ -6687,7 +6689,7 @@ public:
            && "Decl parsing must prevent destructors outside of types!");
     
     TC.checkDeclAttributesEarly(MD);
-    if (!DD->hasAccessibility()) {
+    if (!MD->hasAccessibility()) {
       auto enclosingClass = cast<ClassDecl>(MD->getParent());
       MD->setAccessibility(enclosingClass->getFormalAccess());
     }
@@ -6697,7 +6699,7 @@ public:
     if (MD->getDeclContext()->getGenericSignatureOfContext()) {
       (void)TC.validateGenericFuncSignature(MD);
       MD->setGenericEnvironment(
-                                DD->getDeclContext()->getGenericEnvironmentOfContext());
+                                MD->getDeclContext()->getGenericEnvironmentOfContext());
     }
     
     // Set the context type of 'self'.
@@ -7291,7 +7293,9 @@ void TypeChecker::validateDecl(ValueDecl *D) {
     break;
 
   case DeclKind::Destructor:
-  case DeclKind::EnumElement: {
+  case DeclKind::EnumElement:
+  case DeclKind::MakeContainedReferencesCountAtomically: // dmu (needed?)
+    {
     if (D->hasInterfaceType())
       return;
     if (auto container = dyn_cast<NominalTypeDecl>(D->getDeclContext())) {
@@ -7360,6 +7364,7 @@ void TypeChecker::validateAccessibility(ValueDecl *D) {
     break;
 
   case DeclKind::Destructor:
+  case DeclKind::MakeContainedReferencesCountAtomically: // dmu blind clone
   case DeclKind::EnumElement: {
     if (D->isInvalid()) {
       D->setAccessibility(Accessibility::Private);

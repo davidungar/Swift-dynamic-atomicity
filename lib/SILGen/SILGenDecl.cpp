@@ -1334,6 +1334,7 @@ void SILGenModule::emitExternalDefinition(Decl *d) {
   case DeclKind::Import:
   case DeclKind::Subscript:
   case DeclKind::Destructor:
+  case DeclKind::MakeContainedReferencesCountAtomically: // dmu
   case DeclKind::InfixOperator:
   case DeclKind::PrefixOperator:
   case DeclKind::PostfixOperator:

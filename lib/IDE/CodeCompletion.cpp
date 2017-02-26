@@ -562,6 +562,8 @@ CodeCompletionResult::getCodeCompletionDeclKind(const Decl *D) {
     return CodeCompletionDeclKind::Constructor;
   case DeclKind::Destructor:
     return CodeCompletionDeclKind::Destructor;
+  case DeclKind::MakeContainedReferencesCountAtomically: // dmu
+    return CodeCompletionDeclKind::MakeContainedReferencesCountAtomically;
   case DeclKind::Func: {
     auto DC = D->getDeclContext();
     auto FD = cast<FuncDecl>(D);
@@ -639,6 +641,9 @@ void CodeCompletionResult::print(raw_ostream &OS) const {
       break;
     case CodeCompletionDeclKind::Destructor:
       Prefix.append("[Destructor]");
+      break;
+    case CodeCompletionDeclKind::MakeContainedReferencesCountAtomically: // dmu
+      Prefix.append("[MakeContainedReferencesCountAtomically]");
       break;
     case CodeCompletionDeclKind::Subscript:
       Prefix.append("[Subscript]");
@@ -5502,6 +5507,7 @@ void swift::ide::copyCodeCompletionResults(CodeCompletionResultSink &targetSink,
       case CodeCompletionDeclKind::EnumElement:
       case CodeCompletionDeclKind::Constructor:
       case CodeCompletionDeclKind::Destructor:
+      case CodeCompletionDeclKind::MakeContainedReferencesCountAtomically: // dmu
       case CodeCompletionDeclKind::Subscript:
       case CodeCompletionDeclKind::StaticMethod:
       case CodeCompletionDeclKind::InstanceMethod:

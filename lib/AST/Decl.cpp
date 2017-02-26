@@ -125,6 +125,7 @@ DescriptiveDeclKind Decl::getDescriptiveKind() const {
   TRIVIAL_KIND(Subscript);
   TRIVIAL_KIND(Constructor);
   TRIVIAL_KIND(Destructor);
+  TRIVIAL_KIND(MakeContainedReferencesCountAtomically); // dmu
   TRIVIAL_KIND(EnumElement);
   TRIVIAL_KIND(Param);
   TRIVIAL_KIND(Module);
@@ -247,6 +248,7 @@ StringRef Decl::getDescriptiveKindName(DescriptiveDeclKind K) {
   ENTRY(Subscript, "subscript");
   ENTRY(Constructor, "initializer");
   ENTRY(Destructor, "deinitializer");
+  ENTRY(MakeContainedReferencesCountAtomically, "makeContainedReferencesCountAtomically"); // dmu TODO: (dmu) fix grammar
   ENTRY(LocalFunction, "local function");
   ENTRY(GlobalFunction, "global function");
   ENTRY(OperatorFunction, "operator function");
@@ -589,6 +591,7 @@ ImportKind ImportDecl::getBestImportKind(const ValueDecl *VD) {
   case DeclKind::AssociatedType:
   case DeclKind::Constructor:
   case DeclKind::Destructor:
+  case DeclKind::MakeContainedReferencesCountAtomically: // dmu
   case DeclKind::GenericTypeParam:
   case DeclKind::Subscript:
   case DeclKind::EnumElement:
@@ -1292,6 +1295,7 @@ bool ValueDecl::isDefinition() const {
   case DeclKind::Func:
   case DeclKind::Constructor:
   case DeclKind::Destructor:
+  case DeclKind::MakeContainedReferencesCountAtomically: // dmu 
     return cast<AbstractFunctionDecl>(this)->hasBody();
 
   case DeclKind::Subscript:
@@ -1344,6 +1348,7 @@ bool ValueDecl::isInstanceMember() const {
     return false;
 
   case DeclKind::Destructor:
+  case DeclKind::MakeContainedReferencesCountAtomically: // dmu
     // Destructors are technically instance members, although they
     // can't actually be referenced as such.
     return true;
@@ -2421,7 +2426,7 @@ DestructorDecl *ClassDecl::getDestructor() {
 
 
 MakeContainedReferencesCountAtomicallyDecl *ClassDecl::getMakeContainedReferencesCountAtomically() { // dmu
-  auto name = getASTContext().Id_makeContainedReferencesCountAtomically;
+  auto name = getASTContext().Id_mcrca;
   auto results = lookupDirect(name);
   assert(!results.empty() && "Class without makeContainedReferencesCountAtomically?");
   assert(results.size() == 1 && "More than one makeContainedReferencesCountAtomically?");
@@ -4156,11 +4161,10 @@ Type AbstractFunctionDecl::computeInterfaceSelfType(bool isInitializingCtor,
   } else if (isa<DestructorDecl>(this)) {
     // destructors of value types always have an implicitly inout self.
     isMutating = true;
+  } else if (isa<MakeContainedReferencesCountAtomicallyDecl>(this)) { // dmu
+    // traversal of value types always have an implicitly inout self. TODO: (dmu) really?
+    isMutating = true;
   }
-} else if (isa<MakeContainedReferencesCountAtomicallyDecl>(this)) { // dmu
-  // traversal of value types always have an implicitly inout self. TODO: (dmu) really?
-  isMutating = true;
-}
 
   // 'static' functions have 'self' of type metatype<T>.
   if (isStatic)

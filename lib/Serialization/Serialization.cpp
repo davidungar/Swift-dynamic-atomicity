@@ -1467,6 +1467,7 @@ static bool shouldSerializeMember(Decl *D) {
   case DeclKind::Protocol:
   case DeclKind::Constructor:
   case DeclKind::Destructor:
+  case DeclKind::MakeContainedReferencesCountAtomically: // dmu
   case DeclKind::PatternBinding:
   case DeclKind::Subscript:
   case DeclKind::TypeAlias:
@@ -1840,6 +1841,7 @@ DEF_VERIFY_ATTR(Var)
 DEF_VERIFY_ATTR(Subscript)
 DEF_VERIFY_ATTR(Constructor)
 DEF_VERIFY_ATTR(Destructor)
+DEF_VERIFY_ATTR(MakeContainedReferencesCountAtomically) // dmu
 
 #undef DEF_VERIFY_ATTR
 #else

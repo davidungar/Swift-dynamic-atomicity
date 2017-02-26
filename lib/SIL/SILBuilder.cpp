@@ -178,6 +178,13 @@ SILBuilder::emitDestroyAddr(SILLocation Loc, SILValue Operand) {
   return createDestroyAddr(Loc, Operand);
 }
 
+
+MakeAddrCountAtomicallyInst*
+SILBuilder::emitMakeAddrCountAtomically(SILLocation Loc, SILValue Operand) { // dmu
+  return createMakeAddrCountAtomically(Loc, Operand);
+}
+
+
 static bool couldReduceStrongRefcount(SILInstruction *Inst) {
   // Simple memory accesses cannot reduce refcounts.
   if (isa<LoadInst>(Inst) || isa<StoreInst>(Inst) ||

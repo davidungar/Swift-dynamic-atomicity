@@ -1560,7 +1560,10 @@ void IRGenModule::emitGlobalDecl(Decl *D) {
 
   case DeclKind::Destructor:
     llvm_unreachable("there are no global destructor");
-
+      
+  case DeclKind::MakeContainedReferencesCountAtomically: // dmu
+    llvm_unreachable("there is no global makeContainedReferencesCountAtomically");
+      
   case DeclKind::TypeAlias:
   case DeclKind::GenericTypeParam:
   case DeclKind::AssociatedType:
@@ -2929,6 +2932,7 @@ void IRGenModule::emitNestedTypeDecls(DeclRange members) {
     case DeclKind::Func:
     case DeclKind::Constructor:
     case DeclKind::Destructor:
+    case DeclKind::MakeContainedReferencesCountAtomically: // dmu
     case DeclKind::EnumCase:
     case DeclKind::EnumElement:
       // Skip non-type members.

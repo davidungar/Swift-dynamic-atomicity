@@ -134,7 +134,7 @@ void SILGenFunction::emitClassMemberDestruction(SILValue selfValue,
     }
   }
 }
-
+#error dmu is thisd called?
 void SILGenFunction::emitMakeContainedReferencesCountAtomically(SILValue selfValue, // dmu
                                                 ClassDecl *cd,
                                                 CleanupLocation cleanupLoc) { // yyyyyy dmu

@@ -322,6 +322,7 @@ static void doDynamicLookup(VisibleDeclConsumer &Consumer,
       // Initializers cannot be found by dynamic lookup.
       case DeclKind::Constructor:
       case DeclKind::Destructor:
+      case DeclKind::MakeContainedReferencesCountAtomically: // dmu
         return;
 
       // These cases are probably impossible here but can also just
@@ -831,7 +832,7 @@ void swift::lookupVisibleDecls(VisibleDeclConsumer &Consumer,
 
       // Constructors and destructors don't have 'self' in parameter patterns.
       if (isa<ConstructorDecl>(AFD) || isa<DestructorDecl>(AFD)
-          || is<MakeContainedReferencesCountAtomicallyDecl>(AFD)) // dmu
+          || isa<MakeContainedReferencesCountAtomicallyDecl>(AFD)) // dmu
         if (auto *selfParam = AFD->getImplicitSelfDecl())
           Consumer.foundDecl(const_cast<ParamDecl*>(selfParam),
                              DeclVisibilityKind::FunctionParameter);

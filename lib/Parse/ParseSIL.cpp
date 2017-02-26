@@ -2097,6 +2097,7 @@ bool SILParser::parseSILInstruction(SILBasicBlock *BB, SILBuilder &B) {
     UNARY_INSTRUCTION(IsUnique)
     UNARY_INSTRUCTION(IsUniqueOrPinned)
     UNARY_INSTRUCTION(DestroyAddr)
+    UNARY_INSTRUCTION(MakeAddrCountAtomically) // dmu
     UNARY_INSTRUCTION(CopyValue)
     UNARY_INSTRUCTION(CopyUnownedValue)
     UNARY_INSTRUCTION(DestroyValue)

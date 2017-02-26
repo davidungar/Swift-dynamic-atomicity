@@ -1593,7 +1593,7 @@ bool TypeChecker::typeCheckDestructorBodyUntil(DestructorDecl *DD,
 }
 
 
-bool TypeChecker::typeCheckMakeContainedReferencesCountAtomicallyBodyUntil(DestructorDecl *MD,
+bool TypeChecker::typeCheckMakeContainedReferencesCountAtomicallyBodyUntil(MakeContainedReferencesCountAtomicallyDecl *MD,
                                                SourceLoc EndTypeCheckLoc) {
   return false;
 }

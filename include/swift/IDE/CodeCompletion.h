@@ -397,6 +397,7 @@ enum class CodeCompletionDeclKind {
   GenericTypeParam,
   Constructor,
   Destructor,
+  MakeContainedReferencesCountAtomically, // dmu
   Subscript,
   StaticMethod,
   InstanceMethod,

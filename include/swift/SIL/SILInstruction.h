@@ -4508,9 +4508,10 @@ class DestroyAddrInst : public UnaryInstructionBase<ValueKind::DestroyAddrInst,
   
 /// TODO: (dmu) comment
 class MakeAddrCountAtomicallyInst // dmu
-  : public UnaryInstructionBase<ValueKind::MakeAddrCountAtomicallyInst,
-SILInstruction,
-/*HAS_RESULT*/ false>
+  : public UnaryInstructionBase<
+  ValueKind::MakeAddrCountAtomicallyInst,
+  SILInstruction,
+  /*HAS_RESULT*/ false>
 {
   friend SILBuilder;
   

@@ -691,15 +691,7 @@ static std::string mangleConstantOld(SILDeclRef c,
                                    /*isDeallocating*/ false);
     return mangler.finalize();
       
-  //   entity ::= context 'v'
-  case SILDeclRef::Kind::MakeContainedReferencesCountAtomically: // dmu
-    mangler.append(introducer);
-    mangler.mangleRefVisitortEntity(cast<DestructorDecl>(c.getDecl()));
-
-    return mangler.finalize();
-
-
-    //   entity ::= context 'm'                     // dmu
+    //   entity ::= context 'v'                     // dmu TODO: (dmu) is v right?
   case SILDeclRef::Kind::MakeContainedReferencesCountAtomically: // dmu
     mangler.append(introducer);
     mangler.mangleMakeContainedReferencesCountAtomicallyEntity(cast<MakeContainedReferencesCountAtomicallyDecl>(c.getDecl()));
@@ -847,7 +839,7 @@ static std::string mangleConstant(SILDeclRef c, SILDeclRef::ManglingKind Kind) {
 
   case SILDeclRef::Kind::MakeContainedReferencesCountAtomically: // dmu
     assert(!c.isCurried);
-    return mangler.mangleDestructorEntity(cast<MakeContainedReferencesCountAtomicallyDecl>(c.getDecl()));
+    return mangler.mangleMakeContainedReferencesCountAtomicallyEntity(cast<MakeContainedReferencesCountAtomicallyDecl>(c.getDecl()), SKind);
 
   case SILDeclRef::Kind::Allocator:
     return mangler.mangleConstructorEntity(cast<ConstructorDecl>(c.getDecl()),

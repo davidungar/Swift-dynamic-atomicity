@@ -1524,13 +1524,6 @@ public:
       return nullptr;
     return U.get<DestroyAddrInst *>();
   }
-  // TODO: (dmu) comment
-  MakeAddrCountAtomicallyInst *emitMakeAddrCountAtomicallyAndFold(SILLocation Loc, SILValue Operand) { // dmu
-    auto U = emitMakeAddrCountAtomically(Loc, Operand);
-    if (U.isNull() || !U.is<MakeAddrCountAtomicallyInst *>())
-      return nullptr;
-    return U.get<MakeAddrCountAtomicallyInst *>();
-  }
 
   /// Perform a strong_release instruction at the current location, attempting
   /// to fold it locally into nearby retain instructions or emitting an explicit
@@ -1610,7 +1603,7 @@ public:
   emitDestroyAddr(SILLocation Loc, SILValue Operand);
 
   /// TODO: (dmu) comment
-  PointerUnion<CopyAddrInst *, MakeAddrCountAtomicallyInst *> // dmu
+  MakeAddrCountAtomicallyInst* // dmu
   emitMakeAddrCountAtomically(SILLocation Loc, SILValue Operand);
 
   /// Emit a destroy_value instruction at the current location, attempting to
