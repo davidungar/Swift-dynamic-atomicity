@@ -804,7 +804,7 @@ public:
 
   void visitLoadInst(LoadInst *i);
   void visitStoreInst(StoreInst *i);
-  void visitRefCountStoreBarrierInst(RefCountStoreBarrierInst *i); // dmu
+  void visitStoreBarrier_dmu_Inst(StoreBarrier_dmu_Inst *i); // dmu
   void visitAssignInst(AssignInst *i) {
     llvm_unreachable("assign is not valid in canonical SIL");
   }
@@ -3199,9 +3199,9 @@ void IRGenSILFunction::visitStoreInst(swift::StoreInst *i) {
 
   const auto &typeInfo = cast<LoadableTypeInfo>(getTypeInfo(objType));
 
-  // TODO: (dmu check) how much of this now redundant with visitRefCountStoreBarrierInst
+  // TODO: (dmu check) how much of this now redundant with visitStoreBarrier_dmu_Inst
   // TODO: (dmu check) what about other store instructions & assign? Does this code need to be there?
-  // TODO: (dmu cleanup) factor this code and what is in visitRefCountStoreBarrierInst
+  // TODO: (dmu cleanup) factor this code and what is in visitStoreBarrier_dmu_Inst
   // move into typeinfo???, yes, ClassTypeInfo???
   // cannot be here; could be a record type
   // seems OK to use only source typeInfo
@@ -3230,15 +3230,15 @@ void IRGenSILFunction::visitStoreInst(swift::StoreInst *i) {
 }
 
 // dmu
-void IRGenSILFunction::visitRefCountStoreBarrierInst(RefCountStoreBarrierInst *i) { //dmu
-  Address dest = getLoweredAddress(i->getDest()); // TODO: (dmu optimization) in DefiniteInitialization.cpp, where createRefCountStoreBarrier is called, could pass in loaded value
+void IRGenSILFunction::visitStoreBarrier_dmu_Inst(StoreBarrier_dmu_Inst *i) { //dmu
+  Address dest = getLoweredAddress(i->getDest()); // TODO: (dmu optimization) in DefiniteInitialization.cpp, where createStoreBarrier_dmu_ is called, could pass in loaded value
   SILType objType = i->getSrc()->getType().getObjectType();
   
   const auto &typeInfo = cast<LoadableTypeInfo>(getTypeInfo(objType));
   
   // TODO: (dmu check) how much of this now redundant with visitStoreInst
   // TODO: (dmu check) what about other store instructions & assign? Does this code need to be there?
-  // TODO: (dmu cleanup) factor this code and what is in visitRefCountStoreBarrierInst
+  // TODO: (dmu cleanup) factor this code and what is in visitStoreBarrier_dmu_Inst
   // move into typeinfo???, yes, ClassTypeInfo???
   // cannot be here; could be a record type
   // seems OK to use only source typeInfo

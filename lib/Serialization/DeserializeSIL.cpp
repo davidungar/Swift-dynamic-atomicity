@@ -1425,11 +1425,11 @@ bool SILDeserializer::readSILInstruction(SILFunction *Fn, SILBasicBlock *BB,
     break;
   }
   // TODO: (dmu cleanup) cloned StoreBorrowInst case below. Factor??
-  case ValueKind::RefCountStoreBarrierInst: {
+  case ValueKind::StoreBarrier_dmu_Inst: {
     auto Ty = MF->getType(TyID);
     SILType addrType = getSILType(Ty, (SILValueCategory)TyCategory);
     SILType ValType = addrType.getObjectType();
-    ResultVal = Builder.createRefCountStoreBarrier(Loc,
+    ResultVal = Builder.createStoreBarrier_dmu_(Loc,
                                                    getLocalValue(ValID,   ValType),
                                                    getLocalValue(ValID2, addrType));
     break;

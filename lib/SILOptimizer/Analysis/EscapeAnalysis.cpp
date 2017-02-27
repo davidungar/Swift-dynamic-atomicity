@@ -1429,7 +1429,7 @@ void EscapeAnalysis::analyzeInstruction(SILInstruction *I,
     break;
     case ValueKind::StoreInst:
     case ValueKind::StoreWeakInst:
-    case ValueKind::RefCountStoreBarrierInst: // TODO: (dmu check) blind store clone
+    case ValueKind::StoreBarrier_dmu_Inst: // TODO: (dmu check) blind store clone
       if (CGNode *ValueNode = ConGraph->getNode(I->getOperand(StoreInst::Src),
                                                 this)) {
         CGNode *AddrNode = ConGraph->getNode(I->getOperand(StoreInst::Dest),

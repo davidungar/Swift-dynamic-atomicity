@@ -1735,20 +1735,20 @@ public:
 };
 
   
-/// TODO: (dmu cleanup) write better comment: RefCountStoreBarrierInst - Checks bit in dest and if set, tells src to set the bit
+/// TODO: (dmu cleanup) write better comment: StoreBarrier_dmu_Inst - Checks bit in dest and if set, tells src to set the bit
 ///
 /// Does not really need atomicity in constructor because is never atomic;
 /// bit in ref count must be set BEFORE shared access is possible.
 //  TODO: (dmu factor) Implementation stolen from StoreInst
 //  TODO: (dmu implement enums) is all the machinery with the enums needed?
-class RefCountStoreBarrierInst // dmu
+class StoreBarrier_dmu_Inst // dmu
 : public SILInstruction {
   friend SILBuilder;
   
 private:
   FixedOperandList<2> Operands;
   
-  RefCountStoreBarrierInst(SILDebugLocation DebugLoc, SILValue Src, SILValue Dest); // dmu
+  StoreBarrier_dmu_Inst(SILDebugLocation DebugLoc, SILValue Src, SILValue Dest); // dmu
   
 public:
   
@@ -1759,7 +1759,7 @@ public:
   MutableArrayRef<Operand> getAllOperands() { return Operands.asArray(); }
   
   static bool classof(const ValueBase *V) {
-    return V->getKind() == ValueKind::RefCountStoreBarrierInst;
+    return V->getKind() == ValueKind::StoreBarrier_dmu_Inst;
   }
 };
   

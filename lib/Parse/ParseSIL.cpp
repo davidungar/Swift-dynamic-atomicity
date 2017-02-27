@@ -2617,7 +2617,7 @@ bool SILParser::parseSILInstruction(SILBasicBlock *BB, SILBuilder &B) {
     break;
   }
 
-  case ValueKind::RefCountStoreBarrierInst: { // dmu (clone of StoreInst, w/o attribute)
+  case ValueKind::StoreBarrier_dmu_Inst: { // dmu (clone of StoreInst, w/o attribute)
     UnresolvedValueName From;
     SourceLoc ToLoc, AddrLoc;
     Identifier ToToken;
@@ -2644,7 +2644,7 @@ bool SILParser::parseSILInstruction(SILBasicBlock *BB, SILBuilder &B) {
     
     SILType ValType = AddrVal->getType().getObjectType();
     
-    ResultVal = B.createRefCountStoreBarrier(InstLoc, getLocalValue(From, ValType, InstLoc, B),
+    ResultVal = B.createStoreBarrier_dmu_(InstLoc, getLocalValue(From, ValType, InstLoc, B),
                                                                    AddrVal);
     break;
   }

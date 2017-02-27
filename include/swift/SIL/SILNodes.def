@@ -114,10 +114,10 @@ ABSTRACT_VALUE(SILInstruction, ValueBase)
   INST(StoreBorrowInst, SILInstruction, store_borrow, MayWrite, DoesNotRelease)
   INST(AssignInst, SILInstruction, assign, MayWrite, DoesNotRelease)
 
-  // dmu RefCountStoreBarrierInst was BeSafeForConcurrentAccessInst
+  // dmu StoreBarrier_dmu_Inst was BeSafeForConcurrentAccessInst
   // TODO: (dmu check) be sure this is created wherever any flavor of Store is created? find all createStore* ??
   // TODO: (dmu check) cannot be a RefCountingInst because it has two operands, BUT check all RefCountingInst's because some isa's may apply
-  INST(RefCountStoreBarrierInst, SILInstruction, /* dmu */ref_count_store_barrier, MayHaveSideEffects, DoesNotRelease)
+  INST(StoreBarrier_dmu_Inst, SILInstruction, /* dmu */ref_count_store_barrier, MayHaveSideEffects, DoesNotRelease)
 
   INST(MarkUninitializedInst, SILInstruction, mark_uninitialized, None, DoesNotRelease)
   INST(MarkUninitializedBehaviorInst, SILInstruction, mark_uninitialized_behavior, None, DoesNotRelease)

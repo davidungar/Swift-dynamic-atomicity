@@ -50,7 +50,7 @@ struct OwnershipModelEliminatorVisitor
   bool visitValueBase(ValueBase *V) { return false; }
   bool visitLoadInst(LoadInst *LI);
   bool visitStoreInst(StoreInst *SI);
-  bool visitRefCountStoreBarrierInst(RefCountStoreBarrierInst *RCSBI); // dmu
+  bool visitStoreBarrier_dmu_Inst(StoreBarrier_dmu_Inst *RCSBI); // dmu
   bool visitStoreBorrowInst(StoreBorrowInst *SI);
   bool visitCopyValueInst(CopyValueInst *CVI);
   bool visitCopyUnownedValueInst(CopyUnownedValueInst *CVI);
@@ -106,9 +106,9 @@ bool OwnershipModelEliminatorVisitor::visitStoreInst(StoreInst *SI) {
   return true;
 }
 
-bool OwnershipModelEliminatorVisitor::visitRefCountStoreBarrierInst(RefCountStoreBarrierInst *RCSBI) { // dmu one-eyed clone
+bool OwnershipModelEliminatorVisitor::visitStoreBarrier_dmu_Inst(StoreBarrier_dmu_Inst *RCSBI) { // dmu one-eyed clone
   // TODO: (dmu check) store version does a lowering, this version does not
-  B.createRefCountStoreBarrier(RCSBI->getLoc(), RCSBI->getSrc(), RCSBI->getDest());
+  B.createStoreBarrier_dmu_(RCSBI->getLoc(), RCSBI->getSrc(), RCSBI->getDest());
   
   // Then remove the ref count store barrier
   RCSBI->eraseFromParent();

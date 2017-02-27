@@ -517,12 +517,12 @@ public:
   }
 
   // dmu
-  RefCountStoreBarrierInst
-  *createRefCountStoreBarrier(SILLocation Loc, // dmu
+  StoreBarrier_dmu_Inst
+  *createStoreBarrier_dmu_(SILLocation Loc, // dmu
                               SILValue Src,
                               SILValue Dest) {
     return insert(new (F.getModule())
-                  RefCountStoreBarrierInst( getSILDebugLocation(Loc), Src, Dest));
+                  StoreBarrier_dmu_Inst( getSILDebugLocation(Loc), Src, Dest));
   }
 
   EndBorrowInst *createEndBorrow(SILLocation Loc, SILValue BorrowedValue,
