@@ -134,10 +134,10 @@ void SILGenFunction::emitClassMemberDestruction(SILValue selfValue,
     }
   }
 }
-#error dmu is thisd called?
 void SILGenFunction::emitMakeContainedReferencesCountAtomically(SILValue selfValue, // dmu
                                                 ClassDecl *cd,
                                                 CleanupLocation cleanupLoc) { // yyyyyy dmu
+  abort(); // TODO: (dmu) urgent see if called
   for (VarDecl *vd : cd->getStoredProperties()) {
     const TypeLowering &ti = getTypeLowering(vd->getType());
     if (!ti.isTrivial()) {

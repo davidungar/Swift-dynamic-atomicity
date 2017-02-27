@@ -338,6 +338,7 @@ InlineCost swift::instructionInlineCost(SILInstruction &I) {
     case ValueKind::DeallocValueBufferInst:
     case ValueKind::DeinitExistentialAddrInst:
     case ValueKind::DestroyAddrInst:
+    case ValueKind::MakeAddrCountAtomicallyInst: // dmu
     case ValueKind::ProjectValueBufferInst:
     case ValueKind::ProjectBoxInst:
     case ValueKind::ProjectExistentialBoxInst:

@@ -355,7 +355,7 @@ public:
   bool visitDestroyAddrInst(DestroyAddrInst *UserInst) {
     llvm_unreachable("illegal deinitialization");
   }
-  bool visitMakeAddrCountAtomicallyInst(DestroyAddrInst *MakeAddrCountAtomicallyInst) { // dmu
+  bool visitMakeAddrCountAtomicallyInst(MakeAddrCountAtomicallyInst *MakeAddrCountAtomicallyInst) { // dmu
     llvm_unreachable("illegal deinitialization");
   }
   bool visitUncheckedTakeEnumDataAddrInst(
