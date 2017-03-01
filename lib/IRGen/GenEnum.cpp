@@ -2977,7 +2977,7 @@ namespace {
 
     llvm::Function *copyEnumFunction = nullptr;
     llvm::Function *consumeEnumFunction = nullptr;
-    llvm::Function *makeContainedReferencesOfEnumCountAtomicallyFunction = nullptr; // dmu
+    llvm::Function *visitRefsInEnumFunction_dmu_ = nullptr;
 
     SmallVector<llvm::Type *, 2> PayloadTypesAndTagType;
 
@@ -3030,9 +3030,9 @@ namespace {
       return func;
     }
     
-    llvm::Function *emitMakeContainedReferencesOfEnumCountAtomicallyFunction(IRGenModule &IGM, EnumDecl *theEnum) { // dmu
+    llvm::Function *emitVisitRefsInEnumFunction_dmu_(IRGenModule &IGM, EnumDecl *theEnum) {
       IRGenMangler Mangler;
-      std::string name = Mangler.mangleOutlinedMakeContainedReferencesOfEnumCountAtomicallyFunction(theEnum);
+      std::string name = Mangler.mangleOutlinedVisitRefsInEnumFunction_dmu_(theEnum);
       auto func = createOutlineLLVMFunction(IGM, name, PayloadTypesAndTagType);
       
       IRGenFunction IGF(IGM, func);
@@ -4083,7 +4083,7 @@ namespace {
       }
     }
     
-    void makeContainedReferencesOfExplosionCountAtomically(IRGenFunction &IGF, Explosion &src) const { // dmu
+    void visitRefsInExplosion_dmu_(IRGenFunction &IGF, Explosion &src) const {
       assert(TIK >= Loadable);
       
       switch (CopyDestroyKind) {
@@ -4093,10 +4093,10 @@ namespace {
           abort();
           
         case Normal: {
-          assert(makeContainedReferencesOfEnumCountAtomicallyFunction && "Did not create makeContainedReferencesOfEnumCountAtomically function for enum");
+          assert(visitRefsInEnumFunction_dmu_ && "Did not create visitRefsInEnumFunction_dmu_ function for enum");
           Explosion tmp;
           fillExplosionForOutlinedCall(IGF, src, tmp);
-          llvm::CallInst *call = IGF.Builder.CreateCall(makeContainedReferencesOfEnumCountAtomicallyFunction, tmp.getAll());
+          llvm::CallInst *call = IGF.Builder.CreateCall(visitRefsInEnumFunction_dmu_, tmp.getAll());
           call->setCallingConv(IGF.IGM.DefaultCC);
           return;
         }
@@ -4443,7 +4443,7 @@ namespace {
       if (TI->isLoadable()) {
         Explosion tmp;
         loadAsTake(IGF, addr, tmp);
-        makeContainedReferencesOfExplosionCountAtomically(IGF, tmp);
+        visitRefsInExplosion_dmu_(IGF, tmp);
         return;
       }
       // If the enum is address-only, we better not have any spare bits,
@@ -5992,7 +5992,7 @@ MultiPayloadEnumImplStrategy::completeFixedLayout(TypeConverter &TC,
     computePayloadTypesAndTagType(TC.IGM, *TI, PayloadTypesAndTagType);
     copyEnumFunction = emitCopyEnumFunction(TC.IGM, theEnum);
     consumeEnumFunction = emitConsumeEnumFunction(TC.IGM, theEnum);
-    makeContainedReferencesOfEnumCountAtomicallyFunction = emitMakeContainedReferencesOfEnumCountAtomicallyFunction(TC.IGM, theEnum); // dmu
+    visitRefsInEnumFunction_dmu_ = emitVisitRefsInEnumFunction_dmu_(TC.IGM, theEnum);
   }
 
   return const_cast<TypeInfo *>(TI);
