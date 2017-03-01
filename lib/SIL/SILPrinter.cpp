@@ -324,7 +324,7 @@ void SILDeclRef::print(raw_ostream &OS) const {
     OS << "!ivardestroyer";
     break;
   case SILDeclRef::Kind::VisitRefsInInstance_dmu_: // dmu
-    OS << "!makeContainedReferencesCountAtomically";
+    OS << "!visitRefsInInstance_dmu_";
     break;
   case SILDeclRef::Kind::GlobalAccessor:
     OS << "!globalaccessor";

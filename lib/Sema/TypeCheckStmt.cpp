@@ -1327,7 +1327,7 @@ bool TypeChecker::typeCheckAbstractFunctionBodyUntil(AbstractFunctionDecl *AFD,
     return typeCheckConstructorBodyUntil(CD, EndTypeCheckLoc);
 
   if (auto *MD = dyn_cast<VisitRefsInInstance_dmu_Decl>(AFD)) // TODO: (dmu) needed?
-    return typeCheckMakeContainedReferencesCountAtomicallyBodyUntil(MD, EndTypeCheckLoc);
+    return VisitRefsInInstance_dmu_Until(MD, EndTypeCheckLoc);
 
   auto *DD = cast<DestructorDecl>(AFD);
   return typeCheckDestructorBodyUntil(DD, EndTypeCheckLoc);
@@ -1593,7 +1593,7 @@ bool TypeChecker::typeCheckDestructorBodyUntil(DestructorDecl *DD,
 }
 
 
-bool TypeChecker::typeCheckMakeContainedReferencesCountAtomicallyBodyUntil(VisitRefsInInstance_dmu_Decl *MD,
+bool TypeChecker::VisitRefsInInstance_dmu_Until(VisitRefsInInstance_dmu_Decl *MD,
                                                SourceLoc EndTypeCheckLoc) {
   return false;
 }

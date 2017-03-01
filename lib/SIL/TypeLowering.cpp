@@ -1729,7 +1729,7 @@ static CanAnyFunctionType getVisitRefsInInstance_dmu_InterfaceType(VisitRefsInIn
   ->getCanonicalType();
   
   assert((!isForeign)
-         && "There are no foreign makeContainedReferencesCountAtomically's");
+         && "There are no foreign visitRefsInInstance_dmu_'s");
   AnyFunctionType::ExtInfo extInfo =
   AnyFunctionType::ExtInfo(FunctionType::Representation::Thin,
                            /*throws*/ false);

@@ -36,7 +36,7 @@ IDENTIFIER(CVarArg)
 IDENTIFIER(Darwin)
 IDENTIFIER(dealloc)
 IDENTIFIER(deinit)
-IDENTIFIER(mcrca) // dmu makeContainedReferencesCountAtomically
+IDENTIFIER(refVisitor_dmu_)
 IDENTIFIER(Element)
 IDENTIFIER(error)
 IDENTIFIER(forKeyedSubscript)

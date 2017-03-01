@@ -263,7 +263,7 @@ public:
   /// Generates code for the given class's ... and adds
   /// the SILFunction to the current SILModule under the name
   /// SILDeclRef(cd, Destructor).
-  void emitMakeContainedReferencesCountAtomically(ClassDecl *cd, VisitRefsInInstance_dmu_Decl *md); // dmu
+  void emitVisitRefsInInstance_dmu_(ClassDecl *cd, VisitRefsInInstance_dmu_Decl *md); // dmu
 
 
   /// Generates the enum constructor for the given

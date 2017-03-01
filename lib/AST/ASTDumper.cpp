@@ -1186,7 +1186,7 @@ void swift::printContext(raw_ostream &os, DeclContext *dc) {
     if (isa<DestructorDecl>(AFD))
       os << "deinit";
     if (isa<VisitRefsInInstance_dmu_Decl>(AFD)) // dmu
-      os << "makeContainedreferencesCountAtomically";
+      os << "visitRefsInInstance_dmu_";
     break;
   }
   case DeclContextKind::SubscriptDecl:

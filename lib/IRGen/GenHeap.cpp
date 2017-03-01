@@ -235,12 +235,12 @@ static llvm::Function *createDtorFn(IRGenModule &IGM,
 
 
 
-/// Create the makeContainedReferencesCountAtomically function for a layout. (dmu)
+/// Create the VisitRefsInHeapObj_dmu_ function for a layout. (dmu)
 /// Cloned from createDtorFn TODO: (dmu) combine this with createDtorFn
 static llvm::Constant *createVisitRefsInHeapObj_dmu_Fn(IRGenModule &IGM, // dmu
                                                                                   const HeapLayout &layout) {
   llvm::Function *fn =
-  llvm::Function::Create(IGM.VisitRefsInHeapObj_dmu_Fn,
+  llvm::Function::Create(IGM.VisitRefsInHeapObj_dmu_Ty,
                          llvm::Function::PrivateLinkage,
                          VisitRefsInHeapObj_dmu_Values::twine, &IGM.Module);
   fn->setAttributes(IGM.constructInitialAttributes());
@@ -303,13 +303,13 @@ llvm::Constant *HeapLayout::createSizeFn(IRGenModule &IGM) const {
 static llvm::Constant *buildPrivateMetadata(IRGenModule &IGM,
                                             const HeapLayout &layout,
                                             llvm::Constant *dtorFn,
-                                            llvm::Constant *makeContainedReferencesCountAtomicallyFn,
+                                            llvm::Constant *visitRefsInHeapObj_dmu_Fn,
                                             llvm::Constant *captureDescriptor,
                                             MetadataKind kind) {
   // Build the fields of the private metadata.
   SmallVector<llvm::Constant*, 6> fields; // dmu metadata layout changed 5 to 6
   fields.push_back(dtorFn);
-  fields.push_back(makeContainedReferencesCountAtomicallyFn);
+  fields.push_back(visitRefsInHeapObj_dmu_Fn);
   fields.push_back(llvm::ConstantPointerNull::get(IGM.WitnessTablePtrTy));
   fields.push_back(llvm::ConstantStruct::get(IGM.TypeMetadataStructTy,
                                              getMetadataKind(IGM, kind)));

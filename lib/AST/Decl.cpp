@@ -2426,10 +2426,10 @@ DestructorDecl *ClassDecl::getDestructor() {
 
 
 VisitRefsInInstance_dmu_Decl *ClassDecl::getVisitRefsInInstance_dmu_() { // dmu
-  auto name = getASTContext().Id_mcrca;
+  auto name = getASTContext().Id_refVisitor_dmu_;
   auto results = lookupDirect(name);
-  assert(!results.empty() && "Class without makeContainedReferencesCountAtomically?");
-  assert(results.size() == 1 && "More than one makeContainedReferencesCountAtomically?");
+  assert(!results.empty() && "Class without visitRefsInInstance_dmu_?");
+  assert(results.size() == 1 && "More than one visitRefsInInstance_dmu_?");
   return cast<VisitRefsInInstance_dmu_Decl>(results.front());
 }
 

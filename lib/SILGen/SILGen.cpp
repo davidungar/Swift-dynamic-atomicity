@@ -961,15 +961,15 @@ void SILGenModule::emitDestructor(ClassDecl *cd, DestructorDecl *dd) {
 }
 
 
-void SILGenModule::emitMakeContainedReferencesCountAtomically(ClassDecl *cd,  // dmu
+void SILGenModule::emitVisitRefsInInstance_dmu_(ClassDecl *cd,  // dmu
                                                               VisitRefsInInstance_dmu_Decl *md) {
   emitAbstractFuncDecl(md);
   
   SILDeclRef mdref(md, SILDeclRef::Kind::VisitRefsInInstance_dmu_);
   SILFunction *f = getFunction(mdref, ForDefinition);
   preEmitFunction(mdref, md, f, md);
-  PrettyStackTraceSILFunction X("silgen emitMakeContainedReferencesCountAtomically", f);
-  SILGenFunction(*this, *f).emitMakeContainedReferencesCountAtomically(md);
+  PrettyStackTraceSILFunction X("silgen emitVisitRefsInInstance_dmu_", f);
+  SILGenFunction(*this, *f).emitVisitRefsInInstance_dmu_(md);
   f->setDebugScope(new (M) SILDebugScope(md, f));
   postEmitFunction(mdref, f);
 }

@@ -485,7 +485,7 @@ StringRef IRGenDebugInfo::getName(SILLocation L) {
     return "deinit";
   
   if (L.isASTNode<VisitRefsInInstance_dmu_Decl>()) // dmu
-    return "makeContainedReferencesCountAtomically";
+    return "visitRefsInInstance_dmu_";
 
   return StringRef();
 }

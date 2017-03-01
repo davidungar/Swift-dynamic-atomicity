@@ -877,7 +877,7 @@ public:
   
   void visitVisitRefsInInstance_dmu_Decl(VisitRefsInInstance_dmu_Decl *DD) { // dmu
     auto ResultDD = std::make_shared<sma::VisitRefsInInstance_dmu_Decl>();
-    ResultDD->Name.Name = "makeContainedReferencesCountAtomicallyDecl";
+    ResultDD->Name.Name = "visitRefsInInstance_dmu_Decl";
     // FIXME
     // ResultDD->Attributes = ?;
     Result.Makers.emplace_back(std::move(ResultDD));

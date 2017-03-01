@@ -1562,7 +1562,7 @@ void IRGenModule::emitGlobalDecl(Decl *D) {
     llvm_unreachable("there are no global destructor");
       
   case DeclKind::VisitRefsInInstance_dmu_: // dmu
-    llvm_unreachable("there is no global makeContainedReferencesCountAtomically");
+    llvm_unreachable("there is no global visitRefsInInstance_dmu_");
       
   case DeclKind::TypeAlias:
   case DeclKind::GenericTypeParam:

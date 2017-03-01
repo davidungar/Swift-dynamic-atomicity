@@ -65,9 +65,9 @@ SWIFT_RT_ENTRY_IMPL(swift_allocObject)(HeapMetadata const *metadata,
   object->refCount.init();
   // TODO: (dmu) what about allocating an ObjectiveC object?
   // TODO: (dmu) two routines, one to just set the bit??
-  void const * const makeContainedReferencesCountAtomically = reinterpret_cast<void*>(asFullMetadata(object->metadata)->makeContainedReferencesCountAtomically);
-  if (    MakeContainedReferencesCountAtomicallyValues::unimplemented
-      ==  makeContainedReferencesCountAtomically ) { 
+  void const * const visitRefsInHeapObj_dmu_ = reinterpret_cast<void*>(asFullMetadata(object->metadata)->visitRefsInHeapObj_dmu_);
+  if (    VisitRefsInHeapObj_dmu_Values::unimplemented
+      ==  visitRefsInHeapObj_dmu_ ) {
     object->refCount.beSafeForConcurrentAccess();
   }
   object->weakRefCount.init();
@@ -134,7 +134,7 @@ public:
   BoxCacheEntry(const Metadata *type)
   : Data{HeapMetadataHeader{{
     destroyGenericBox,
-    (void (*)(HeapObject*))(MakeContainedReferencesCountAtomicallyValues::unimplemented) /*dmu makeContainedReferencesCountAtomicallyContents */
+    (void (*)(HeapObject*))(VisitRefsInHeapObj_dmu_Values::unimplemented)
   }, {/*vwtable*/ nullptr}},
            GenericBoxHeapMetadata{MetadataKind::HeapGenericLocalVariable,
                                   GenericBoxHeapMetadata::getHeaderOffset(type),
@@ -329,9 +329,9 @@ void SWIFT_RT_ENTRY_IMPL(swift_beSafeForConcurrentAccess)(HeapObject *object) { 
   object->refCount.beSafeForConcurrentAccess(); // must set this first to break the recursion
   auto md = object->metadata; // extra var for debugging
   auto fmd = asFullMetadata(md); // extra var for debugging
-  void (*makeContainedReferencesCountAtomically)(HeapObject*) = fmd->makeContainedReferencesCountAtomically;
-  assert(makeContainedReferencesCountAtomically != nullptr  &&  "if obj is nonatomic, must be a makeContainedReferencesCountAtomically fn");
-  makeContainedReferencesCountAtomically(object);
+  void (*visitRefsInHeapObj_dmu_)(HeapObject*) = fmd->visitRefsInHeapObj_dmu_;
+  assert(visitRefsInHeapObj_dmu_ != nullptr  &&  "if obj is nonatomic, visitRefsInHeapObj_dmu_ fn cannot be nil");
+  visitRefsInHeapObj_dmu_(object);
 }
 
 

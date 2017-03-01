@@ -2884,7 +2884,7 @@ void PrintAST::visitVisitRefsInInstance_dmu_Decl(VisitRefsInInstance_dmu_Decl *d
   printAttributes(decl);
   recordDeclLoc(decl,
                 [&]{
-                  Printer << "mcrca";
+                  Printer << "refVisitor_dmu_";
                 });
   
   if (!Options.FunctionDefinitions || !decl->getBody()) {

@@ -395,9 +395,9 @@ public:
   }
 
   void visitVisitRefsInInstance_dmu_Decl(VisitRefsInInstance_dmu_Decl *md) { // dmu
-    assert(isa<ClassDecl>(theType) && "makeContainedReferencesCountAtomicallyDecl in a non-class type");
+    assert(isa<ClassDecl>(theType) && "visitRefsInInstance_dmu_Decl in a non-class type");
     ProfilerRAII Profiler(SGM, md);
-    SGM.emitMakeContainedReferencesCountAtomically(cast<ClassDecl>(theType), md);
+    SGM.emitVisitRefsInInstance_dmu_(cast<ClassDecl>(theType), md);
   }
 
   void visitEnumCaseDecl(EnumCaseDecl *ecd) {}

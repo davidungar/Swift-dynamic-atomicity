@@ -265,7 +265,7 @@ SILDeclRef::SILDeclRef(ValueDecl *vd, SILDeclRef::Kind kind,
     naturalUncurryLevel = 0;
   } else if (isa<VisitRefsInInstance_dmu_Decl>(vd)) { // dmu
     assert((kind == Kind::VisitRefsInInstance_dmu_)
-           && "can only create makeContainedReferencesCountAtomicallyDecl SILDeclRef for maker");
+           && "can only create visitRefsInInstance_dmu_Decl SILDeclRef for maker");
     naturalUncurryLevel = 0;
   } else if (isa<ClassDecl>(vd)) {
     assert((kind == Kind::IVarInitializer || kind == Kind::IVarDestroyer) &&
