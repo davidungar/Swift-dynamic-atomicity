@@ -268,8 +268,8 @@ static llvm::Constant *createVisitorOfRefsInHeapObj_dmu_Fn(IRGenModule &IGM,
     auto fieldTy = layout.getElementTypes()[i];
     if (field.isPOD())
       continue;
-    // dmu entry into makeContainedReferencesOfElementCountAtomically urgent rename
-    field.getType().makeContainedReferencesOfElementCountAtomically(IGF,
+    // dmu entry into visitRefsInValue_dmu_ urgent rename
+    field.getType().visitRefsInValue_dmu_(IGF,
                                                                     field.project(IGF, structAddr, offsets),
                                                                     fieldTy);
     }
@@ -559,7 +559,7 @@ namespace {
       IGF.emitNativeWeakDestroy(addr);
     }
 
-    void makeContainedReferencesOfElementCountAtomically(IRGenFunction &IGF, Address addr, SILType T) const override { // dmu
+    void visitRefsInValue_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override { // dmu
       IGF.emitNativeWeakBeSafeForConcurrentAccess(addr);
     }
 
@@ -720,7 +720,7 @@ namespace {
       IGF.emitUnknownUnownedDestroy(addr);
     }
 
-    void makeContainedReferencesOfElementCountAtomically(IRGenFunction &IGF, Address addr, SILType T) const override { // dmu
+    void visitRefsInValue_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override { // dmu
       IGF.emitUnknownUnownedBeSafeForConcurrentAccess(addr);
     }
 
@@ -795,7 +795,7 @@ namespace {
       IGF.emitUnknownWeakDestroy(addr);
     }
                                 
-    void makeContainedReferencesOfElementCountAtomically(IRGenFunction &IGF, Address addr, SILType T) const override { // dmu
+    void visitRefsInValue_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override { // dmu
       IGF.emitUnknownWeakBeSafeForConcurrentAccess(addr);
     }
                                 

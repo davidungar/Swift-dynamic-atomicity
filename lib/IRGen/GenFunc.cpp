@@ -382,7 +382,7 @@ namespace {
         IGF.emitNativeStrongRelease(data);
     }
 
-    void makeContainedReferencesOfElementCountAtomically(IRGenFunction &IGF, Address addr, SILType T) const override { // dmu
+    void visitRefsInValue_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override { // dmu
       auto data = IGF.Builder.CreateLoad(projectData(IGF, addr));
       if (!isPOD(ResilienceExpansion::Maximal)) // blind clone
         IGF.emitNativeBeSafeForConcurrentAccess(data);
@@ -504,8 +504,8 @@ namespace {
     void destroy(IRGenFunction &IGF, Address addr, SILType T) const override {
       IGF.unimplemented(SourceLoc(), "destroying @block_storage");
     }
-    void makeContainedReferencesOfElementCountAtomically(IRGenFunction &IGF, Address addr, SILType T) const override { // dmu
-      IGF.unimplemented(SourceLoc(), "makeContainedReferencesOfElementCountAtomically @block_storage");
+    void visitRefsInValue_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override { // dmu
+      IGF.unimplemented(SourceLoc(), "visitRefsInValue_dmu_ @block_storage");
     }
   };
 } // end anonymous namespace

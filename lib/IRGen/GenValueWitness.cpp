@@ -349,7 +349,7 @@ static void emitDefaultMakeContainedReferencesOfElementsOfBufferCountAtomically(
                                  T, type, buffer);
   
   Address object = emitDefaultProjectBuffer(IGF, buffer, T, type, packing);
-  type.makeContainedReferencesOfElementCountAtomically(IGF, object, T);
+  type.visitRefsInValue_dmu_(IGF, object, T);
 }
 
 /// Emit an 'initializeBufferWithCopyOfBuffer' operation.
@@ -652,7 +652,7 @@ static void buildValueWitnessFunction(IRGenModule &IGM,
   case ValueWitness::MakeContentsSafeForConcurrentAccess: { // dmu
     Address object = getArgAs(IGF, argv, type, "object");
     getArgAsLocalSelfTypeMetadata(IGF, argv, abstractType);
-    type.makeContainedReferencesOfElementCountAtomically(IGF, object, concreteType);
+    type.visitRefsInValue_dmu_(IGF, object, concreteType);
     IGF.Builder.CreateRetVoid();
     return;
   }
@@ -689,7 +689,7 @@ static void buildValueWitnessFunction(IRGenModule &IGM,
     
     IGF.Builder.emitBlock(loop);
     ConditionalDominanceScope condition(IGF);
-    type.makeContainedReferencesOfElementCountAtomically(IGF, element, concreteType);
+    type.visitRefsInValue_dmu_(IGF, element, concreteType);
     auto nextCounter = IGF.Builder.CreateSub(counter,
                                              llvm::ConstantInt::get(IGM.SizeTy, 1));
     auto nextElement = type.indexArray(IGF, element,
@@ -1746,7 +1746,7 @@ void TypeInfo::makeContainedReferencesOfElementsOfArrayCountAtomically(IRGenFunc
   IGF.Builder.emitBlock(loop);
   ConditionalDominanceScope condition(IGF);
   
-  makeContainedReferencesOfElementCountAtomically(IGF, element, T);
+  visitRefsInValue_dmu_(IGF, element, T);
   
   auto nextCounter = IGF.Builder.CreateSub(counter,
                                            llvm::ConstantInt::get(IGF.IGM.SizeTy, 1));

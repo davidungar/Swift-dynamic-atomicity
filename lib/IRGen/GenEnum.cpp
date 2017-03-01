@@ -510,10 +510,10 @@ namespace {
                                 getSingletonType(IGF.IGM, T));
     }
 
-    void makeContainedReferencesOfElementCountAtomically(IRGenFunction &IGF, Address addr, SILType T) const override { // dmu
+    void visitRefsInValue_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override { // dmu
       if (getSingleton() &&
           !getSingleton()->isPOD(ResilienceExpansion::Maximal)) {
-        getSingleton()->makeContainedReferencesOfElementCountAtomically(
+        getSingleton()->visitRefsInValue_dmu_(
                                                                         IGF, getSingletonAddress(IGF, addr),
                                                                         getSingletonType(IGF.IGM, T));
       }
@@ -2434,7 +2434,7 @@ namespace {
     }
 
     // TODO: (dmu) factor with destroy above
-    void makeContainedReferencesOfElementCountAtomically(IRGenFunction &IGF, Address addr, SILType T) const override { // dmu
+    void visitRefsInValue_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override { // dmu
       switch (CopyDestroyKind) {
         case POD:
           return;
@@ -2447,7 +2447,7 @@ namespace {
           
           // If there is, project and fix it.
           Address payloadAddr = projectPayloadData(IGF, addr);
-          getPayloadTypeInfo().makeContainedReferencesOfElementCountAtomically(IGF, payloadAddr,
+          getPayloadTypeInfo().visitRefsInValue_dmu_(IGF, payloadAddr,
                                                                                getPayloadType(IGF.IGM, T));
           
           IGF.Builder.CreateBr(endBB);
@@ -4426,7 +4426,7 @@ namespace {
       }
     }
 
-    void makeContainedReferencesOfElementCountAtomically(IRGenFunction &IGF, Address addr, SILType T) const override { // dmu
+    void visitRefsInValue_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override { // dmu
       
       // assignWithCopy emitIndirectAssign(IGF, dest, src, T, false);
       
@@ -4503,7 +4503,7 @@ namespace {
         // Do the take/copy of the payload.
         Address data = IGF.Builder.CreateBitCast(addr,
                                                  payloadTI.getStorageType()->getPointerTo());
-        payloadTI.makeContainedReferencesOfElementCountAtomically(IGF, data, PayloadT);
+        payloadTI.visitRefsInValue_dmu_(IGF, data, PayloadT);
         
         IGF.Builder.CreateBr(endBB);
         
@@ -5006,7 +5006,7 @@ namespace {
       emitDestroyCall(IGF, T, addr);
     }
 
-    void makeContainedReferencesOfElementCountAtomically(IRGenFunction &IGF, Address addr, SILType T) const override { // dmu
+    void visitRefsInValue_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override { // dmu
       emitMakeContentsSafeForConcurrentAccessCall(IGF, T, addr);
     }
 
@@ -5379,8 +5379,8 @@ namespace {
     void destroy(IRGenFunction &IGF, Address addr, SILType T) const override {
       return Strategy.destroy(IGF, addr, T);
     }
-    void makeContainedReferencesOfElementCountAtomically(IRGenFunction &IGF, Address addr, SILType T) const override { // dmu
-      Strategy.makeContainedReferencesOfElementCountAtomically(IGF, addr, T);
+    void visitRefsInValue_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override { // dmu
+      Strategy.visitRefsInValue_dmu_(IGF, addr, T);
     }
     void initializeFromParams(IRGenFunction &IGF, Explosion &params,
                               Address dest, SILType T) const override {

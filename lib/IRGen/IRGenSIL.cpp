@@ -4729,7 +4729,7 @@ void IRGenSILFunction::visitVisitRefAtAddr_dmu_Inst(swift::VisitRefAtAddr_dmu_In
   
   // Otherwise, do the normal thing.
   Address base = getLoweredAddress(i->getOperand());
-  addrTI.makeContainedReferencesOfElementCountAtomically(*this, base, addrTy);
+  addrTI.visitRefsInValue_dmu_(*this, base, addrTy);
 }
 
 

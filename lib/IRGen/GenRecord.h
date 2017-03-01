@@ -214,12 +214,12 @@ public:
     }
   }
       
-  void makeContainedReferencesOfElementCountAtomically(IRGenFunction &IGF, Address addr, SILType T) const override { // dmu
+  void visitRefsInValue_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override { // dmu
     auto offsets = asImpl().getNonFixedOffsets(IGF, T);
     for (auto &field : getFields()) {
       if (field.isPOD())
         continue;
-      field.getTypeInfo().makeContainedReferencesOfElementCountAtomically(IGF, field.projectAddress(IGF, addr, offsets),
+      field.getTypeInfo().visitRefsInValue_dmu_(IGF, field.projectAddress(IGF, addr, offsets),
                                                                                              field.getType(IGF.IGM, T));
     }
   }
