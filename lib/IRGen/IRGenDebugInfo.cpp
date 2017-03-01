@@ -484,7 +484,7 @@ StringRef IRGenDebugInfo::getName(SILLocation L) {
   if (L.isASTNode<DestructorDecl>())
     return "deinit";
   
-  if (L.isASTNode<VisitorOfRefsInInstance_dmu_Decl>())
+  if (L.isASTNode<VisitorOfRefsInInstance_dmu_Decl>()) // dmu
     return "visitorOfRefsInInstance_dmu_";
 
   return StringRef();

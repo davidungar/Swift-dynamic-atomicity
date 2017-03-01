@@ -804,7 +804,7 @@ public:
 
   void visitLoadInst(LoadInst *i);
   void visitStoreInst(StoreInst *i);
-  void visitStoreBarrier_dmu_Inst(StoreBarrier_dmu_Inst *i);
+  void visitStoreBarrier_dmu_Inst(StoreBarrier_dmu_Inst *i); // dmu
   void visitAssignInst(AssignInst *i) {
     llvm_unreachable("assign is not valid in canonical SIL");
   }
@@ -1040,7 +1040,7 @@ IRGenSILFunction::IRGenSILFunction(IRGenModule &IGM,
     CurFn->addFnAttr(llvm::Attribute::SanitizeAddress);
   if (IGM.IRGen.Opts.Sanitize == SanitizerKind::Thread) {
     if (dyn_cast_or_null<DestructorDecl>(f->getDeclContext())
-        || dyn_cast_or_null<VisitorOfRefsInInstance_dmu_Decl>(f->getDeclContext()))
+        || dyn_cast_or_null<VisitorOfRefsInInstance_dmu_Decl>(f->getDeclContext())) // dmu
       // Do not report races in deinit and anything called from it
       // because TSan does not observe synchronization between retain
       // count dropping to '0' and the object deinitialization.

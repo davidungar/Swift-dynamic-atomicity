@@ -1434,7 +1434,7 @@ namespace {
       }
     }
 
-    void visitVisitorOfRefsInInstance_dmu_Decl(VisitorOfRefsInInstance_dmu_Decl *maker) {
+    void visitVisitorOfRefsInInstance_dmu_Decl(VisitorOfRefsInInstance_dmu_Decl *maker) { // dmu
     }
 
     void addIVarInitializer() {

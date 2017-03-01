@@ -1323,7 +1323,7 @@ void SILSerializer::writeSILInstruction(const SILInstruction &SI) {
   case ValueKind::AssignInst:
   case ValueKind::CopyAddrInst:
   case ValueKind::StoreInst:
-  case ValueKind::StoreBarrier_dmu_Inst:
+  case ValueKind::StoreBarrier_dmu_Inst: // dmu
   case ValueKind::StoreBorrowInst:
   case ValueKind::StoreUnownedInst:
   case ValueKind::StoreWeakInst: {
@@ -1352,7 +1352,7 @@ void SILSerializer::writeSILInstruction(const SILInstruction &SI) {
     } else if (auto *SBI = dyn_cast<StoreBorrowInst>(&SI)) {
       operand = SBI->getDest();
       value = SBI->getSrc();
-    } else if (SI.getKind() == ValueKind::StoreBarrier_dmu_Inst) {
+    } else if (SI.getKind() == ValueKind::StoreBarrier_dmu_Inst) { // dmu
       operand = cast<StoreBarrier_dmu_Inst>(&SI)->getDest();
       value = cast<StoreBarrier_dmu_Inst>(&SI)->getSrc();
     } else {

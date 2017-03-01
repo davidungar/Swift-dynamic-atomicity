@@ -694,7 +694,7 @@ void SILCloner<ImplClass>::visitStoreInst(StoreInst *Inst) {
 }
   
 template <typename ImplClass>
-void SILCloner<ImplClass>::visitStoreBarrier_dmu_Inst(StoreBarrier_dmu_Inst *Inst) {
+void SILCloner<ImplClass>::visitStoreBarrier_dmu_Inst(StoreBarrier_dmu_Inst *Inst) { // dmu
   getBuilder().setCurrentDebugScope(getOpScope(Inst->getDebugScope()));
   doPostProcess(Inst, getBuilder().createStoreBarrier_dmu_(getOpLocation(Inst->getLoc()),
                                                               getOpValue(Inst->getSrc()),

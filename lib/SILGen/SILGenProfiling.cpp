@@ -34,7 +34,7 @@ static bool isUnmappedDecl(Decl *D) {
     if (!AFD->getBody())
       return true;
 
-  if (isa<ConstructorDecl>(D) || isa<DestructorDecl>(D) || isa<VisitorOfRefsInInstance_dmu_Decl>(D))
+  if (isa<ConstructorDecl>(D) || isa<DestructorDecl>(D) || isa<VisitorOfRefsInInstance_dmu_Decl>(D)) // dmu
     return false;
 
   return D->isImplicit() || isa<EnumCaseDecl>(D);

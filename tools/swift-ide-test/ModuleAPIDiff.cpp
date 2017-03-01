@@ -875,7 +875,7 @@ public:
   }
 
   
-  void visitVisitorOfRefsInInstance_dmu_Decl(VisitorOfRefsInInstance_dmu_Decl *DD) {
+  void visitVisitorOfRefsInInstance_dmu_Decl(VisitorOfRefsInInstance_dmu_Decl *DD) { // dmu
     auto ResultDD = std::make_shared<sma::VisitorOfRefsInInstance_dmu_Decl>();
     ResultDD->Name.Name = "visitorOfRefsInInstance_dmu_Decl";
     // FIXME

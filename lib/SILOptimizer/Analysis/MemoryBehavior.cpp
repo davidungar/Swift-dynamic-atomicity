@@ -95,7 +95,7 @@ public:
 
   MemBehavior visitLoadInst(LoadInst *LI);
   MemBehavior visitStoreInst(StoreInst *SI);
-  MemBehavior visitStoreBarrier_dmu_Inst(StoreBarrier_dmu_Inst *BI);
+  MemBehavior visitStoreBarrier_dmu_Inst(StoreBarrier_dmu_Inst *BI); // dmu
   MemBehavior visitApplyInst(ApplyInst *AI);
   MemBehavior visitTryApplyInst(TryApplyInst *AI);
   MemBehavior visitBuiltinInst(BuiltinInst *BI);
@@ -193,7 +193,7 @@ MemBehavior MemoryBehaviorVisitor::visitStoreInst(StoreInst *SI) {
 }
 
 // dmu
-MemBehavior MemoryBehaviorVisitor::visitStoreBarrier_dmu_Inst(StoreBarrier_dmu_Inst *SI) {
+MemBehavior MemoryBehaviorVisitor::visitStoreBarrier_dmu_Inst(StoreBarrier_dmu_Inst *SI) { // dmu
   return MemBehavior::MayHaveSideEffects; // TODO: (dmu check) is this right? conservative??
 }
 

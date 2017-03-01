@@ -263,7 +263,7 @@ SILDeclRef::SILDeclRef(ValueDecl *vd, SILDeclRef::Kind kind,
     assert((kind == Kind::Destroyer || kind == Kind::Deallocator)
            && "can only create destroyer/deallocator SILDeclRef for dtor");
     naturalUncurryLevel = 0;
-  } else if (isa<VisitorOfRefsInInstance_dmu_Decl>(vd)) {
+  } else if (isa<VisitorOfRefsInInstance_dmu_Decl>(vd)) { // dmu
     assert((kind == Kind::VisitorOfRefsInInstance_dmu_)
            && "can only create visitorOfRefsInInstance_dmu_Decl SILDeclRef for maker");
     naturalUncurryLevel = 0;
@@ -331,7 +331,7 @@ SILDeclRef::SILDeclRef(SILDeclRef::Loc baseLoc,
       kind = Kind::Deallocator;
       naturalUncurryLevel = 0;
     }
-    else if (auto maker = dyn_cast<VisitorOfRefsInInstance_dmu_Decl>(vd)) {
+    else if (auto maker = dyn_cast<VisitorOfRefsInInstance_dmu_Decl>(vd)) { // dmu
       loc = maker;
       kind = Kind::VisitorOfRefsInInstance_dmu_;
       naturalUncurryLevel = 0;
@@ -692,7 +692,7 @@ static std::string mangleConstantOld(SILDeclRef c,
     return mangler.finalize();
       
     //   entity ::= context 'v'                     // dmu TODO: (dmu) is v right?
-  case SILDeclRef::Kind::VisitorOfRefsInInstance_dmu_:
+  case SILDeclRef::Kind::VisitorOfRefsInInstance_dmu_: // dmu
     mangler.append(introducer);
     mangler.mangleVisitorOfRefsInInstance_dmu_Entity(cast<VisitorOfRefsInInstance_dmu_Decl>(c.getDecl()));
     return mangler.finalize();
@@ -837,7 +837,7 @@ static std::string mangleConstant(SILDeclRef c, SILDeclRef::ManglingKind Kind) {
                                           /*isDeallocating*/ false,
                                           SKind);
 
-  case SILDeclRef::Kind::VisitorOfRefsInInstance_dmu_:
+  case SILDeclRef::Kind::VisitorOfRefsInInstance_dmu_: // dmu
     assert(!c.isCurried);
     return mangler.mangleVisitorOfRefsInInstance_dmu_Entity(cast<VisitorOfRefsInInstance_dmu_Decl>(c.getDecl()), SKind);
 

@@ -547,7 +547,7 @@ struct ASTNodeBase {};
     FUNCTION_LIKE(AbstractClosureExpr)
     FUNCTION_LIKE(ConstructorDecl)
     FUNCTION_LIKE(DestructorDecl)
-    FUNCTION_LIKE(VisitorOfRefsInInstance_dmu_Decl)
+    FUNCTION_LIKE(VisitorOfRefsInInstance_dmu_Decl) // dmu
     FUNCTION_LIKE(FuncDecl)
     SCOPE_LIKE(NominalTypeDecl)
     SCOPE_LIKE(ExtensionDecl)
@@ -2093,7 +2093,7 @@ struct ASTNodeBase {};
 
       // All of the parameter names should match.
       if (!isa<DestructorDecl>(AFD)
-          && !isa<VisitorOfRefsInInstance_dmu_Decl>(AFD)
+          && !isa<VisitorOfRefsInInstance_dmu_Decl>(AFD) // dmu
           ) { // Destructor has no non-self params.
         auto paramNames = AFD->getFullName().getArgumentNames();
         bool checkParamNames = (bool)AFD->getFullName();
@@ -2213,7 +2213,7 @@ struct ASTNodeBase {};
       verifyParsedBase(DD);
     }
     
-    void verifyParsed(VisitorOfRefsInInstance_dmu_Decl *DD) {
+    void verifyParsed(VisitorOfRefsInInstance_dmu_Decl *DD) { // dmu
       PrettyStackTraceDecl debugStack("verifying VisitorOfRefsInInstance_dmu_Decl", DD);
       
       if (DD->isGeneric()) {
@@ -2335,7 +2335,7 @@ struct ASTNodeBase {};
       verifyCheckedBase(DD);
     }
     
-    void verifyChecked(VisitorOfRefsInInstance_dmu_Decl *DD) {
+    void verifyChecked(VisitorOfRefsInInstance_dmu_Decl *DD) { // dmu
       PrettyStackTraceDecl debugStack("verifying VisitorOfRefsInInstance_dmu_Decl", DD);
       
       auto *ND = DD->getDeclContext()->getAsNominalTypeOrNominalTypeExtensionContext();
@@ -2446,7 +2446,7 @@ struct ASTNodeBase {};
                  "explicitly provided or created by the type checker\n";
           abort();
         }
-        unsigned NumVisitorOfRefsInInstance_dmu_s = 0; 
+        unsigned NumVisitorOfRefsInInstance_dmu_s = 0;  // dmu
         for (auto Member : CD->getMembers()) {
           if (isa<VisitorOfRefsInInstance_dmu_Decl>(Member)) {
             NumVisitorOfRefsInInstance_dmu_s++;

@@ -1035,7 +1035,7 @@ static CanSILFunctionType getNativeSILFunctionType(SILModule &M,
     case SILDeclRef::Kind::Func:
     case SILDeclRef::Kind::Allocator:
     case SILDeclRef::Kind::Destroyer:
-    case SILDeclRef::Kind::VisitorOfRefsInInstance_dmu_:
+    case SILDeclRef::Kind::VisitorOfRefsInInstance_dmu_: // dmu
     case SILDeclRef::Kind::GlobalAccessor:
     case SILDeclRef::Kind::GlobalGetter:
     case SILDeclRef::Kind::DefaultArgGenerator:
@@ -1508,7 +1508,7 @@ static SelectorFamily getSelectorFamily(SILDeclRef c) {
   case SILDeclRef::Kind::EnumElement:
   case SILDeclRef::Kind::Destroyer:
   case SILDeclRef::Kind::Deallocator:
-  case SILDeclRef::Kind::VisitorOfRefsInInstance_dmu_:
+  case SILDeclRef::Kind::VisitorOfRefsInInstance_dmu_: // dmu
   case SILDeclRef::Kind::GlobalAccessor:
   case SILDeclRef::Kind::GlobalGetter:
   case SILDeclRef::Kind::IVarDestroyer:
@@ -1706,7 +1706,7 @@ TypeConverter::getDeclRefRepresentation(SILDeclRef c) {
       return SILFunctionTypeRepresentation::Thin;
 
     case SILDeclRef::Kind::Destroyer:
-    case SILDeclRef::Kind::VisitorOfRefsInInstance_dmu_:
+    case SILDeclRef::Kind::VisitorOfRefsInInstance_dmu_: // dmu
     case SILDeclRef::Kind::Deallocator:
     case SILDeclRef::Kind::Allocator:
     case SILDeclRef::Kind::Initializer:
@@ -2374,7 +2374,7 @@ static AbstractFunctionDecl *getBridgedFunction(SILDeclRef declRef) {
 
   case SILDeclRef::Kind::EnumElement:
   case SILDeclRef::Kind::Destroyer:
-  case SILDeclRef::Kind::VisitorOfRefsInInstance_dmu_:
+  case SILDeclRef::Kind::VisitorOfRefsInInstance_dmu_: // dmu
   case SILDeclRef::Kind::Deallocator:
   case SILDeclRef::Kind::GlobalAccessor:
   case SILDeclRef::Kind::GlobalGetter:

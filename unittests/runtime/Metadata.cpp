@@ -596,9 +596,9 @@ TEST(MetadataTest, getGenericMetadata_SuperclassWithUnexpectedPrefix) {
         swift_getGenericMetadata(metadataTemplate, args));
       void * const *fields = reinterpret_cast<void * const *>(inst);
 
-      int const extraWordCountFor_visitorOfRefsInHeapObj_dmu_ = 1; metadata layout
+      int const extraWordCountFor_visitorOfRefsInHeapObj_dmu_ = 1; // dmu metadata layout
       // No instance variables that are reference counted
-      void* const expectedValueFor_visitorOfRefsInHeapObj_dmu_ = reinterpret_cast<void* const>(VisitorOfRefsInHeapObj_dmu_Values::unimplemented);
+      void* const expectedValueFor_visitorOfRefsInHeapObj_dmu_ = reinterpret_cast<void* const>(VisitorOfRefsInHeapObj_dmu_Values::unimplemented); // dmu
       
       // Assert that we copied the extra prefix data from the superclass.
       EXPECT_EQ(&Global1, fields[-6 - extraWordCountFor_visitorOfRefsInHeapObj_dmu_]); // TODO: (dmu factor extra metadata layotu)

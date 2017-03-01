@@ -3541,7 +3541,7 @@ Decl *ModuleFile::getDecl(DeclID DID, Optional<DeclContext *> ForcedContext) {
     if (declOrOffset.isComplete())
       return declOrOffset;
     
-    auto make = createDecl<VisitorOfRefsInInstance_dmu_Decl>(ctx.Id_refVisitor_dmu_,
+    auto make = createDecl<VisitorOfRefsInInstance_dmu_Decl>(ctx.Id_refVisitor_dmu_, // dmu
                                                                        SourceLoc(),
                                                                        /*selfpat*/nullptr, MC);
     declOrOffset = make;

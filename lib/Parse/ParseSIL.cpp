@@ -2617,7 +2617,7 @@ bool SILParser::parseSILInstruction(SILBasicBlock *BB, SILBuilder &B) {
     break;
   }
 
-  case ValueKind::StoreBarrier_dmu_Inst: { (clone of StoreInst, w/o attribute)
+  case ValueKind::StoreBarrier_dmu_Inst: { // dmu (clone of StoreInst, w/o attribute)
     UnresolvedValueName From;
     SourceLoc ToLoc, AddrLoc;
     Identifier ToToken;

@@ -70,7 +70,7 @@ public:
   std::string mangleDestructorEntity(const DestructorDecl *decl,
                                      bool isDeallocating, SymbolKind SKind);
 
-  std::string mangleVisitorOfRefsInInstance_dmu_Entity(const VisitorOfRefsInInstance_dmu_Decl *decl,
+  std::string mangleVisitorOfRefsInInstance_dmu_Entity(const VisitorOfRefsInInstance_dmu_Decl *decl, // dmu
                                      SymbolKind SKind);
   
   std::string mangleConstructorEntity(const ConstructorDecl *ctor,
@@ -215,7 +215,7 @@ protected:
   
   void appendDestructorEntity(const DestructorDecl *decl, bool isDeallocating);
   
-  void appendVisitorOfRefsInInstance_dmu_Entity(const VisitorOfRefsInInstance_dmu_Decl *decl);
+  void appendVisitorOfRefsInInstance_dmu_Entity(const VisitorOfRefsInInstance_dmu_Decl *decl); // dmu
   
   void appendAccessorEntity(AccessorKind kind,
                             AddressorKind addressorKind,

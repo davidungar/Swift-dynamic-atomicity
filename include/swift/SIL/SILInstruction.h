@@ -1741,14 +1741,14 @@ public:
 /// bit in ref count must be set BEFORE shared access is possible.
 //  TODO: (dmu factor) Implementation stolen from StoreInst
 //  TODO: (dmu implement enums) is all the machinery with the enums needed?
-class StoreBarrier_dmu_Inst
+class StoreBarrier_dmu_Inst // dmu
 : public SILInstruction {
   friend SILBuilder;
   
 private:
   FixedOperandList<2> Operands;
   
-  StoreBarrier_dmu_Inst(SILDebugLocation DebugLoc, SILValue Src, SILValue Dest);
+  StoreBarrier_dmu_Inst(SILDebugLocation DebugLoc, SILValue Src, SILValue Dest); // dmu
   
 public:
   

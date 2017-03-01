@@ -374,7 +374,7 @@ InlineCost swift::instructionInlineCost(SILInstruction &I) {
     case ValueKind::RefToUnmanagedInst:
     case ValueKind::RefToUnownedInst:
     case ValueKind::StoreInst:
-    case ValueKind::StoreBarrier_dmu_Inst:
+    case ValueKind::StoreBarrier_dmu_Inst: // dmu
     case ValueKind::StoreBorrowInst:
     case ValueKind::StoreUnownedInst:
     case ValueKind::StoreWeakInst:

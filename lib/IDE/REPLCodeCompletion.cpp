@@ -117,7 +117,7 @@ static void toDisplayString(CodeCompletionResult *Result,
         case CodeCompletionDeclKind::GenericTypeParam:
         case CodeCompletionDeclKind::Constructor:
         case CodeCompletionDeclKind::Destructor:
-        case CodeCompletionDeclKind::VisitorOfRefsInInstance_dmu_:
+        case CodeCompletionDeclKind::VisitorOfRefsInInstance_dmu_: // dmu
           continue;
 
         case CodeCompletionDeclKind::Subscript:

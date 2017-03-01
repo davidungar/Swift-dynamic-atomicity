@@ -81,7 +81,7 @@ namespace swift {
   class ConstructorDecl;
   class Decl;
   class DestructorDecl;
-  class VisitorOfRefsInInstance_dmu_Decl;
+  class VisitorOfRefsInInstance_dmu_Decl; // dmu
   class ExtensionDecl;
   class FuncDecl;
   class LinkLibrary;
