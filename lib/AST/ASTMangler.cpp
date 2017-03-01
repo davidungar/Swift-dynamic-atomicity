@@ -88,7 +88,7 @@ std::string ASTMangler::mangleDestructorEntity(const DestructorDecl *decl,
 }
 
 
-std::string ASTMangler::mangleVisitorOfRefsInInstance_dmu_Entity(const VisitorOfRefsInInstance_dmu_Decl *decl, // dmu
+std::string ASTMangler::mangleVisitorOfRefsInInstance_dmu_Entity(const VisitorOfRefsInInstance_dmu_Decl *decl,
                                                SymbolKind SKind) {
   beginMangling();
   appendVisitorOfRefsInInstance_dmu_Entity(decl);
@@ -300,7 +300,7 @@ std::string ASTMangler::mangleDeclAsUSR(ValueDecl *Decl, StringRef USRPrefix) {
     appendConstructorEntity(Ctor, /*isAllocating=*/false);
   } else if (auto Dtor = dyn_cast<DestructorDecl>(Decl)) {
     appendDestructorEntity(Dtor, /*isDeallocating=*/false);
-  } else if (auto Maker = dyn_cast<VisitorOfRefsInInstance_dmu_Decl>(Decl)) { // dmu
+  } else if (auto Maker = dyn_cast<VisitorOfRefsInInstance_dmu_Decl>(Decl)) {
     appendVisitorOfRefsInInstance_dmu_Entity(Maker);
   } else if (auto NTD = dyn_cast<NominalTypeDecl>(Decl)) {
     appendNominalType(NTD);
@@ -1087,7 +1087,7 @@ void ASTMangler::appendContext(const DeclContext *ctx) {
     if (auto dtor = dyn_cast<DestructorDecl>(fn))
       return appendDestructorEntity(dtor, /*deallocating*/ false);
 
-    if (auto maker = dyn_cast<VisitorOfRefsInInstance_dmu_Decl>(fn)) // dmu
+    if (auto maker = dyn_cast<VisitorOfRefsInInstance_dmu_Decl>(fn))
       return appendVisitorOfRefsInInstance_dmu_Entity(maker);
     
     return appendEntity(fn);
@@ -1627,7 +1627,7 @@ void ASTMangler::appendDestructorEntity(const DestructorDecl *dtor,
   appendOperator(isDeallocating ? "fD" : "fd");
 }
 
-void ASTMangler::appendVisitorOfRefsInInstance_dmu_Entity(const VisitorOfRefsInInstance_dmu_Decl *maker ) {  // dmu
+void ASTMangler::appendVisitorOfRefsInInstance_dmu_Entity(const VisitorOfRefsInInstance_dmu_Decl *maker ) { 
   appendContextOf(maker);
   appendOperator("ma");
 }
@@ -1693,7 +1693,7 @@ void ASTMangler::appendEntity(const ValueDecl *decl) {
   if (!DeclCtx) DeclCtx = decl->getInnermostDeclContext();
   assert(!isa<ConstructorDecl>(decl));
   assert(!isa<DestructorDecl>(decl));
-  assert(!isa<VisitorOfRefsInInstance_dmu_Decl>(decl)); // dmu
+  assert(!isa<VisitorOfRefsInInstance_dmu_Decl>(decl));
   
   // Handle accessors specially, they are mangled as modifiers on the accessed
   // declaration.

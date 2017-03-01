@@ -102,7 +102,7 @@ static void LowerAssignInstruction(SILBuilder &B, AssignInst *Inst,
     SILValue IncomingVal =
         B.createLoad(Loc, Inst->getDest(), LoadOwnershipQualifier::Unqualified);
     // TODO: (dmu optimization) use IncomingVal instead of Inst->getDest() below to avoid reloading the destination
-    B.createStoreBarrier_dmu_(Inst->getLoc(), Src, Inst->getDest()); // dmu StoreBarrier_dmu_Inst
+    B.createStoreBarrier_dmu_(Inst->getLoc(), Src, Inst->getDest()); StoreBarrier_dmu_Inst
     B.createStore(Inst->getLoc(), Src, Inst->getDest(),
                   StoreOwnershipQualifier::Unqualified);
 

@@ -125,7 +125,7 @@ DescriptiveDeclKind Decl::getDescriptiveKind() const {
   TRIVIAL_KIND(Subscript);
   TRIVIAL_KIND(Constructor);
   TRIVIAL_KIND(Destructor);
-  TRIVIAL_KIND(VisitorOfRefsInInstance_dmu_); // dmu
+  TRIVIAL_KIND(VisitorOfRefsInInstance_dmu_);
   TRIVIAL_KIND(EnumElement);
   TRIVIAL_KIND(Param);
   TRIVIAL_KIND(Module);
@@ -248,7 +248,7 @@ StringRef Decl::getDescriptiveKindName(DescriptiveDeclKind K) {
   ENTRY(Subscript, "subscript");
   ENTRY(Constructor, "initializer");
   ENTRY(Destructor, "deinitializer");
-  ENTRY(VisitorOfRefsInInstance_dmu_, "visitorOfRefsInInstance_dmu_"); // dmu TODO: (dmu) fix grammar
+  ENTRY(VisitorOfRefsInInstance_dmu_, "visitorOfRefsInInstance_dmu_"); TODO: (dmu) fix grammar
   ENTRY(LocalFunction, "local function");
   ENTRY(GlobalFunction, "global function");
   ENTRY(OperatorFunction, "operator function");
@@ -591,7 +591,7 @@ ImportKind ImportDecl::getBestImportKind(const ValueDecl *VD) {
   case DeclKind::AssociatedType:
   case DeclKind::Constructor:
   case DeclKind::Destructor:
-  case DeclKind::VisitorOfRefsInInstance_dmu_: // dmu
+  case DeclKind::VisitorOfRefsInInstance_dmu_:
   case DeclKind::GenericTypeParam:
   case DeclKind::Subscript:
   case DeclKind::EnumElement:
@@ -1295,7 +1295,7 @@ bool ValueDecl::isDefinition() const {
   case DeclKind::Func:
   case DeclKind::Constructor:
   case DeclKind::Destructor:
-  case DeclKind::VisitorOfRefsInInstance_dmu_: // dmu 
+  case DeclKind::VisitorOfRefsInInstance_dmu_: 
     return cast<AbstractFunctionDecl>(this)->hasBody();
 
   case DeclKind::Subscript:
@@ -1348,7 +1348,7 @@ bool ValueDecl::isInstanceMember() const {
     return false;
 
   case DeclKind::Destructor:
-  case DeclKind::VisitorOfRefsInInstance_dmu_: // dmu
+  case DeclKind::VisitorOfRefsInInstance_dmu_:
     // Destructors are technically instance members, although they
     // can't actually be referenced as such.
     return true;
@@ -2425,7 +2425,7 @@ DestructorDecl *ClassDecl::getDestructor() {
 }
 
 
-VisitorOfRefsInInstance_dmu_Decl *ClassDecl::getVisitorOfRefsInInstance_dmu_() { // dmu
+VisitorOfRefsInInstance_dmu_Decl *ClassDecl::getVisitorOfRefsInInstance_dmu_() {
   auto name = getASTContext().Id_refVisitor_dmu_;
   auto results = lookupDirect(name);
   assert(!results.empty() && "Class without visitorOfRefsInInstance_dmu_?");
@@ -4161,7 +4161,7 @@ Type AbstractFunctionDecl::computeInterfaceSelfType(bool isInitializingCtor,
   } else if (isa<DestructorDecl>(this)) {
     // destructors of value types always have an implicitly inout self.
     isMutating = true;
-  } else if (isa<VisitorOfRefsInInstance_dmu_Decl>(this)) { // dmu
+  } else if (isa<VisitorOfRefsInInstance_dmu_Decl>(this)) {
     // traversal of value types always have an implicitly inout self. TODO: (dmu) really?
     isMutating = true;
   }
@@ -4291,7 +4291,7 @@ bool AbstractFunctionDecl::argumentNameIsAPIByDefault() const {
   }
 
   assert(isa<DestructorDecl>(this)
-         || isa<VisitorOfRefsInInstance_dmu_Decl>(this)); // dmu
+         || isa<VisitorOfRefsInInstance_dmu_Decl>(this));
   return false;
 }
 
@@ -4680,7 +4680,7 @@ void DestructorDecl::setSelfDecl(ParamDecl *selfDecl) {
 }
 
 // TODO: (dmu) factor with above??
-VisitorOfRefsInInstance_dmu_Decl::VisitorOfRefsInInstance_dmu_Decl(Identifier NameHack, // dmu
+VisitorOfRefsInInstance_dmu_Decl::VisitorOfRefsInInstance_dmu_Decl(Identifier NameHack,
                                                                                        SourceLoc makeLoc,                                                                            ParamDecl *selfDecl,
                                                                                        DeclContext *Parent)
 : AbstractFunctionDecl(DeclKind::VisitorOfRefsInInstance_dmu_, Parent, NameHack, makeLoc,
@@ -4689,7 +4689,7 @@ VisitorOfRefsInInstance_dmu_Decl::VisitorOfRefsInInstance_dmu_Decl(Identifier Na
   setSelfDecl(selfDecl);
 }
 
-void VisitorOfRefsInInstance_dmu_Decl::setSelfDecl(ParamDecl *selfDecl) { // dmu
+void VisitorOfRefsInInstance_dmu_Decl::setSelfDecl(ParamDecl *selfDecl) {
   if (selfDecl) {
     SelfParameter = ParameterList::createWithoutLoc(selfDecl);
     SelfParameter->setDeclContextOfParamDecls(this);
@@ -4984,7 +4984,7 @@ SourceRange DestructorDecl::getSourceRange() const {
 }
 
 
-SourceRange VisitorOfRefsInInstance_dmu_Decl::getSourceRange() const { // dmu
+SourceRange VisitorOfRefsInInstance_dmu_Decl::getSourceRange() const {
   return { SourceLoc(), SourceLoc() };
 }
 

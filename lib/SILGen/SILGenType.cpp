@@ -293,7 +293,7 @@ public:
     }
   }
   
-  void visitVisitorOfRefsInInstance_dmu_Decl(VisitorOfRefsInInstance_dmu_Decl *md) { // dmu
+  void visitVisitorOfRefsInInstance_dmu_Decl(VisitorOfRefsInInstance_dmu_Decl *md) {
     if (md->getParent()->getAsClassOrClassExtensionContext() == theClass) {
       // Add the ... to the vtable just for the purpose
       // that it is referenced and cannot be eliminated by dead function removal.
@@ -394,7 +394,7 @@ public:
     SGM.emitDestructor(cast<ClassDecl>(theType), dd);
   }
 
-  void visitVisitorOfRefsInInstance_dmu_Decl(VisitorOfRefsInInstance_dmu_Decl *md) { // dmu
+  void visitVisitorOfRefsInInstance_dmu_Decl(VisitorOfRefsInInstance_dmu_Decl *md) {
     assert(isa<ClassDecl>(theType) && "visitorOfRefsInInstance_dmu_Decl in a non-class type");
     ProfilerRAII Profiler(SGM, md);
     SGM.emitVisitorOfRefsInInstance_dmu_(cast<ClassDecl>(theType), md);
@@ -493,7 +493,7 @@ public:
   void visitDestructorDecl(DestructorDecl *dd) {
     llvm_unreachable("destructor in extension?!");
   }
-  void visitVisitorOfRefsInInstance_dmu_Decl(VisitorOfRefsInInstance_dmu_Decl *) {  // dmu
+  void visitVisitorOfRefsInInstance_dmu_Decl(VisitorOfRefsInInstance_dmu_Decl *) { 
     llvm_unreachable("destructor in extension?!");
   }
 

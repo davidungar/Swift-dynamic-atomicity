@@ -237,7 +237,7 @@ static llvm::Function *createDtorFn(IRGenModule &IGM,
 
 /// Create the VisitorOfRefsInHeapObj_dmu_ function for a layout. (dmu)
 /// Cloned from createDtorFn TODO: (dmu) combine this with createDtorFn
-static llvm::Constant *createVisitorOfRefsInHeapObj_dmu_Fn(IRGenModule &IGM, // dmu
+static llvm::Constant *createVisitorOfRefsInHeapObj_dmu_Fn(IRGenModule &IGM,
                                                                                   const HeapLayout &layout) {
   llvm::Function *fn =
   llvm::Function::Create(IGM.VisitorOfRefsInHeapObj_dmu_Ty,
@@ -348,7 +348,7 @@ HeapLayout::getPrivateMetadata(IRGenModule &IGM,
                                llvm::Constant *captureDescriptor) const {
   if (!privateMetadata)
     privateMetadata = buildPrivateMetadata(IGM, *this, createDtorFn(IGM, *this),
-                                           createVisitorOfRefsInHeapObj_dmu_Fn(IGM, *this), // dmu
+                                           createVisitorOfRefsInHeapObj_dmu_Fn(IGM, *this),
                                            captureDescriptor,
                                            MetadataKind::HeapLocalVariable);
   return privateMetadata;

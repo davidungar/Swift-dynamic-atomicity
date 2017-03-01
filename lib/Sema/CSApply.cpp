@@ -187,7 +187,7 @@ static bool shouldAccessStorageDirectly(Expr *base, VarDecl *member,
     return false;
 
   if (!isa<ConstructorDecl>(AFD) && !isa<DestructorDecl>(AFD)
-      &&  !isa<VisitorOfRefsInInstance_dmu_Decl>(AFD))  // dmu
+      &&  !isa<VisitorOfRefsInInstance_dmu_Decl>(AFD)) 
     return false;
 
   // ... via a "self.property" reference.
