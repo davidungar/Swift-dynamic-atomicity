@@ -178,12 +178,12 @@ namespace irgen {
                              Address buffer);
   
   /// TODO: (dmu) comment
-  void emitMakeContentsOfBufferSafeForConcurrentAccessCall(IRGenFunction &IGF, // dmu
-                                                           llvm::Value *metadata,
-                                                           Address buffer);
-  void emitMakeContentsOfBufferSafeForConcurrentAccessCall(IRGenFunction &IGF, // dmu
-                                                           SILType T,
-                                                           Address buffer);
+  void emitVisitRefsInBuffer_dmu_Call(IRGenFunction &IGF,
+                                      llvm::Value *metadata,
+                                      Address buffer);
+  void emitVisitRefsInBuffer_dmu_Call(IRGenFunction &IGF,
+                                      SILType T,
+                                      Address buffer);
   
   /// Emit a call to do a 'deallocateBuffer' operation.
   void emitDeallocateBufferCall(IRGenFunction &IGF,

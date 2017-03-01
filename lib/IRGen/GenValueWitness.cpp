@@ -74,7 +74,7 @@ const char *irgen::getValueWitnessName(ValueWitness witness) {
   CASE(Stride)
   CASE(ExtraInhabitantFlags)
   CASE(VisitRefsInValue_dmu_)
-  CASE(MakeContentsOfBufferSafeForConcurrentAccess) // dmu
+  CASE(VisitRefsInBuffer_dmu_)
   CASE(MakeContentsOfArraySafeForConcurrentAccess) // dmu
 #undef CASE
   }
@@ -657,7 +657,7 @@ static void buildValueWitnessFunction(IRGenModule &IGM,
     return;
   }
       
-  case ValueWitness::MakeContentsOfBufferSafeForConcurrentAccess: { // dmu clone TODO: (dmu) factor with destroyBuffer?
+  case ValueWitness::VisitRefsInBuffer_dmu_: { // dmu clone TODO: (dmu) factor with destroyBuffer?
     Address buffer = getArgAsBuffer(IGF, argv, "buffer");
     getArgAsLocalSelfTypeMetadata(IGF, argv, abstractType);
     emitMakeContainedReferencesOfElementsOfBufferCountAtomically(IGF, buffer, concreteType, type, packing);
@@ -1219,7 +1219,7 @@ static llvm::Constant *getValueWitness(IRGenModule &IGM,
     }
     goto standard;
       
-  case ValueWitness::MakeContentsOfBufferSafeForConcurrentAccess: // dmu
+  case ValueWitness::VisitRefsInBuffer_dmu_:
     if (concreteTI.isPOD(ResilienceExpansion::Maximal)) {
       if (isNeverAllocated(packing))
         return asOpaquePtr(IGM, getNoOpVoidFunction(IGM));

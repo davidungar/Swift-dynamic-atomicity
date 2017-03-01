@@ -136,7 +136,7 @@ static void emitVisitRefsInExistentialValue_dmu_(IRGenFunction &IGF,
   llvm::Value *metadata = layout.loadMetadataRef(IGF, addr);
   
   Address object = layout.projectExistentialBuffer(IGF, addr);
-  emitMakeContentsOfBufferSafeForConcurrentAccessCall(IGF, metadata, object);
+  emitVisitRefsInBuffer_dmu_Call(IGF, metadata, object);
 }
 
 static llvm::Constant *getAssignExistentialsFunction(IRGenModule &IGM,

@@ -57,10 +57,10 @@ static llvm::Type *createWitnessType(IRGenModule &IGM, ValueWitness index) {
   switch (index) {
   // void (*deallocateBuffer)(B *buffer, M *self);
   // void (*destroyBuffer)(B *buffer, M *self);
-  // void (*makeContentsOfBufferSafeForConcurrentAccess)(B *buffer, M* self); // dmu blind clone
+  // void (*visitRefsInBuffer_dmu_)(B *buffer, M* self); // dmu blind clone
   case ValueWitness::DeallocateBuffer:
   case ValueWitness::DestroyBuffer:
-  case ValueWitness::MakeContentsOfBufferSafeForConcurrentAccess: /*dmu*/  {
+  case ValueWitness::VisitRefsInBuffer_dmu_: {
     llvm::Type *bufPtrTy = IGM.getFixedBufferTy()->getPointerTo(0);
     llvm::Type *args[] = { bufPtrTy, IGM.TypeMetadataPtrTy };
     return llvm::FunctionType::get(IGM.VoidTy, args, /*isVarArg*/ false)
@@ -289,8 +289,8 @@ static StringRef getValueWitnessLabel(ValueWitness index) {
     return "destructiveInjectEnumTag";
   case ValueWitness::VisitRefsInValue_dmu_:
     return "visitRefsInValue_dmu_";
-  case ValueWitness::MakeContentsOfBufferSafeForConcurrentAccess: // dmu
-    return "makeContentsOfBufferSafeForConcurrentAccess";
+  case ValueWitness::VisitRefsInBuffer_dmu_:
+    return "visitRefsInBuffer_dmu_";
   case ValueWitness::MakeContentsOfArraySafeForConcurrentAccess: // dmu
     return "makeContentsOfArraySafeForConcurrentAccess";
   }
@@ -770,22 +770,22 @@ void irgen::emitDestroyBufferCall(IRGenFunction &IGF,
 
 
 /// Emit a call to do a 'destroyBuffer' operation.
-void irgen::emitMakeContentsOfBufferSafeForConcurrentAccessCall(IRGenFunction &IGF, // dmu blind clone
+void irgen::emitVisitRefsInBuffer_dmu_Call(IRGenFunction &IGF, // dmu blind clone
                                   SILType T,
                                   Address buffer) {
   auto metadata = IGF.emitTypeMetadataRefForLayout(T);
   llvm::Value *fn = IGF.emitValueWitnessForLayout(T,
-                                                  ValueWitness::MakeContentsOfBufferSafeForConcurrentAccess);
+                                                  ValueWitness::VisitRefsInBuffer_dmu_);
   llvm::CallInst *call =
   IGF.Builder.CreateCall(fn, {buffer.getAddress(), metadata});
   call->setCallingConv(IGF.IGM.DefaultCC);
   setHelperAttributes(call);
 }
-void irgen::emitMakeContentsOfBufferSafeForConcurrentAccessCall(IRGenFunction &IGF, // dmu blind clone
+void irgen::emitVisitRefsInBuffer_dmu_Call(IRGenFunction &IGF, // dmu blind clone
                                   llvm::Value *metadata,
                                   Address buffer) {
   auto fn = emitLoadOfValueWitnessFromMetadata(IGF, metadata,
-                                               ValueWitness::MakeContentsOfBufferSafeForConcurrentAccess);
+                                               ValueWitness::VisitRefsInBuffer_dmu_);
   llvm::CallInst *call =
   IGF.Builder.CreateCall(fn, {buffer.getAddress(), metadata});
   call->setCallingConv(IGF.IGM.DefaultCC);

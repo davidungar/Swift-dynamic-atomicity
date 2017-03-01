@@ -146,7 +146,7 @@ public:
   }
   
   void makeContainedReferencesOfElementsOfBufferCountAtomically(IRGenFunction &IGF, Address buffer, SILType T) const override { // dmu
-    emitMakeContentsOfBufferSafeForConcurrentAccessCall(IGF, T, buffer);
+    emitVisitRefsInBuffer_dmu_Call(IGF, T, buffer);
   }
   
   void makeContainedReferencesOfElementsOfArrayCountAtomically(IRGenFunction &IGF, // dmu

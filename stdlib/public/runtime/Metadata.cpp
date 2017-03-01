@@ -622,7 +622,7 @@ static void tuple_visitRefsInValue_dmu_(OpaqueValue *tuple, const Metadata *_met
 }
 /// TODO: (dmu) explain
 template <bool IsPOD, bool IsInline>
-static void tuple_makeContentsOfBufferSafeForConcurrentAccess(ValueBuffer *buffer, const Metadata *metatype) { // dmu
+static void tuple_visitRefsInBuffer_dmu_(ValueBuffer *buffer, const Metadata *metatype) {
   assert(IsPOD == tuple_getValueWitnesses(metatype)->isPOD());
   assert(IsInline == tuple_getValueWitnesses(metatype)->isValueInline());
   
@@ -1237,11 +1237,11 @@ static void pod_noop(void *object, const Metadata *self) {
   pod_direct_visitRefsInValue_dmu_
 
 
-#define pod_direct_makeContentsOfBufferSafeForConcurrentAccess /*dmu*/ \
-pointer_function_cast<value_witness_types::makeContentsOfBufferSafeForConcurrentAccess>(pod_noop)
+#define pod_direct_visitRefsInBuffer_dmu_ \
+pointer_function_cast<value_witness_types::visitRefsInBuffer_dmu_>(pod_noop)
 
-#define pod_indirect_makeContentsOfBufferSafeForConcurrentAccess /*dmu*/ \
-pod_direct_makeContentsOfBufferSafeForConcurrentAccess
+#define pod_indirect_visitRefsInBuffer_dmu_ \
+pod_direct_visitRefsInBuffer_dmu_
 
 
 

@@ -104,7 +104,7 @@ struct LLVM_LIBRARY_VISIBILITY OpaqueExistentialBoxBase
       
   template <class Container, class... A>
   static void visitRefsInValue_dmu_(Container *value, A... args) {
-    value->getType()->vw_makeContentsOfBufferSafeForConcurrentAccess(value->getBuffer(args...));
+    value->getType()->vw_visitRefsInBuffer_dmu_(value->getBuffer(args...));
   }
 
   

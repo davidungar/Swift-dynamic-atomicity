@@ -193,7 +193,7 @@ enum class ValueWitness : unsigned {
   VisitRefsInValue_dmu_,
   
   ///  TODO: (dmu) comment me
-  MakeContentsOfBufferSafeForConcurrentAccess, // dmu
+  VisitRefsInBuffer_dmu_,
   
   ///  TODO: (dmu) comment me
   MakeContentsOfArraySafeForConcurrentAccess, // dmu

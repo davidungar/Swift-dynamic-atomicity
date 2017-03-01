@@ -292,8 +292,8 @@ static StringRef toString(ValueWitnessKind k) {
     return "destructiveInjectEnumTag";
   case ValueWitnessKind::VisitRefsInValue_dmu_:
     return "visitRefsInValue_dmu_";
-  case ValueWitnessKind::MakeContentsOfBufferSafeForConcurrentAccess: // dmu
-    return "makeContentsOfBufferSafeForConcurrentAccess";
+  case ValueWitnessKind::VisitRefsInBuffer_dmu_:
+    return "visitRefsInBuffer_dmu_";
   case ValueWitnessKind::MakeContentsOfArraySafeForConcurrentAccess: // dmu
       return "makeContentsOfArraySafeForConcurrentAccess";
   }

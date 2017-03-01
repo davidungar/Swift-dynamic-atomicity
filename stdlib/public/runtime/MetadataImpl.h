@@ -173,7 +173,7 @@ struct NativeBox {
   
   static void visitRefsInValue_dmu_(T *value) {}
   
-  static void makeContentsOfBufferSafeForConcurrentAccess(T *value) {} // dmu
+  static void visitRefsInBuffer_dmu_(T *value) {}
   
   static void makeContentsOfArraySafeForConcurrentAccess(T *array, size_t n) {} // dmu
 
@@ -839,7 +839,7 @@ template <class Impl> struct BufferValueWitnessesBase {
     return Impl::initializeWithTake(Impl::allocateBuffer(dest, self), src, self);
   }
   
-  static void makeContentsOfBufferSafeForConcurrentAccess(ValueBuffer* buffer, const Metadata *self) { // dmu
+  static void visitRefsInBuffer_dmu_(ValueBuffer* buffer, const Metadata *self) {
     Impl::visitRefsInValue_dmu_(Impl::projectBuffer(buffer, self), self);
   }
 };
