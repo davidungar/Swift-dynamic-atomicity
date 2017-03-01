@@ -1594,7 +1594,7 @@ public:
   void visitDestroyAddrInst(DestroyAddrInst *DI) {
     *this << getIDAndType(DI->getOperand());
   }
-  void visitMakeAddrCountAtomicallyInst(MakeAddrCountAtomicallyInst *DI) { // dmu
+  void visitVisitRefAtAddr_dmu_Inst(VisitRefAtAddr_dmu_Inst *DI) { // dmu
     *this << getIDAndType(DI->getOperand());
   }
   void visitProjectValueBufferInst(ProjectValueBufferInst *PVBI) {

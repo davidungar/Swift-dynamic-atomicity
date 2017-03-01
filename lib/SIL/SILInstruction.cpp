@@ -204,7 +204,7 @@ namespace {
       return true;
     }
 
-    bool visitMakeAddrCountAtomicallyInst(const MakeAddrCountAtomicallyInst *RHS) { // dmu
+    bool visitVisitRefAtAddr_dmu_Inst(const VisitRefAtAddr_dmu_Inst *RHS) { // dmu
       return true;
     }
       

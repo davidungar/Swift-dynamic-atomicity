@@ -921,7 +921,7 @@ public:
 
   void visitCopyAddrInst(CopyAddrInst *i);
   void visitDestroyAddrInst(DestroyAddrInst *i);
-  void visitMakeAddrCountAtomicallyInst(MakeAddrCountAtomicallyInst *i); // dmu
+  void visitVisitRefAtAddr_dmu_Inst(VisitRefAtAddr_dmu_Inst *i); // dmu
 
   void visitBindMemoryInst(BindMemoryInst *i);
 
@@ -4723,7 +4723,7 @@ void IRGenSILFunction::visitDestroyAddrInst(swift::DestroyAddrInst *i) {
 }
 
 
-void IRGenSILFunction::visitMakeAddrCountAtomicallyInst(swift::MakeAddrCountAtomicallyInst *i) { // dmu
+void IRGenSILFunction::visitVisitRefAtAddr_dmu_Inst(swift::VisitRefAtAddr_dmu_Inst *i) { // dmu
   SILType addrTy = i->getOperand()->getType();
   const TypeInfo &addrTI = getTypeInfo(addrTy);
   

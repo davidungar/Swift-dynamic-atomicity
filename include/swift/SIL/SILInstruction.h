@@ -4507,15 +4507,15 @@ class DestroyAddrInst : public UnaryInstructionBase<ValueKind::DestroyAddrInst,
 };
   
 /// TODO: (dmu) comment
-class MakeAddrCountAtomicallyInst // dmu
+class VisitRefAtAddr_dmu_Inst // dmu
   : public UnaryInstructionBase<
-  ValueKind::MakeAddrCountAtomicallyInst,
+  ValueKind::VisitRefAtAddr_dmu_Inst,
   SILInstruction,
   /*HAS_RESULT*/ false>
 {
   friend SILBuilder;
   
-  MakeAddrCountAtomicallyInst(SILDebugLocation DebugLoc, SILValue Operand)
+  VisitRefAtAddr_dmu_Inst(SILDebugLocation DebugLoc, SILValue Operand)
   : UnaryInstructionBase(DebugLoc, Operand) {}
 };
 

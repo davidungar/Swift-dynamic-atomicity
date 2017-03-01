@@ -143,7 +143,7 @@ void SILGenFunction::emitVisitorOfRefsInInstance_dmu_(SILValue selfValue,
     if (!ti.isTrivial()) {
       SILValue addr = B.createRefElementAddr(cleanupLoc, selfValue, vd,
                                              ti.getLoweredType().getAddressType());
-      B.createMakeAddrCountAtomically(cleanupLoc, addr);
+      B.createVisitRefAtAddr_dmu_(cleanupLoc, addr);
     }
   }
 }

@@ -127,7 +127,7 @@ ABSTRACT_VALUE(SILInstruction, ValueBase)
   INST(StoreUnownedInst, SILInstruction, store_unowned, MayWrite, DoesNotRelease)
   INST(StoreWeakInst, SILInstruction, store_weak, MayWrite, DoesNotRelease)
   INST(CopyAddrInst, SILInstruction, copy_addr, MayHaveSideEffects, MayRelease)
-  INST(MakeAddrCountAtomicallyInst, SILInstruction, make_addr_count_atomically, MayHaveSideEffects, MayRelease) // dmu
+  INST(VisitRefAtAddr_dmu_Inst, SILInstruction, visit_ref_at_addr_dmu, MayHaveSideEffects, MayRelease)
   INST(DestroyAddrInst, SILInstruction, destroy_addr, MayHaveSideEffects, MayRelease)
   INST(ProjectValueBufferInst, SILInstruction, project_value_buffer, MayRead, DoesNotRelease)
   INST(ProjectBoxInst, SILInstruction, project_box, None, DoesNotRelease)

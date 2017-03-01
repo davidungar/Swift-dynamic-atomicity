@@ -1796,10 +1796,10 @@ SILCloner<ImplClass>::visitDestroyAddrInst(DestroyAddrInst *Inst) {
   
 template<typename ImplClass>
 void
-SILCloner<ImplClass>::visitMakeAddrCountAtomicallyInst(MakeAddrCountAtomicallyInst *Inst) { // dmu
+SILCloner<ImplClass>::visitVisitRefAtAddr_dmu_Inst(VisitRefAtAddr_dmu_Inst *Inst) { // dmu
   getBuilder().setCurrentDebugScope(getOpScope(Inst->getDebugScope()));
   doPostProcess(Inst,
-                getBuilder().createMakeAddrCountAtomically(getOpLocation(Inst->getLoc()),
+                getBuilder().createVisitRefAtAddr_dmu_(getOpLocation(Inst->getLoc()),
                                                getOpValue(Inst->getOperand())));
 }
 

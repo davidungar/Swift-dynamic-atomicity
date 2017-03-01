@@ -284,7 +284,7 @@ CONSTANT_OWNERSHIP_INST(Trivial, false, DeallocStack)
 CONSTANT_OWNERSHIP_INST(Trivial, false, DebugValueAddr)
 CONSTANT_OWNERSHIP_INST(Trivial, false, DeinitExistentialAddr)
 CONSTANT_OWNERSHIP_INST(Trivial, false, DestroyAddr)
-CONSTANT_OWNERSHIP_INST(Trivial, false, MakeAddrCountAtomically) // dmu
+CONSTANT_OWNERSHIP_INST(Trivial, false, VisitRefAtAddr_dmu_) // dmu
 CONSTANT_OWNERSHIP_INST(Trivial, false, IndexAddr)
 CONSTANT_OWNERSHIP_INST(Trivial, false, IndexRawPointer)
 CONSTANT_OWNERSHIP_INST(Trivial, false, InitBlockStorageHeader)

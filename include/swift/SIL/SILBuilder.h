@@ -1314,9 +1314,9 @@ public:
     return insert(new (F.getModule())
                       DestroyAddrInst(getSILDebugLocation(Loc), Operand));
   }
-  MakeAddrCountAtomicallyInst *createMakeAddrCountAtomically(SILLocation Loc, SILValue Operand) { // dmu
+  VisitRefAtAddr_dmu_Inst *createVisitRefAtAddr_dmu_(SILLocation Loc, SILValue Operand) { // dmu
     return insert(new (F.getModule())
-                  MakeAddrCountAtomicallyInst(getSILDebugLocation(Loc), Operand));
+                  VisitRefAtAddr_dmu_Inst(getSILDebugLocation(Loc), Operand));
   }
 
   ProjectValueBufferInst *createProjectValueBuffer(SILLocation Loc,
@@ -1603,8 +1603,8 @@ public:
   emitDestroyAddr(SILLocation Loc, SILValue Operand);
 
   /// TODO: (dmu) comment
-  MakeAddrCountAtomicallyInst* // dmu
-  emitMakeAddrCountAtomically(SILLocation Loc, SILValue Operand);
+  VisitRefAtAddr_dmu_Inst* // dmu
+  emitVisitRefAtAddr_dmu_(SILLocation Loc, SILValue Operand);
 
   /// Emit a destroy_value instruction at the current location, attempting to
   /// fold it locally into another nearby copy_value instruction. Returns a

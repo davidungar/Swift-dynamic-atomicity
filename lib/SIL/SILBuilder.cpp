@@ -179,9 +179,9 @@ SILBuilder::emitDestroyAddr(SILLocation Loc, SILValue Operand) {
 }
 
 
-MakeAddrCountAtomicallyInst*
-SILBuilder::emitMakeAddrCountAtomically(SILLocation Loc, SILValue Operand) { // dmu
-  return createMakeAddrCountAtomically(Loc, Operand);
+VisitRefAtAddr_dmu_Inst*
+SILBuilder::emitVisitRefAtAddr_dmu_(SILLocation Loc, SILValue Operand) { // dmu
+  return createVisitRefAtAddr_dmu_(Loc, Operand);
 }
 
 
