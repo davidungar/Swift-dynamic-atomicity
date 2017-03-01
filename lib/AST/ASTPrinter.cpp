@@ -1418,7 +1418,7 @@ bool swift::shouldPrint(const Decl *D, PrintOptions &Options) {
     return false;
   }
   
-  // TODO: (dmu) add for MakeContainedReferencesCountAtomicallyDecl
+  // TODO: (dmu) add for VisitRefsInInstance_dmu_Decl
 
   if (Options.SkipImports && isa<ImportDecl>(D)) {
     return false;
@@ -2879,7 +2879,7 @@ void PrintAST::visitDestructorDecl(DestructorDecl *decl) {
 }
 
 
-void PrintAST::visitMakeContainedReferencesCountAtomicallyDecl(MakeContainedReferencesCountAtomicallyDecl *decl) { // dmu
+void PrintAST::visitVisitRefsInInstance_dmu_Decl(VisitRefsInInstance_dmu_Decl *decl) { // dmu
   printDocumentationComment(decl);
   printAttributes(decl);
   recordDeclLoc(decl,

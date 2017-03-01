@@ -562,7 +562,7 @@ CodeCompletionResult::getCodeCompletionDeclKind(const Decl *D) {
     return CodeCompletionDeclKind::Constructor;
   case DeclKind::Destructor:
     return CodeCompletionDeclKind::Destructor;
-  case DeclKind::MakeContainedReferencesCountAtomically: // dmu
+  case DeclKind::VisitRefsInInstance_dmu_: // dmu
     return CodeCompletionDeclKind::MakeContainedReferencesCountAtomically;
   case DeclKind::Func: {
     auto DC = D->getDeclContext();

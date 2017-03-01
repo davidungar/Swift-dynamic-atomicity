@@ -545,7 +545,7 @@ struct {
   FullMetadata<ClassMetadata> Metadata;
 } SuperclassWithPrefix = {
   { &Global1, &Global3, &Global2, &Global3 },
-  { { { &destroySuperclass, MakeContainedReferencesCountAtomicallyFunctionValues::unimplemented /*dmu makeContainedReferencesCountAtomicallyContents*/ }, { &VALUE_WITNESS_SYM(Bo) } },
+  { { { &destroySuperclass, VisitRefsInHeapObj_dmu_Values::unimplemented /*dmu makeContainedReferencesCountAtomicallyContents*/ }, { &VALUE_WITNESS_SYM(Bo) } },
     { { { MetadataKind::Class } }, nullptr, /*rodata*/ 1, ClassFlags(), nullptr,
       0, 0, 0, sizeof(SuperclassWithPrefix),
       sizeof(SuperclassWithPrefix.Prefix) + sizeof(HeapMetadataHeader) } }
@@ -577,7 +577,7 @@ struct {
     sizeof(HeapMetadataHeader), // address point
     {} // private data
   },
-  { { { &destroySubclass, MakeContainedReferencesCountAtomicallyFunctionValues::unimplemented /*dmu makeContainedReferencesCountAtomicallyContents*/ }, { &VALUE_WITNESS_SYM(Bo) } },
+  { { { &destroySubclass, VisitRefsInHeapObj_dmu_Values::unimplemented /*dmu makeContainedReferencesCountAtomicallyContents*/ }, { &VALUE_WITNESS_SYM(Bo) } },
     { { { MetadataKind::Class } }, nullptr, /*rodata*/ 1, ClassFlags(), nullptr,
       0, 0, 0,
       sizeof(GenericSubclass.Pattern) + sizeof(GenericSubclass.Suffix),
@@ -598,7 +598,7 @@ TEST(MetadataTest, getGenericMetadata_SuperclassWithUnexpectedPrefix) {
 
       int const extraWordCountFor_makeContainedReferencesCountAtomically = 1; // dmu metadata layout
       // No instance variables that are reference counted
-      void* const expectedValueFor_makeContainedReferencesCountAtomically = reinterpret_cast<void* const>(MakeContainedReferencesCountAtomicallyFunctionValues::unimplemented); // dmu
+      void* const expectedValueFor_makeContainedReferencesCountAtomically = reinterpret_cast<void* const>(VisitRefsInHeapObj_dmu_Values::unimplemented); // dmu
       
       // Assert that we copied the extra prefix data from the superclass.
       EXPECT_EQ(&Global1, fields[-6 - extraWordCountFor_makeContainedReferencesCountAtomically]); // TODO: (dmu factor extra metadata layotu)

@@ -1434,7 +1434,7 @@ namespace {
       }
     }
 
-    void visitMakeContainedReferencesCountAtomicallyDecl(MakeContainedReferencesCountAtomicallyDecl *maker) { // dmu
+    void visitVisitRefsInInstance_dmu_Decl(VisitRefsInInstance_dmu_Decl *maker) { // dmu
     }
 
     void addIVarInitializer() {

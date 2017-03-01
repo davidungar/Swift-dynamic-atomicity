@@ -1722,7 +1722,7 @@ static CanAnyFunctionType getDestructorInterfaceType(DestructorDecl *dd,
 
 /// Get the type of a make... function.
 /// TODO: (dmu) needed?
-static CanAnyFunctionType getMakeContainedReferencesCountAtomicallyInterfaceType(MakeContainedReferencesCountAtomicallyDecl *dd, // dmu
+static CanAnyFunctionType getMakeContainedReferencesCountAtomicallyInterfaceType(VisitRefsInInstance_dmu_Decl *dd, // dmu
                                                                                  ASTContext &C,
                                                                                  bool isForeign) {
   auto classType = dd->getDeclContext()->getDeclaredInterfaceType()
@@ -1899,7 +1899,7 @@ CanAnyFunctionType TypeConverter::makeConstantInterfaceType(SILDeclRef c) {
       
   // TODO: (dmu) blind clone
   case SILDeclRef::Kind::MakeContainedReferencesCountAtomically: // dmu
-      return getMakeContainedReferencesCountAtomicallyInterfaceType(cast<MakeContainedReferencesCountAtomicallyDecl>(vd),
+      return getMakeContainedReferencesCountAtomicallyInterfaceType(cast<VisitRefsInInstance_dmu_Decl>(vd),
                                         Context,
                                         c.isForeign);
   

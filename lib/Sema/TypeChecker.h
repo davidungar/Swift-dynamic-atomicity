@@ -1040,7 +1040,7 @@ public:
   bool typeCheckDestructorBodyUntil(DestructorDecl *DD,
                                     SourceLoc EndTypeCheckLoc);
 
-  bool typeCheckMakeContainedReferencesCountAtomicallyBodyUntil(MakeContainedReferencesCountAtomicallyDecl *MD, // dmu
+  bool typeCheckMakeContainedReferencesCountAtomicallyBodyUntil(VisitRefsInInstance_dmu_Decl *MD, // dmu
                                     SourceLoc EndTypeCheckLoc);
 
   void typeCheckClosureBody(ClosureExpr *closure);

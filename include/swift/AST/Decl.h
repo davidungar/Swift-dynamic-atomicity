@@ -45,7 +45,7 @@ namespace swift {
   class ASTWalker;
   class ConstructorDecl;
   class DestructorDecl;
-  class MakeContainedReferencesCountAtomicallyDecl; // dmu
+  class VisitRefsInInstance_dmu_Decl; // dmu
   class DiagnosticEngine;
   class DynamicSelfType;
   class Type;
@@ -123,7 +123,7 @@ enum class DescriptiveDeclKind : uint8_t {
   Subscript,
   Constructor,
   Destructor,
-  MakeContainedReferencesCountAtomically, // dmu
+  VisitRefsInInstance_dmu_,
   LocalFunction,
   GlobalFunction,
   OperatorFunction,
@@ -3259,7 +3259,7 @@ public:
   /// Retrieve the destructor for this class.
   DestructorDecl *getDestructor();
   
-  MakeContainedReferencesCountAtomicallyDecl *getMakeContainedReferencesCountAtomically(); // dmu
+  VisitRefsInInstance_dmu_Decl *getMakeContainedReferencesCountAtomically(); // dmu
 
 
   /// Determine whether this class inherits the convenience initializers
@@ -5703,10 +5703,10 @@ public:
   }
 };
   
-class MakeContainedReferencesCountAtomicallyDecl : public AbstractFunctionDecl { // dmu
+class VisitRefsInInstance_dmu_Decl : public AbstractFunctionDecl { // dmu
   ParameterList *SelfParameter;
 public:
-  MakeContainedReferencesCountAtomicallyDecl(Identifier NameHack, // dmu
+  VisitRefsInInstance_dmu_Decl(Identifier NameHack, // dmu
                  SourceLoc makeLoc, ParamDecl *selfDecl, DeclContext *Parent);
   
   void setSelfDecl(ParamDecl *selfDecl);
@@ -6099,8 +6099,8 @@ AbstractFunctionDecl::getParameterLists() {
     return cast<ConstructorDecl>(this)->getParameterLists();
   case DeclKind::Destructor:
     return cast<DestructorDecl>(this)->getParameterLists();
-  case DeclKind::MakeContainedReferencesCountAtomically: // dmu
-    return cast<MakeContainedReferencesCountAtomicallyDecl>(this)->getParameterLists();
+    case DeclKind::VisitRefsInInstance_dmu_: // dmu
+    return cast<VisitRefsInInstance_dmu_Decl>(this)->getParameterLists();
   case DeclKind::Func:
     return cast<FuncDecl>(this)->getParameterLists();
   }

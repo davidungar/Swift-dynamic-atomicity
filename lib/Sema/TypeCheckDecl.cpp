@@ -1776,7 +1776,7 @@ static void checkAccessibility(TypeChecker &TC, const Decl *D) {
   case DeclKind::Destructor:
     // Always correct.
     return;
-  case DeclKind::MakeContainedReferencesCountAtomically: // dmu
+  case DeclKind::VisitRefsInInstance_dmu_: // dmu
       return;
 
   case DeclKind::PatternBinding: {
@@ -2560,7 +2560,7 @@ void swift::markAsObjC(TypeChecker &TC, ValueDecl *D,
   }
 
   // Make sure we have the appropriate bridging operations.
-  if (!isa<DestructorDecl>(D)  &&  !isa<MakeContainedReferencesCountAtomicallyDecl>(D)) // dmu
+  if (!isa<DestructorDecl>(D)  &&  !isa<VisitRefsInInstance_dmu_Decl>(D)) // dmu
     checkBridgedFunctions(TC);
   TC.useObjectiveCBridgeableConformances(D->getInnermostDeclContext(),
                                          D->getInterfaceType());
@@ -6666,7 +6666,7 @@ public:
     TC.checkDeclAttributes(DD);
   }
   
-  void visitMakeContainedReferencesCountAtomicallyDecl(MakeContainedReferencesCountAtomicallyDecl *MD) { // dmu TODO: (dmu) check
+  void visitVisitRefsInInstance_dmu_Decl(VisitRefsInInstance_dmu_Decl *MD) { // dmu TODO: (dmu) check
     if (MD->isInvalid()) {
       MD->setInterfaceType(ErrorType::get(TC.Context));
       return;
@@ -7294,7 +7294,7 @@ void TypeChecker::validateDecl(ValueDecl *D) {
 
   case DeclKind::Destructor:
   case DeclKind::EnumElement:
-  case DeclKind::MakeContainedReferencesCountAtomically: // dmu (needed?)
+  case DeclKind::VisitRefsInInstance_dmu_: // dmu (needed?)
     {
     if (D->hasInterfaceType())
       return;
@@ -7364,7 +7364,7 @@ void TypeChecker::validateAccessibility(ValueDecl *D) {
     break;
 
   case DeclKind::Destructor:
-  case DeclKind::MakeContainedReferencesCountAtomically: // dmu blind clone
+  case DeclKind::VisitRefsInInstance_dmu_: // dmu blind clone
   case DeclKind::EnumElement: {
     if (D->isInvalid()) {
       D->setAccessibility(Accessibility::Private);
@@ -8202,7 +8202,7 @@ static void validateAttributes(TypeChecker &TC, Decl *D) {
         error = diag::objc_observing_accessor;
     } else if (isa<ConstructorDecl>(D) ||
                isa<DestructorDecl>(D) ||
-               isa<MakeContainedReferencesCountAtomicallyDecl>(D) || // dmu
+               isa<VisitRefsInInstance_dmu_Decl>(D) || // dmu
                isa<SubscriptDecl>(D) ||
                isa<VarDecl>(D)) {
       if (!checkObjCDeclContext(D))
@@ -8238,7 +8238,7 @@ static void validateAttributes(TypeChecker &TC, Decl *D) {
             ObjCSelector(TC.Context, 0, objcName->getSelectorPieces()[0]),
             /*implicit=*/false);
         }
-      } else if (isa<SubscriptDecl>(D) || isa<DestructorDecl>(D) || isa<MakeContainedReferencesCountAtomicallyDecl>(D)) { // dmu
+      } else if (isa<SubscriptDecl>(D) || isa<DestructorDecl>(D) || isa<VisitRefsInInstance_dmu_Decl>(D)) { // dmu
         TC.diagnose(objcAttr->getLParenLoc(),
                     isa<SubscriptDecl>(D)
                       ? diag::objc_name_subscript
@@ -8293,7 +8293,7 @@ static void validateAttributes(TypeChecker &TC, Decl *D) {
     auto func = dyn_cast<FuncDecl>(D);
     if (func &&
         (isa<DestructorDecl>(func) ||
-         isa<MakeContainedReferencesCountAtomicallyDecl>(func) || // TODO: (dmu) check
+         isa<VisitRefsInInstance_dmu_Decl>(func) || // TODO: (dmu) check
          !checkObjCDeclContext(func) ||
          (func->isAccessor() && !func->isGetterOrSetter()))) {
       error = diag::invalid_nonobjc_decl;

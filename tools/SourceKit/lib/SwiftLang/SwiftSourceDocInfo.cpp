@@ -1458,7 +1458,7 @@ void SwiftLangSupport::findRelatedIdentifiersInFile(
         if (!SemaTok.IsRef &&
             (isa<ConstructorDecl>(VD) ||
              isa<DestructorDecl>(VD) ||
-             isa<MakeContainedReferencesCountAtomicallyDecl>(VD) ||  // dmu
+             isa<VisitRefsInInstance_dmu_Decl>(VD) ||  // dmu
              isa<SubscriptDecl>(VD)))
           return;
         if (VD->getName().isOperator())

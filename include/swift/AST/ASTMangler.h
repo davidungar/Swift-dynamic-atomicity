@@ -70,7 +70,7 @@ public:
   std::string mangleDestructorEntity(const DestructorDecl *decl,
                                      bool isDeallocating, SymbolKind SKind);
 
-  std::string mangleMakeContainedReferencesCountAtomicallyEntity(const MakeContainedReferencesCountAtomicallyDecl *decl, // dmu
+  std::string mangleVisitRefsInInstance_dmu_Entity(const VisitRefsInInstance_dmu_Decl *decl, // dmu
                                      SymbolKind SKind);
   
   std::string mangleConstructorEntity(const ConstructorDecl *ctor,
@@ -215,7 +215,7 @@ protected:
   
   void appendDestructorEntity(const DestructorDecl *decl, bool isDeallocating);
   
-  void appendMakeContainedReferencesCountAtomicallyEntity(const MakeContainedReferencesCountAtomicallyDecl *decl); // dmu
+  void appendMakeContainedReferencesCountAtomicallyEntity(const VisitRefsInInstance_dmu_Decl *decl); // dmu
   
   void appendAccessorEntity(AccessorKind kind,
                             AddressorKind addressorKind,

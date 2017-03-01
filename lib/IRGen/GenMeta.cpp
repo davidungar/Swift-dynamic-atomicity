@@ -3347,7 +3347,7 @@ namespace {
     }
     
     // TODO: (dmu) factor with addDestructorFunction above
-    void addMakeContainedReferencesCountAtomicallyFunction() { // dmu
+    void addVisitRefsInInstance_dmu_Function() { // dmu
       
       auto expansion = ResilienceExpansion::Minimal;
       auto makeRef = SILDeclRef(Target->getDestructor(),

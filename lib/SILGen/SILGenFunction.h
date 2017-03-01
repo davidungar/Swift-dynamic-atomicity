@@ -474,7 +474,7 @@ public:
   void emitDestroyingDestructor(DestructorDecl *dd);
   
   /// Generates code for a TODO: (dmu) comment
-  void emitMakeContainedReferencesCountAtomically(MakeContainedReferencesCountAtomicallyDecl *dd); // dmu
+  void emitMakeContainedReferencesCountAtomically(VisitRefsInInstance_dmu_Decl *dd); // dmu
 
 
   /// Generates code for an artificial top-level function that starts an

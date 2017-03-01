@@ -980,9 +980,9 @@ namespace {
       PrintWithColorRAII(OS, ParenthesisColor) << ')';
     }
     
-    void visitMakeContainedReferencesCountAtomicallyDecl(MakeContainedReferencesCountAtomicallyDecl *MD) { // dmu
-      printCommonAFD(MD, "makeContainedReferencesCountAtomically_decl");
-      printAbstractFunctionDecl(MD);
+    void visitVisitRefsInInstance_dmu_Decl(VisitRefsInInstance_dmu_Decl *VD) { // dmu
+      printCommonAFD(VD, "visitRefsInInstance_dmu__decl");
+      printAbstractFunctionDecl(VD);
       PrintWithColorRAII(OS, ParenthesisColor) << ')';
     }
 
@@ -1185,7 +1185,7 @@ void swift::printContext(raw_ostream &os, DeclContext *dc) {
       os << "init";
     if (isa<DestructorDecl>(AFD))
       os << "deinit";
-    if (isa<MakeContainedReferencesCountAtomicallyDecl>(AFD)) // dmu
+    if (isa<VisitRefsInInstance_dmu_Decl>(AFD)) // dmu
       os << "makeContainedreferencesCountAtomically";
     break;
   }

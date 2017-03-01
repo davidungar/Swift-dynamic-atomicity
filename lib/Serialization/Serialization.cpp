@@ -1467,7 +1467,7 @@ static bool shouldSerializeMember(Decl *D) {
   case DeclKind::Protocol:
   case DeclKind::Constructor:
   case DeclKind::Destructor:
-  case DeclKind::MakeContainedReferencesCountAtomically: // dmu
+  case DeclKind::VisitRefsInInstance_dmu_: // dmu
   case DeclKind::PatternBinding:
   case DeclKind::Subscript:
   case DeclKind::TypeAlias:
@@ -1841,7 +1841,7 @@ DEF_VERIFY_ATTR(Var)
 DEF_VERIFY_ATTR(Subscript)
 DEF_VERIFY_ATTR(Constructor)
 DEF_VERIFY_ATTR(Destructor)
-DEF_VERIFY_ATTR(MakeContainedReferencesCountAtomically) // dmu
+DEF_VERIFY_ATTR(VisitRefsInInstance_dmu_) // dmu
 
 #undef DEF_VERIFY_ATTR
 #else
@@ -2906,8 +2906,8 @@ void Serializer::writeDecl(const Decl *D) {
     break;
   }
       
-  case DeclKind::MakeContainedReferencesCountAtomically: { // dmu
-    auto maker = cast<MakeContainedReferencesCountAtomicallyDecl>(D);
+  case DeclKind::VisitRefsInInstance_dmu_: { // dmu
+    auto maker = cast<VisitRefsInInstance_dmu_Decl>(D);
     verifyAttrSerializable(maker);
     
     auto contextID = addDeclContextRef(maker->getDeclContext());
