@@ -401,7 +401,8 @@ public:
   /// Output code to visit each reference in this element and make its reference count atomic
   
   virtual void visitRefsInValue_dmu_(IRGenFunction &IGF, Address address, SILType T) const = 0;
-  virtual void makeContainedReferencesOfElementsOfBufferCountAtomically(IRGenFunction &IGF, Address buffer, SILType T) const; // dmu
+  // TODO: (dmu) Urgent: Are next two used???
+  virtual void visitRefsInBuffer_dmu_(IRGenFunction &IGF, Address buffer, SILType T) const;
   virtual void makeContainedReferencesOfElementsOfArrayCountAtomically(IRGenFunction &IGF,
                                                                        Address base,
                                                                        llvm::Value *count,

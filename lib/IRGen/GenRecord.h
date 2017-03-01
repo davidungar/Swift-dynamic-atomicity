@@ -289,14 +289,14 @@ public:
     }
   }
 
-  void makeContainedReferencesOfElementsOfBufferCountAtomically(IRGenFunction &IGF, Address buffer, // dmu
-                                                                SILType type) const override {
+  void visitRefsInBuffer_dmu_(IRGenFunction &IGF, Address buffer,
+                              SILType type) const override {
     if (auto field = getUniqueNonEmptyField()) {
-      field->getTypeInfo().makeContainedReferencesOfElementsOfBufferCountAtomically(IGF,
-                                                                                    buffer,
-                                                                                    field->getType(IGF.IGM, type));
+      field->getTypeInfo().visitRefsInBuffer_dmu_(IGF,
+                                                  buffer,
+                                                  field->getType(IGF.IGM, type));
     } else {
-      super::makeContainedReferencesOfElementsOfBufferCountAtomically(IGF, buffer, type);
+      super::visitRefsInBuffer_dmu_(IGF, buffer, type);
     }
   }
 

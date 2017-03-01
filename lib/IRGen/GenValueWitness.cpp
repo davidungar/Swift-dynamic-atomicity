@@ -338,14 +338,14 @@ static void emitDefaultDestroyBuffer(IRGenFunction &IGF, Address buffer,
 }
 
 /// TODO: (dmu) comment check one-eyed clone
-static void emitDefaultMakeContainedReferencesOfElementsOfBufferCountAtomically( IRGenFunction &IGF, // dmu
-                                                                   Address buffer,
-                                                                   SILType T,
-                                                                   const TypeInfo &type,
-                                                                   FixedPacking packing) {
+static void emitDefaultVisitRefsInBuffer_dmu_(IRGenFunction &IGF,
+                                              Address buffer,
+                                              SILType T,
+                                              const TypeInfo &type,
+                                              FixedPacking packing) {
   // Special-case dynamic packing in order to thread the jumps.
   if (packing == FixedPacking::Dynamic)
-    return emitForDynamicPacking(IGF, &emitDefaultMakeContainedReferencesOfElementsOfBufferCountAtomically,
+    return emitForDynamicPacking(IGF, &emitDefaultVisitRefsInBuffer_dmu_,
                                  T, type, buffer);
   
   Address object = emitDefaultProjectBuffer(IGF, buffer, T, type, packing);
@@ -480,7 +480,7 @@ static RESULT emit##TITLE(IRGenFunction &IGF, Address buffer, SILType T,      \
 DEFINE_UNARY_BUFFER_OP(Address, allocateBuffer, AllocateBuffer)
 DEFINE_UNARY_BUFFER_OP(Address, projectBuffer, ProjectBuffer)
 DEFINE_UNARY_BUFFER_OP(void, destroyBuffer, DestroyBuffer)
-DEFINE_UNARY_BUFFER_OP(void, makeContainedReferencesOfElementsOfBufferCountAtomically, MakeContainedReferencesOfElementsOfBufferCountAtomically) // dmu TODO: (dmu) blind clone
+DEFINE_UNARY_BUFFER_OP(void, visitRefsInBuffer_dmu_, VisitRefsInBuffer_dmu_) // dmu TODO: (dmu) blind clone
 DEFINE_UNARY_BUFFER_OP(void, deallocateBuffer, DeallocateBuffer)
 #undef DEFINE_UNARY_BUFFER_OP
 
@@ -660,7 +660,7 @@ static void buildValueWitnessFunction(IRGenModule &IGM,
   case ValueWitness::VisitRefsInBuffer_dmu_: { // dmu clone TODO: (dmu) factor with destroyBuffer?
     Address buffer = getArgAsBuffer(IGF, argv, "buffer");
     getArgAsLocalSelfTypeMetadata(IGF, argv, abstractType);
-    emitMakeContainedReferencesOfElementsOfBufferCountAtomically(IGF, buffer, concreteType, type, packing);
+    emitVisitRefsInBuffer_dmu_(IGF, buffer, concreteType, type, packing);
     IGF.Builder.CreateRetVoid();
     return;
   }

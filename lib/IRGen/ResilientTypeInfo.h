@@ -145,7 +145,7 @@ public:
     emitVisitRefsInValueCall_dmu_(IGF, T, addr);
   }
   
-  void makeContainedReferencesOfElementsOfBufferCountAtomically(IRGenFunction &IGF, Address buffer, SILType T) const override { // dmu
+  void visitRefsInBuffer_dmu_(IRGenFunction &IGF, Address buffer, SILType T) const override {
     emitVisitRefsInBuffer_dmu_Call(IGF, T, buffer);
   }
   
