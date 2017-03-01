@@ -1295,7 +1295,7 @@ bool ValueDecl::isDefinition() const {
   case DeclKind::Func:
   case DeclKind::Constructor:
   case DeclKind::Destructor:
-  case DeclKind::VisitorOfRefsInInstance_dmu_: // dmu 
+  case DeclKind::VisitorOfRefsInInstance_dmu_:
     return cast<AbstractFunctionDecl>(this)->hasBody();
 
   case DeclKind::Subscript:

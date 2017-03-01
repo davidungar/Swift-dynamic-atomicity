@@ -1017,7 +1017,7 @@ namespace decls_block {
   >;
 
   using VisitorOfRefsInInstance_dmu_Layout = BCRecordLayout<
-    MAKE_CONTAINED_REFERENCES_COUNT_ATOMICALLY_DECL,
+    VISITOR_OF_REFS_IN_INSTANCE_dmu__DECL,
     DeclContextIDField, // context decl
     GenericEnvironmentIDField, // generic environment
     TypeIDField  // interface type

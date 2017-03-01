@@ -3528,7 +3528,7 @@ Decl *ModuleFile::getDecl(DeclID DID, Optional<DeclContext *> ForcedContext) {
   }
       
       
-  case decls_block::MAKE_CONTAINED_REFERENCES_COUNT_ATOMICALLY_DECL: {
+  case decls_block::VISITOR_OF_REFS_IN_INSTANCE_dmu__DECL: {
     DeclContextID contextID;
     GenericEnvironmentID genericEnvID;
     TypeID interfaceID;
