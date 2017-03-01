@@ -323,7 +323,7 @@ void SILDeclRef::print(raw_ostream &OS) const {
   case SILDeclRef::Kind::IVarDestroyer:
     OS << "!ivardestroyer";
     break;
-  case SILDeclRef::Kind::VisitorOfRefsInInstance_dmu_: // dmu
+  case SILDeclRef::Kind::VisitorOfRefsInInstance_dmu_:
     OS << "!visitorOfRefsInInstance_dmu_";
     break;
   case SILDeclRef::Kind::GlobalAccessor:
@@ -1104,7 +1104,7 @@ public:
     *this << getIDAndType(SI->getDest());
   }
 
-  void visitStoreBarrier_dmu_Inst(StoreBarrier_dmu_Inst *I) { // dmu
+  void visitStoreBarrier_dmu_Inst(StoreBarrier_dmu_Inst *I) {
     *this << getID(I->getSrc()) << " to ";
     *this << getIDAndType(I->getDest());
   }

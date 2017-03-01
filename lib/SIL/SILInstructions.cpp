@@ -663,7 +663,7 @@ StoreInst::StoreInst(
     : SILInstruction(ValueKind::StoreInst, Loc), Operands(this, Src, Dest),
       OwnershipQualifier(Qualifier) {}
 
-StoreBarrier_dmu_Inst::StoreBarrier_dmu_Inst( // dmu
+StoreBarrier_dmu_Inst::StoreBarrier_dmu_Inst(
                      SILDebugLocation Loc, SILValue Src, SILValue Dest)
 : SILInstruction(ValueKind::StoreBarrier_dmu_Inst, Loc), Operands(this, Src, Dest)
 {}

@@ -1776,7 +1776,7 @@ static void checkAccessibility(TypeChecker &TC, const Decl *D) {
   case DeclKind::Destructor:
     // Always correct.
     return;
-  case DeclKind::VisitorOfRefsInInstance_dmu_: // dmu
+  case DeclKind::VisitorOfRefsInInstance_dmu_:
       return;
 
   case DeclKind::PatternBinding: {
@@ -2560,7 +2560,7 @@ void swift::markAsObjC(TypeChecker &TC, ValueDecl *D,
   }
 
   // Make sure we have the appropriate bridging operations.
-  if (!isa<DestructorDecl>(D)  &&  !isa<VisitorOfRefsInInstance_dmu_Decl>(D)) // dmu
+  if (!isa<DestructorDecl>(D)  &&  !isa<VisitorOfRefsInInstance_dmu_Decl>(D))
     checkBridgedFunctions(TC);
   TC.useObjectiveCBridgeableConformances(D->getInnermostDeclContext(),
                                          D->getInterfaceType());
@@ -8202,7 +8202,7 @@ static void validateAttributes(TypeChecker &TC, Decl *D) {
         error = diag::objc_observing_accessor;
     } else if (isa<ConstructorDecl>(D) ||
                isa<DestructorDecl>(D) ||
-               isa<VisitorOfRefsInInstance_dmu_Decl>(D) || // dmu
+               isa<VisitorOfRefsInInstance_dmu_Decl>(D) ||
                isa<SubscriptDecl>(D) ||
                isa<VarDecl>(D)) {
       if (!checkObjCDeclContext(D))
@@ -8238,7 +8238,7 @@ static void validateAttributes(TypeChecker &TC, Decl *D) {
             ObjCSelector(TC.Context, 0, objcName->getSelectorPieces()[0]),
             /*implicit=*/false);
         }
-      } else if (isa<SubscriptDecl>(D) || isa<DestructorDecl>(D) || isa<VisitorOfRefsInInstance_dmu_Decl>(D)) { // dmu
+      } else if (isa<SubscriptDecl>(D) || isa<DestructorDecl>(D) || isa<VisitorOfRefsInInstance_dmu_Decl>(D)) {
         TC.diagnose(objcAttr->getLParenLoc(),
                     isa<SubscriptDecl>(D)
                       ? diag::objc_name_subscript

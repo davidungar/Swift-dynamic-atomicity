@@ -961,7 +961,7 @@ void SILGenModule::emitDestructor(ClassDecl *cd, DestructorDecl *dd) {
 }
 
 
-void SILGenModule::emitVisitorOfRefsInInstance_dmu_(ClassDecl *cd,  // dmu
+void SILGenModule::emitVisitorOfRefsInInstance_dmu_(ClassDecl *cd, 
                                                               VisitorOfRefsInInstance_dmu_Decl *md) {
   emitAbstractFuncDecl(md);
   

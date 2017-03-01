@@ -3573,7 +3573,7 @@ Optional<DeclName> TypeChecker::omitNeedlessWords(AbstractFunctionDecl *afd) {
     validateDecl(afd);
 
   if (afd->isInvalid() || isa<DestructorDecl>(afd)
-      || isa<VisitorOfRefsInInstance_dmu_Decl>(afd)) // dmu
+      || isa<VisitorOfRefsInInstance_dmu_Decl>(afd))
     return None;
 
   DeclName name = afd->getFullName();

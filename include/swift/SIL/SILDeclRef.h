@@ -187,7 +187,7 @@ struct SILDeclRef {
   ///   SILDeclRef for the enum element.
   /// - If 'loc' is a DestructorDecl, this returns the Destructor SILDeclRef
   ///   for the containing ClassDecl.
-  /// TODO: (dmu) comment for VisitorOfRefsInInstance_dmu_Decl // dmu
+  /// TODO: (dmu) comment for VisitorOfRefsInInstance_dmu_Decl
   /// - If 'loc' is a global VarDecl, this returns its GlobalAccessor
   ///   SILDeclRef.
   /// If the uncurry level is unspecified or specified as NaturalUncurryLevel,

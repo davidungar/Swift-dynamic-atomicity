@@ -2879,7 +2879,7 @@ void PrintAST::visitDestructorDecl(DestructorDecl *decl) {
 }
 
 
-void PrintAST::visitVisitorOfRefsInInstance_dmu_Decl(VisitorOfRefsInInstance_dmu_Decl *decl) { // dmu
+void PrintAST::visitVisitorOfRefsInInstance_dmu_Decl(VisitorOfRefsInInstance_dmu_Decl *decl) {
   printDocumentationComment(decl);
   printAttributes(decl);
   recordDeclLoc(decl,

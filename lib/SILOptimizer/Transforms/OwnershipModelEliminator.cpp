@@ -50,7 +50,7 @@ struct OwnershipModelEliminatorVisitor
   bool visitValueBase(ValueBase *V) { return false; }
   bool visitLoadInst(LoadInst *LI);
   bool visitStoreInst(StoreInst *SI);
-  bool visitStoreBarrier_dmu_Inst(StoreBarrier_dmu_Inst *RCSBI); // dmu
+  bool visitStoreBarrier_dmu_Inst(StoreBarrier_dmu_Inst *RCSBI);
   bool visitStoreBorrowInst(StoreBorrowInst *SI);
   bool visitCopyValueInst(CopyValueInst *CVI);
   bool visitCopyUnownedValueInst(CopyUnownedValueInst *CVI);

@@ -1467,7 +1467,7 @@ static bool shouldSerializeMember(Decl *D) {
   case DeclKind::Protocol:
   case DeclKind::Constructor:
   case DeclKind::Destructor:
-  case DeclKind::VisitorOfRefsInInstance_dmu_: // dmu
+  case DeclKind::VisitorOfRefsInInstance_dmu_:
   case DeclKind::PatternBinding:
   case DeclKind::Subscript:
   case DeclKind::TypeAlias:
@@ -1841,7 +1841,7 @@ DEF_VERIFY_ATTR(Var)
 DEF_VERIFY_ATTR(Subscript)
 DEF_VERIFY_ATTR(Constructor)
 DEF_VERIFY_ATTR(Destructor)
-DEF_VERIFY_ATTR(VisitorOfRefsInInstance_dmu_) // dmu
+DEF_VERIFY_ATTR(VisitorOfRefsInInstance_dmu_)
 
 #undef DEF_VERIFY_ATTR
 #else
@@ -2906,7 +2906,7 @@ void Serializer::writeDecl(const Decl *D) {
     break;
   }
       
-  case DeclKind::VisitorOfRefsInInstance_dmu_: { // dmu
+  case DeclKind::VisitorOfRefsInInstance_dmu_: {
     auto maker = cast<VisitorOfRefsInInstance_dmu_Decl>(D);
     verifyAttrSerializable(maker);
     

@@ -598,7 +598,7 @@ TEST(MetadataTest, getGenericMetadata_SuperclassWithUnexpectedPrefix) {
 
       int const extraWordCountFor_visitorOfRefsInHeapObj_dmu_ = 1; // dmu metadata layout
       // No instance variables that are reference counted
-      void* const expectedValueFor_visitorOfRefsInHeapObj_dmu_ = reinterpret_cast<void* const>(VisitorOfRefsInHeapObj_dmu_Values::unimplemented); // dmu
+      void* const expectedValueFor_visitorOfRefsInHeapObj_dmu_ = reinterpret_cast<void* const>(VisitorOfRefsInHeapObj_dmu_Values::unimplemented);
       
       // Assert that we copied the extra prefix data from the superclass.
       EXPECT_EQ(&Global1, fields[-6 - extraWordCountFor_visitorOfRefsInHeapObj_dmu_]); // TODO: (dmu factor extra metadata layotu)

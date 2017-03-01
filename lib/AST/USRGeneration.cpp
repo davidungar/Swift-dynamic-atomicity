@@ -114,7 +114,7 @@ bool ide::printDeclUSR(const ValueDecl *D, raw_ostream &OS) {
   if (isa<ParamDecl>(VD)
       && (
           isa<DestructorDecl>(VD->getDeclContext())
-          || isa<VisitorOfRefsInInstance_dmu_Decl>(VD->getDeclContext()))) // dmu
+          || isa<VisitorOfRefsInInstance_dmu_Decl>(VD->getDeclContext())))
     return true;
 
   std::string Old = getUSRSpacePrefix().str();
@@ -127,7 +127,7 @@ bool ide::printDeclUSR(const ValueDecl *D, raw_ostream &OS) {
                                     /*uncurryingLevel=*/0);
   } else if (auto Dtor = dyn_cast<DestructorDecl>(VD)) {
     Mangler.mangleDestructorEntity(Dtor, /*isDeallocating=*/false);
-  } else if (auto Maker = dyn_cast<VisitorOfRefsInInstance_dmu_Decl>(VD)) { // dmu
+  } else if (auto Maker = dyn_cast<VisitorOfRefsInInstance_dmu_Decl>(VD)) {
     Mangler.mangleVisitorOfRefsInInstance_dmu_Entity(Maker);
   } else if (auto NTD = dyn_cast<NominalTypeDecl>(VD)) {
     Mangler.mangleNominalType(NTD);

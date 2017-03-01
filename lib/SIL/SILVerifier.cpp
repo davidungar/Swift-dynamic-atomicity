@@ -1227,7 +1227,7 @@ public:
     }
   }
 
-  void checkStoreBarrier_dmu_Inst(StoreBarrier_dmu_Inst *I) { // dmu
+  void checkStoreBarrier_dmu_Inst(StoreBarrier_dmu_Inst *I) {
     // TODO: (dmu check) what should this be? Same as checkStoreInst??
     require(I->getSrc()->getType().isObject(),
             "Source value should be an object value");

@@ -134,7 +134,7 @@ void SILGenFunction::emitClassMemberDestruction(SILValue selfValue,
     }
   }
 }
-void SILGenFunction::emitVisitorOfRefsInInstance_dmu_(SILValue selfValue, // dmu
+void SILGenFunction::emitVisitorOfRefsInInstance_dmu_(SILValue selfValue,
                                                 ClassDecl *cd,
                                                 CleanupLocation cleanupLoc) { // yyyyyy dmu
   abort(); // TODO: (dmu) urgent see if called
