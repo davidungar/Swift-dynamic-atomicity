@@ -204,7 +204,7 @@ namespace {
       return true;
     }
 
-    bool visitVisitRefAtAddr_dmu_Inst(const VisitRefAtAddr_dmu_Inst *RHS) { // dmu
+    bool visitVisitRefAtAddr_dmu_Inst(const VisitRefAtAddr_dmu_Inst *RHS) {
       return true;
     }
       

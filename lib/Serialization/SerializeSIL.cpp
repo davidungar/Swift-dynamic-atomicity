@@ -1039,7 +1039,7 @@ void SILSerializer::writeSILInstruction(const SILInstruction &SI) {
   case ValueKind::DeallocRefInst:
   case ValueKind::DeinitExistentialAddrInst:
   case ValueKind::DestroyAddrInst:
-  case ValueKind::VisitRefAtAddr_dmu_Inst: // dmu
+  case ValueKind::VisitRefAtAddr_dmu_Inst:
   case ValueKind::IsNonnullInst:
   case ValueKind::LoadInst:
   case ValueKind::LoadBorrowInst:

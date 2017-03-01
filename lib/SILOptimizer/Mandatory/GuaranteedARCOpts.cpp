@@ -23,7 +23,7 @@ struct GuaranteedARCOptsVisitor
     : SILInstructionVisitor<GuaranteedARCOptsVisitor, bool> {
   bool visitValueBase(ValueBase *V) { return false; }
   bool visitDestroyAddrInst(DestroyAddrInst *DAI);
-  bool visitVisitRefAtAddr_dmu_Inst(VisitRefAtAddr_dmu_Inst *DAI); // dmu
+  bool visitVisitRefAtAddr_dmu_Inst(VisitRefAtAddr_dmu_Inst *DAI);
   bool visitStrongReleaseInst(StrongReleaseInst *SRI);
   bool visitDestroyValueInst(DestroyValueInst *DVI);
   bool visitReleaseValueInst(ReleaseValueInst *RVI);

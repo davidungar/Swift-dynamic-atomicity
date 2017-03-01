@@ -180,7 +180,7 @@ SILBuilder::emitDestroyAddr(SILLocation Loc, SILValue Operand) {
 
 
 VisitRefAtAddr_dmu_Inst*
-SILBuilder::emitVisitRefAtAddr_dmu_(SILLocation Loc, SILValue Operand) { // dmu
+SILBuilder::emitVisitRefAtAddr_dmu_(SILLocation Loc, SILValue Operand) {
   return createVisitRefAtAddr_dmu_(Loc, Operand);
 }
 

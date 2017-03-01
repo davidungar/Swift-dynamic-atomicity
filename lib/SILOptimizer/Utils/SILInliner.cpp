@@ -338,7 +338,7 @@ InlineCost swift::instructionInlineCost(SILInstruction &I) {
     case ValueKind::DeallocValueBufferInst:
     case ValueKind::DeinitExistentialAddrInst:
     case ValueKind::DestroyAddrInst:
-    case ValueKind::VisitRefAtAddr_dmu_Inst: // dmu
+    case ValueKind::VisitRefAtAddr_dmu_Inst:
     case ValueKind::ProjectValueBufferInst:
     case ValueKind::ProjectBoxInst:
     case ValueKind::ProjectExistentialBoxInst:

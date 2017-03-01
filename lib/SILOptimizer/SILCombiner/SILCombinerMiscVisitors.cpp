@@ -244,7 +244,7 @@ public:
 
   // Destroy and dealloc are both fine.
   void visitDestroyAddrInst(DestroyAddrInst *I) {}
-  void visitVisitRefAtAddr_dmu_Inst(VisitRefAtAddr_dmu_Inst *I) {} // dmu
+  void visitVisitRefAtAddr_dmu_Inst(VisitRefAtAddr_dmu_Inst *I) {}
   void visitDeinitExistentialAddrInst(DeinitExistentialAddrInst *I) {}
   void visitDeallocStackInst(DeallocStackInst *I) {}
 

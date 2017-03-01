@@ -1796,7 +1796,7 @@ SILCloner<ImplClass>::visitDestroyAddrInst(DestroyAddrInst *Inst) {
   
 template<typename ImplClass>
 void
-SILCloner<ImplClass>::visitVisitRefAtAddr_dmu_Inst(VisitRefAtAddr_dmu_Inst *Inst) { // dmu
+SILCloner<ImplClass>::visitVisitRefAtAddr_dmu_Inst(VisitRefAtAddr_dmu_Inst *Inst) {
   getBuilder().setCurrentDebugScope(getOpScope(Inst->getDebugScope()));
   doPostProcess(Inst,
                 getBuilder().createVisitRefAtAddr_dmu_(getOpLocation(Inst->getLoc()),

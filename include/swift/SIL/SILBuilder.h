@@ -1314,7 +1314,7 @@ public:
     return insert(new (F.getModule())
                       DestroyAddrInst(getSILDebugLocation(Loc), Operand));
   }
-  VisitRefAtAddr_dmu_Inst *createVisitRefAtAddr_dmu_(SILLocation Loc, SILValue Operand) { // dmu
+  VisitRefAtAddr_dmu_Inst *createVisitRefAtAddr_dmu_(SILLocation Loc, SILValue Operand) {
     return insert(new (F.getModule())
                   VisitRefAtAddr_dmu_Inst(getSILDebugLocation(Loc), Operand));
   }
@@ -1603,7 +1603,7 @@ public:
   emitDestroyAddr(SILLocation Loc, SILValue Operand);
 
   /// TODO: (dmu) comment
-  VisitRefAtAddr_dmu_Inst* // dmu
+  VisitRefAtAddr_dmu_Inst*
   emitVisitRefAtAddr_dmu_(SILLocation Loc, SILValue Operand);
 
   /// Emit a destroy_value instruction at the current location, attempting to

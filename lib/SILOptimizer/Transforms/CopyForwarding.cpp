@@ -232,7 +232,7 @@ public:
     Oper = &UserInst->getOperandRef();
     return true;
   }
-  bool visitVisitRefAtAddr_dmu_Inst(VisitRefAtAddr_dmu_Inst *UserInst) { // dmu
+  bool visitVisitRefAtAddr_dmu_Inst(VisitRefAtAddr_dmu_Inst *UserInst) {
     Oper = &UserInst->getOperandRef();
     return true;
   }
@@ -355,7 +355,7 @@ public:
   bool visitDestroyAddrInst(DestroyAddrInst *UserInst) {
     llvm_unreachable("illegal deinitialization");
   }
-  bool visitVisitRefAtAddr_dmu_Inst(VisitRefAtAddr_dmu_Inst *VisitRefAtAddr_dmu_Inst) { // dmu
+  bool visitVisitRefAtAddr_dmu_Inst(VisitRefAtAddr_dmu_Inst *VisitRefAtAddr_dmu_Inst) {
     llvm_unreachable("illegal deinitialization");
   }
   bool visitUncheckedTakeEnumDataAddrInst(

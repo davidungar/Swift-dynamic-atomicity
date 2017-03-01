@@ -4507,7 +4507,7 @@ class DestroyAddrInst : public UnaryInstructionBase<ValueKind::DestroyAddrInst,
 };
   
 /// TODO: (dmu) comment
-class VisitRefAtAddr_dmu_Inst // dmu
+class VisitRefAtAddr_dmu_Inst
   : public UnaryInstructionBase<
   ValueKind::VisitRefAtAddr_dmu_Inst,
   SILInstruction,
