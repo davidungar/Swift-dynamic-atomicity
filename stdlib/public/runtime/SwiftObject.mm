@@ -963,13 +963,14 @@ void swift::swift_unknownUnownedTakeAssign(UnownedReference *dest,
   dest->Value = src->Value;
 }
 
-void swift::swift_unknownUnownedMakeContentsSafeForConcurrentAccess(UnownedReference *ref) { // dmu
+void swift::swift_unknownUnownedVisitRefsInValue_dmu_(UnownedReference *ref) {
   if (!ref->Value) {
     // Nothing to do.
     return;
   } else if (auto objcRef = dyn_cast<ObjCUnownedReference>(ref)) {
   } else {
-    swift_unownedDestroy(ref);
+#error dmu next line must be wrong
+    swift_unownedVisitRefsInValue_dmu_(ref);
   }
 }
 
@@ -1074,7 +1075,7 @@ void swift::swift_unknownWeakDestroy(WeakReference *addr) {
 
 void swift::swift_unknownWeakBeSafeForConcurrentAccess(WeakReference *addr) { // dmu
   if (isNativeSwiftWeakReference(addr)) {
-    swift_weakMakeContentsSafeForConcurrentAccess(addr);
+    swift_weakVisitRefsInValue_dmu_(addr);
   }
 }
 

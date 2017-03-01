@@ -130,9 +130,9 @@ static void emitDestroyExistential(IRGenFunction &IGF, Address addr,
 }
 
 /// Given the address of an existential object, make all its contained refs ref count atomically.
-static void emitMakeContentsSafeForConcurrentAccessExistential(IRGenFunction &IGF, // dmu
-                                                               Address addr,
-                                   OpaqueExistentialLayout layout) {
+static void emitVisitRefsInExistentialValue_dmu_(IRGenFunction &IGF,
+                                                 Address addr,
+                                                 OpaqueExistentialLayout layout) {
   llvm::Value *metadata = layout.loadMetadataRef(IGF, addr);
   
   Address object = layout.projectExistentialBuffer(IGF, addr);
@@ -362,7 +362,7 @@ public:
   }
                
   void visitRefsInValue_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
-    emitMakeContentsSafeForConcurrentAccessExistential(IGF, addr, getLayout());
+    emitVisitRefsInExistentialValue_dmu_(IGF, addr, getLayout());
   }
 
 };

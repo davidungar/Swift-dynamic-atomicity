@@ -190,7 +190,7 @@ enum class ValueWitness : unsigned {
   InitializeArrayWithTakeBackToFront,
   
   ///  TODO: (dmu) comment me
-  MakeContentsSafeForConcurrentAccess, // dmu
+  VisitRefsInValue_dmu_,
   
   ///  TODO: (dmu) comment me
   MakeContentsOfBufferSafeForConcurrentAccess, // dmu

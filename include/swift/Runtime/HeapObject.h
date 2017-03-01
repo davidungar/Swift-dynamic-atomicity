@@ -724,7 +724,7 @@ void swift_weakTakeAssign(WeakReference *dest, WeakReference *src);
   
 /// Ensure that my reference count and contained references count atomically -- dmu
 SWIFT_RUNTIME_EXPORT
-void swift_weakMakeContentsSafeForConcurrentAccess(WeakReference *ref); // dmu
+void swift_weakVisitRefsInValue_dmu_(WeakReference *ref);
 
 /*****************************************************************************/
 /************************* OTHER REFERENCE-COUNTING **************************/
@@ -1206,11 +1206,11 @@ static inline void swift_unknownUnownedTakeAssign(UnownedReference *dest,
   
   /// TODO: (dmu) explain
   SWIFT_RUNTIME_EXPORT
-  void swift_unknownUnownedMakeContentsSafeForConcurrentAccess(UnownedReference *ref); // dmu
+  void swift_unknownUnownedVisitRefsInValue_dmu_(UnownedReference *ref);
   
 #else
   
-  static inline void swift_unknownUnownedMakeContentsSafeForConcurrentAccess(UnownedReference *ref) { // dmu
+  static inline void swift_unknownUnownedVisitRefsInValue_dmu_(UnownedReference *ref) {
     swift_unownedBeSafeForConcurrentAccess(ref);
   }
   

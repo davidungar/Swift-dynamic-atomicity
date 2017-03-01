@@ -142,7 +142,7 @@ public:
   }
 
   void visitRefsInValue_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
-    emitMakeContentsSafeForConcurrentAccessCall(IGF, T, addr);
+    emitVisitRefsInValueCall_dmu_(IGF, T, addr);
   }
   
   void makeContainedReferencesOfElementsOfBufferCountAtomically(IRGenFunction &IGF, Address buffer, SILType T) const override { // dmu

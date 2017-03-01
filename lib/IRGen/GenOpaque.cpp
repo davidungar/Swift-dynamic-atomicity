@@ -74,8 +74,8 @@ static llvm::Type *createWitnessType(IRGenModule &IGM, ValueWitness index) {
       ->getPointerTo();
   }
       
-  // void (*makeContentsSafeForConcurrentAccess)(T *object, witness_t *self);
-  case ValueWitness::MakeContentsSafeForConcurrentAccess: { // dmu
+  // void (*visitRefsInValue_dmu_)(T *object, witness_t *self);
+  case ValueWitness::VisitRefsInValue_dmu_: {
     llvm::Type *args[] = { IGM.OpaquePtrTy, IGM.TypeMetadataPtrTy };
     return llvm::FunctionType::get(IGM.VoidTy, args, /*isVarArg*/ false)
     ->getPointerTo();
@@ -287,8 +287,8 @@ static StringRef getValueWitnessLabel(ValueWitness index) {
     return "destructiveProjectEnumData";
   case ValueWitness::DestructiveInjectEnumTag:
     return "destructiveInjectEnumTag";
-  case ValueWitness::MakeContentsSafeForConcurrentAccess: // dmu
-    return "makeContentsSafeForConcurrentAccess";
+  case ValueWitness::VisitRefsInValue_dmu_:
+    return "visitRefsInValue_dmu_";
   case ValueWitness::MakeContentsOfBufferSafeForConcurrentAccess: // dmu
     return "makeContentsOfBufferSafeForConcurrentAccess";
   case ValueWitness::MakeContentsOfArraySafeForConcurrentAccess: // dmu
@@ -700,13 +700,13 @@ void irgen::emitDestroyCall(IRGenFunction &IGF,
   setHelperAttributes(call);
 }
 
-/// Emit a call to do a 'makeContentsSafeForConcurrentAccess' operation.
-void irgen::emitMakeContentsSafeForConcurrentAccessCall(IRGenFunction &IGF, // dmu
+/// Emit a call to do a 'visitRefsInValue_dmu_' operation.
+void irgen::emitVisitRefsInValueCall_dmu_(IRGenFunction &IGF,
                             SILType T,
                             Address object) {
   auto metadata = IGF.emitTypeMetadataRefForLayout(T);
   llvm::Value *fn = IGF.emitValueWitnessForLayout(T,
-                                                  ValueWitness::MakeContentsSafeForConcurrentAccess);
+                                                  ValueWitness::VisitRefsInValue_dmu_);
   llvm::CallInst *call =
   IGF.Builder.CreateCall(fn, {object.getAddress(), metadata});
   call->setCallingConv(IGF.IGM.DefaultCC);

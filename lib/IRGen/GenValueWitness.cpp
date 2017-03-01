@@ -73,7 +73,7 @@ const char *irgen::getValueWitnessName(ValueWitness witness) {
   CASE(Flags)
   CASE(Stride)
   CASE(ExtraInhabitantFlags)
-  CASE(MakeContentsSafeForConcurrentAccess) // dmu
+  CASE(VisitRefsInValue_dmu_)
   CASE(MakeContentsOfBufferSafeForConcurrentAccess) // dmu
   CASE(MakeContentsOfArraySafeForConcurrentAccess) // dmu
 #undef CASE
@@ -649,7 +649,7 @@ static void buildValueWitnessFunction(IRGenModule &IGM,
     return;
   }
       
-  case ValueWitness::MakeContentsSafeForConcurrentAccess: { // dmu
+  case ValueWitness::VisitRefsInValue_dmu_: {
     Address object = getArgAs(IGF, argv, type, "object");
     getArgAsLocalSelfTypeMetadata(IGF, argv, abstractType);
     type.visitRefsInValue_dmu_(IGF, object, concreteType);
@@ -1045,7 +1045,7 @@ static llvm::Constant *getDestroyStrongFunction(IRGenModule &IGM) {
 
 /// Return a function which takes two pointer arguments, loads a
 /// pointer from the first, and calls swift_beSafeForConcurrentAccess on it immediately.
-static llvm::Constant *getMakeContentsSafeForConcurrentAccessFunction(IRGenModule &IGM) { // dmu
+static llvm::Constant *getVisitRefsInValue_dmu_Function(IRGenModule &IGM) {
   llvm::Type *argTys[] = { IGM.Int8PtrPtrTy, IGM.WitnessTablePtrTy };
   return IGM.getOrCreateHelperFunction("__swift_beSafeForConcurrentAccess",
                                        IGM.VoidTy, argTys,
@@ -1211,11 +1211,11 @@ static llvm::Constant *getValueWitness(IRGenModule &IGM,
     }
     goto standard;
 
-  case ValueWitness::MakeContentsSafeForConcurrentAccess: // dmu
+  case ValueWitness::VisitRefsInValue_dmu_:
     if (concreteTI.isPOD(ResilienceExpansion::Maximal)) {
       return asOpaquePtr(IGM, getNoOpVoidFunction(IGM));
     } else if (concreteTI.isSingleSwiftRetainablePointer(ResilienceExpansion::Maximal)) {
-      return asOpaquePtr(IGM, getMakeContentsSafeForConcurrentAccessFunction(IGM));
+      return asOpaquePtr(IGM, getVisitRefsInValue_dmu_Function(IGM));
     }
     goto standard;
       
@@ -1225,7 +1225,7 @@ static llvm::Constant *getValueWitness(IRGenModule &IGM,
         return asOpaquePtr(IGM, getNoOpVoidFunction(IGM));
     } else if (concreteTI.isSingleSwiftRetainablePointer(ResilienceExpansion::Maximal)) {
       assert(isNeverAllocated(packing));
-      return asOpaquePtr(IGM, getMakeContentsSafeForConcurrentAccessFunction(IGM)); // dmu blind clone
+      return asOpaquePtr(IGM, getVisitRefsInValue_dmu_Function(IGM)); // dmu blind clone
     }
     goto standard;
     

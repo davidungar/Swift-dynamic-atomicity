@@ -171,7 +171,7 @@ struct NativeBox {
     return dest;
   }
   
-  static void makeContentsSafeForConcurrentAccess(T *value) {} // dmu
+  static void visitRefsInValue_dmu_(T *value) {}
   
   static void makeContentsOfBufferSafeForConcurrentAccess(T *value) {} // dmu
   
@@ -199,7 +199,7 @@ template <class Impl, class T> struct RetainableBoxBase {
     Impl::release(*addr);
   }
   
-  static void makeContentsSafeForConcurrentAccess(T *addr) {
+  static void visitRefsInValue_dmu_(T *addr) {
     Impl::beSafeForConcurrentAccess(*addr);
   }
 
@@ -371,7 +371,7 @@ struct WeakRetainableBoxBase {
     
   static void makeContentsOfArraySafeForConcurrentAccess(T *arr, size_t n) { // dmu
     while (n--)
-      Impl::makeContentsSafeForConcurrentAccess(arr++);
+      Impl::visitRefsInValue_dmu_(arr++);
   }
 };
 
@@ -401,8 +401,8 @@ struct SwiftWeakRetainableBox :
     swift_weakTakeAssign(dest, src);
     return dest;
   }
-  static void makeContentsSafeForConcurrentAccess(WeakReference *value) { // dmu
-    swift_weakMakeContentsSafeForConcurrentAccess(value);
+  static void visitRefsInValue_dmu_(WeakReference *value) {
+    swift_weakVisitRefsInValue_dmu_(value);
   }
 };
 
@@ -460,8 +460,8 @@ struct ObjCUnownedRetainableBox
     swift_unknownUnownedTakeAssign(dest, src);
     return dest;
   }
-  static void makeContentsSafeForConcurrentAccess(UnownedReference *ref) { // dmu
-    swift_unknownUnownedMakeContentsSafeForConcurrentAccess(ref);
+  static void visitRefsInValue_dmu_(UnownedReference *ref) {
+    swift_unknownUnownedVisitRefsInValue_dmu_(ref);
   }
 };
 
@@ -491,7 +491,7 @@ struct ObjCWeakRetainableBox :
     swift_unknownWeakTakeAssign(dest, src);
     return dest;
   }
-  static void makeContentsSafeForConcurrentAccess(WeakReference *ref) { // dmu
+  static void visitRefsInValue_dmu_(WeakReference *ref) {
     swift_unknownBeSafeForConcurrentAccess(ref); // Note: breaks the symmetry
   }
 };
@@ -636,7 +636,7 @@ public:
 
   static void destroy(char *addr) {}
   
-  static void makeContentsSafeForConcurrentAccess(char* addr) {} // dmu
+  static void visitRefsInValue_dmu_(char* addr) {}
 };
 
 // Recursive case: add an element to the start.
@@ -686,10 +686,10 @@ public:
   }
   
   
-  static void makeContentsSafeForConcurrentAccess(char* addr) { // dmu
+  static void visitRefsInValue_dmu_(char* addr) {
     addr += startToEltOffset;
-    EltBox::makeContentsSafeForConcurrentAccess((typename EltBox::type*) addr);
-    NextHelper::makeContentsSafeForConcurrentAccess(addr + eltToNextOffset);
+    EltBox::visitRefsInValue_dmu_((typename EltBox::type*) addr);
+    NextHelper::visitRefsInValue_dmu_(addr + eltToNextOffset);
   }
 
 };
@@ -783,16 +783,16 @@ struct AggregateBox {
     return r;
   }
   // TODO: (dmu) implement
-  static void makeContentsSafeForConcurrentAccess(char* value) { // dmu
+  static void visitRefsInValue_dmu_(char* value) {
     if (isPOD)
       return;
-    Helper::makeContentsSafeForConcurrentAccess(value);
+    Helper::visitRefsInValue_dmu_(value);
   }
   static void makeContentsOfArraySafeForConcurrentAccess(char *array, size_t n) { // dmu
     if (isPOD)
       return;
     while (n--) {
-      makeContentsSafeForConcurrentAccess(array);
+      visitRefsInValue_dmu_(array);
       array += stride;
     }
   }
@@ -840,7 +840,7 @@ template <class Impl> struct BufferValueWitnessesBase {
   }
   
   static void makeContentsOfBufferSafeForConcurrentAccess(ValueBuffer* buffer, const Metadata *self) { // dmu
-    Impl::makeContentsSafeForConcurrentAccess(Impl::projectBuffer(buffer, self), self);
+    Impl::visitRefsInValue_dmu_(Impl::projectBuffer(buffer, self), self);
   }
 };
 
@@ -991,8 +991,8 @@ struct ValueWitnesses : BufferValueWitnesses<ValueWitnesses<Box>,
     return Box::destroy((typename Box::type*) value);
   }
 
-  static void makeContentsSafeForConcurrentAccess(OpaqueValue *value, const Metadata *self) { // dmu
-    Box::makeContentsSafeForConcurrentAccess((typename Box::type*) value);
+  static void visitRefsInValue_dmu_(OpaqueValue *value, const Metadata *self) {
+    Box::visitRefsInValue_dmu_((typename Box::type*) value);
   }
 
   static OpaqueValue *initializeWithCopy(OpaqueValue *dest, OpaqueValue *src,
@@ -1096,8 +1096,8 @@ struct NonFixedValueWitnesses :
     return Box::destroy((typename Box::type*) value, self);
   }
   
-  static void makeContentsSafeForConcurrentAccess(OpaqueValue *value, const Metadata *self) { // dmu
-    Box::makeContentsSafeForConcurrentAccess((typename Box::type*) value, self);
+  static void visitRefsInValue_dmu_(OpaqueValue *value, const Metadata *self) {
+    Box::visitRefsInValue_dmu_((typename Box::type*) value, self);
   }
   
   static void destroyArray(OpaqueValue *array, size_t n,

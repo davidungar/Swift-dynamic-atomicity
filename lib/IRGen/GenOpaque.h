@@ -152,8 +152,8 @@ namespace irgen {
                        SILType T,
                        Address object);
   
-  /// Emit a call to do a 'makeContentsSafeForConcurrentAccess' operation.
-  void emitMakeContentsSafeForConcurrentAccessCall(IRGenFunction &IGF, // dmu
+  /// Emit a call to do a 'visitRefsInValue_dmu_' operation.
+  void emitVisitRefsInValueCall_dmu_(IRGenFunction &IGF,
                                                    SILType T,
                                                    Address object);
 

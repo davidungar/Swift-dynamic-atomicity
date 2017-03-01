@@ -605,7 +605,7 @@ static void tuple_destroy(OpaqueValue *tuple, const Metadata *_metadata) {
 
 /// TODO: (dmu) explain
 template <bool IsPOD, bool IsInline>
-static void tuple_makeContentsSafeForConcurrentAccess(OpaqueValue *tuple, const Metadata *_metadata) { // dmu
+static void tuple_visitRefsInValue_dmu_(OpaqueValue *tuple, const Metadata *_metadata) {
   auto &metadata = *(const TupleTypeMetadata*) _metadata;
   assert(IsPOD == tuple_getValueWitnesses(&metadata)->isPOD());
   assert(IsInline == tuple_getValueWitnesses(&metadata)->isValueInline());
@@ -617,7 +617,7 @@ static void tuple_makeContentsSafeForConcurrentAccess(OpaqueValue *tuple, const 
     auto &eltInfo = metadata.getElements()[i];
     OpaqueValue *elt = eltInfo.findIn(tuple);
     auto eltWitnesses = eltInfo.Type->getValueWitnesses();
-    eltWitnesses->makeContentsSafeForConcurrentAccess(elt, eltInfo.Type);
+    eltWitnesses->visitRefsInValue_dmu_(elt, eltInfo.Type);
   }
 }
 /// TODO: (dmu) explain
@@ -627,7 +627,7 @@ static void tuple_makeContentsOfBufferSafeForConcurrentAccess(ValueBuffer *buffe
   assert(IsInline == tuple_getValueWitnesses(metatype)->isValueInline());
   
   auto tuple = tuple_projectBuffer<IsPOD, IsInline>(buffer, metatype);
-  tuple_makeContentsSafeForConcurrentAccess<IsPOD, IsInline>(tuple, metatype);
+  tuple_visitRefsInValue_dmu_<IsPOD, IsInline>(tuple, metatype);
 }
 /// TODO: (dmu) explain
 template <bool IsPOD, bool IsInline>
@@ -642,7 +642,7 @@ static void tuple_makeContentsOfArraySafeForConcurrentAccess(OpaqueValue *array,
   char *bytes = (char*)array;
   
   while (n--) {
-    tuple_makeContentsSafeForConcurrentAccess<IsPOD, IsInline>((OpaqueValue*)bytes, _metadata);
+    tuple_visitRefsInValue_dmu_<IsPOD, IsInline>((OpaqueValue*)bytes, _metadata);
     bytes += stride;
   }
 }
@@ -1230,11 +1230,11 @@ static void pod_noop(void *object, const Metadata *self) {
   pointer_function_cast<value_witness_types::deallocateBuffer>(pod_noop)
 
 
-#define pod_direct_makeContentsSafeForConcurrentAccess /*dmu*/ \
- pointer_function_cast<value_witness_types::makeContentsSafeForConcurrentAccess>(pod_noop)
+#define pod_direct_visitRefsInValue_dmu_ /*dmu*/ \
+ pointer_function_cast<value_witness_types::visitRefsInValue_dmu_>(pod_noop)
 
-#define pod_indirect_makeContentsSafeForConcurrentAccess /*dmu*/ \
-  pod_direct_makeContentsSafeForConcurrentAccess
+#define pod_indirect_visitRefsInValue_dmu_ /*dmu*/ \
+  pod_direct_visitRefsInValue_dmu_
 
 
 #define pod_direct_makeContentsOfBufferSafeForConcurrentAccess /*dmu*/ \
