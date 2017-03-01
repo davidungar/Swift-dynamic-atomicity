@@ -88,10 +88,10 @@ std::string ASTMangler::mangleDestructorEntity(const DestructorDecl *decl,
 }
 
 
-std::string ASTMangler::mangleVisitRefsInInstance_dmu_Entity(const VisitRefsInInstance_dmu_Decl *decl, // dmu
+std::string ASTMangler::mangleVisitorOfRefsInInstance_dmu_Entity(const VisitorOfRefsInInstance_dmu_Decl *decl, // dmu
                                                SymbolKind SKind) {
   beginMangling();
-  appendVisitRefsInInstance_dmu_Entity(decl);
+  appendVisitorOfRefsInInstance_dmu_Entity(decl);
   appendSymbolKind(SKind);
   return finalize();
 }
@@ -300,8 +300,8 @@ std::string ASTMangler::mangleDeclAsUSR(ValueDecl *Decl, StringRef USRPrefix) {
     appendConstructorEntity(Ctor, /*isAllocating=*/false);
   } else if (auto Dtor = dyn_cast<DestructorDecl>(Decl)) {
     appendDestructorEntity(Dtor, /*isDeallocating=*/false);
-  } else if (auto Maker = dyn_cast<VisitRefsInInstance_dmu_Decl>(Decl)) { // dmu
-    appendVisitRefsInInstance_dmu_Entity(Maker);
+  } else if (auto Maker = dyn_cast<VisitorOfRefsInInstance_dmu_Decl>(Decl)) { // dmu
+    appendVisitorOfRefsInInstance_dmu_Entity(Maker);
   } else if (auto NTD = dyn_cast<NominalTypeDecl>(Decl)) {
     appendNominalType(NTD);
   } else if (isa<TypeAliasDecl>(Decl) || isa<AssociatedTypeDecl>(Decl)) {
@@ -1087,8 +1087,8 @@ void ASTMangler::appendContext(const DeclContext *ctx) {
     if (auto dtor = dyn_cast<DestructorDecl>(fn))
       return appendDestructorEntity(dtor, /*deallocating*/ false);
 
-    if (auto maker = dyn_cast<VisitRefsInInstance_dmu_Decl>(fn)) // dmu
-      return appendVisitRefsInInstance_dmu_Entity(maker);
+    if (auto maker = dyn_cast<VisitorOfRefsInInstance_dmu_Decl>(fn)) // dmu
+      return appendVisitorOfRefsInInstance_dmu_Entity(maker);
     
     return appendEntity(fn);
   }
@@ -1627,7 +1627,7 @@ void ASTMangler::appendDestructorEntity(const DestructorDecl *dtor,
   appendOperator(isDeallocating ? "fD" : "fd");
 }
 
-void ASTMangler::appendVisitRefsInInstance_dmu_Entity(const VisitRefsInInstance_dmu_Decl *maker ) {  // dmu
+void ASTMangler::appendVisitorOfRefsInInstance_dmu_Entity(const VisitorOfRefsInInstance_dmu_Decl *maker ) {  // dmu
   appendContextOf(maker);
   appendOperator("ma");
 }
@@ -1693,7 +1693,7 @@ void ASTMangler::appendEntity(const ValueDecl *decl) {
   if (!DeclCtx) DeclCtx = decl->getInnermostDeclContext();
   assert(!isa<ConstructorDecl>(decl));
   assert(!isa<DestructorDecl>(decl));
-  assert(!isa<VisitRefsInInstance_dmu_Decl>(decl)); // dmu
+  assert(!isa<VisitorOfRefsInInstance_dmu_Decl>(decl)); // dmu
   
   // Handle accessors specially, they are mangled as modifiers on the accessed
   // declaration.

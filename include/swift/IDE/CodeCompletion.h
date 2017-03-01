@@ -397,7 +397,7 @@ enum class CodeCompletionDeclKind {
   GenericTypeParam,
   Constructor,
   Destructor,
-  VisitRefsInInstance_dmu_,
+  VisitorOfRefsInInstance_dmu_,
   Subscript,
   StaticMethod,
   InstanceMethod,

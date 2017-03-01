@@ -286,7 +286,7 @@ public:
 
     OnConstructor      = 1 << 24,
     OnDestructor       = 1 << 25,
-    OnVisitRefsInInstance_dmu_ = OnDestructor, // TODO: (dmu) likely wrong urgent
+    OnVisitorOfRefsInInstance_dmu_ = OnDestructor, // TODO: (dmu) likely wrong urgent
     OnFunc             = 1 << 26,
     OnEnumElement      = 1 << 27,
 

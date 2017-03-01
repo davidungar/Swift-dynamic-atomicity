@@ -564,7 +564,7 @@ public:
 };
 
   // dmu
-  class VisitRefsInHeapObj_dmu_Values { // dmu
+  class VisitorOfRefsInHeapObj_dmu_Values { // dmu
   public:
     class HeapObject; // dmu
     constexpr static void (* const unimplemented)(HeapObject*) = nullptr;

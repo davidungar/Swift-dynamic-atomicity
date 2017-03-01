@@ -1722,14 +1722,14 @@ static CanAnyFunctionType getDestructorInterfaceType(DestructorDecl *dd,
 
 /// Get the type of a make... function.
 /// TODO: (dmu) needed?
-static CanAnyFunctionType getVisitRefsInInstance_dmu_InterfaceType(VisitRefsInInstance_dmu_Decl *dd, // dmu
+static CanAnyFunctionType getVisitorOfRefsInInstance_dmu_InterfaceType(VisitorOfRefsInInstance_dmu_Decl *dd, // dmu
                                                                                  ASTContext &C,
                                                                                  bool isForeign) {
   auto classType = dd->getDeclContext()->getDeclaredInterfaceType()
   ->getCanonicalType();
   
   assert((!isForeign)
-         && "There are no foreign visitRefsInInstance_dmu_'s");
+         && "There are no foreign visitorOfRefsInInstance_dmu_'s");
   AnyFunctionType::ExtInfo extInfo =
   AnyFunctionType::ExtInfo(FunctionType::Representation::Thin,
                            /*throws*/ false);
@@ -1898,8 +1898,8 @@ CanAnyFunctionType TypeConverter::makeConstantInterfaceType(SILDeclRef c) {
                              c.isForeign);
       
   // TODO: (dmu) blind clone
-  case SILDeclRef::Kind::VisitRefsInInstance_dmu_: // dmu
-      return getVisitRefsInInstance_dmu_InterfaceType(cast<VisitRefsInInstance_dmu_Decl>(vd),
+  case SILDeclRef::Kind::VisitorOfRefsInInstance_dmu_: // dmu
+      return getVisitorOfRefsInInstance_dmu_InterfaceType(cast<VisitorOfRefsInInstance_dmu_Decl>(vd),
                                                       Context,
                                                       c.isForeign);
   
@@ -1960,7 +1960,7 @@ TypeConverter::getConstantGenericEnvironment(SILDeclRef c) {
   case SILDeclRef::Kind::Initializer:
   case SILDeclRef::Kind::Destroyer:
   case SILDeclRef::Kind::Deallocator:
-  case SILDeclRef::Kind::VisitRefsInInstance_dmu_: // dmu
+  case SILDeclRef::Kind::VisitorOfRefsInInstance_dmu_: // dmu
     {
     auto *afd = cast<AbstractFunctionDecl>(vd);
     auto captureInfo = getLoweredLocalCaptures(afd);

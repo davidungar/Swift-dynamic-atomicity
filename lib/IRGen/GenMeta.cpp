@@ -3347,11 +3347,11 @@ namespace {
     }
     
     // TODO: (dmu) factor with addDestructorFunction above
-    void addVisitRefsInInstance_dmu_Function() { // dmu
+    void addVisitorOfRefsInInstance_dmu_Function() { // dmu
       
       auto expansion = ResilienceExpansion::Minimal;
       auto makeRef = SILDeclRef(Target->getDestructor(),
-                                SILDeclRef::Kind::VisitRefsInInstance_dmu_,
+                                SILDeclRef::Kind::VisitorOfRefsInInstance_dmu_,
                                 expansion);
       SILFunction *makeFunc = IGM.getSILModule().lookUpFunction(makeRef);
       

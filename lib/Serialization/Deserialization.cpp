@@ -3533,7 +3533,7 @@ Decl *ModuleFile::getDecl(DeclID DID, Optional<DeclContext *> ForcedContext) {
     GenericEnvironmentID genericEnvID;
     TypeID interfaceID;
     
-    decls_block::VisitRefsInInstance_dmu_Layout::readRecord(scratch, contextID,
+    decls_block::VisitorOfRefsInInstance_dmu_Layout::readRecord(scratch, contextID,
                                                                           genericEnvID,
                                                                           interfaceID);
     
@@ -3541,7 +3541,7 @@ Decl *ModuleFile::getDecl(DeclID DID, Optional<DeclContext *> ForcedContext) {
     if (declOrOffset.isComplete())
       return declOrOffset;
     
-    auto make = createDecl<VisitRefsInInstance_dmu_Decl>(ctx.Id_refVisitor_dmu_, // dmu
+    auto make = createDecl<VisitorOfRefsInInstance_dmu_Decl>(ctx.Id_refVisitor_dmu_, // dmu
                                                                        SourceLoc(),
                                                                        /*selfpat*/nullptr, MC);
     declOrOffset = make;

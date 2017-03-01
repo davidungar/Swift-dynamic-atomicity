@@ -1040,7 +1040,7 @@ IRGenSILFunction::IRGenSILFunction(IRGenModule &IGM,
     CurFn->addFnAttr(llvm::Attribute::SanitizeAddress);
   if (IGM.IRGen.Opts.Sanitize == SanitizerKind::Thread) {
     if (dyn_cast_or_null<DestructorDecl>(f->getDeclContext())
-        || dyn_cast_or_null<VisitRefsInInstance_dmu_Decl>(f->getDeclContext())) // dmu
+        || dyn_cast_or_null<VisitorOfRefsInInstance_dmu_Decl>(f->getDeclContext())) // dmu
       // Do not report races in deinit and anything called from it
       // because TSan does not observe synchronization between retain
       // count dropping to '0' and the object deinitialization.

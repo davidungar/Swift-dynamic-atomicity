@@ -980,8 +980,8 @@ namespace {
       PrintWithColorRAII(OS, ParenthesisColor) << ')';
     }
     
-    void visitVisitRefsInInstance_dmu_Decl(VisitRefsInInstance_dmu_Decl *VD) { // dmu
-      printCommonAFD(VD, "visitRefsInInstance_dmu__decl");
+    void visitVisitorOfRefsInInstance_dmu_Decl(VisitorOfRefsInInstance_dmu_Decl *VD) { // dmu
+      printCommonAFD(VD, "visitorOfRefsInInstance_dmu__decl");
       printAbstractFunctionDecl(VD);
       PrintWithColorRAII(OS, ParenthesisColor) << ')';
     }
@@ -1185,8 +1185,8 @@ void swift::printContext(raw_ostream &os, DeclContext *dc) {
       os << "init";
     if (isa<DestructorDecl>(AFD))
       os << "deinit";
-    if (isa<VisitRefsInInstance_dmu_Decl>(AFD)) // dmu
-      os << "visitRefsInInstance_dmu_";
+    if (isa<VisitorOfRefsInInstance_dmu_Decl>(AFD)) // dmu
+      os << "visitorOfRefsInInstance_dmu_";
     break;
   }
   case DeclContextKind::SubscriptDecl:

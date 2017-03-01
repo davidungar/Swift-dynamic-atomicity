@@ -81,7 +81,7 @@ namespace swift {
   class ConstructorDecl;
   class Decl;
   class DestructorDecl;
-  class VisitRefsInInstance_dmu_Decl; // dmu
+  class VisitorOfRefsInInstance_dmu_Decl; // dmu
   class ExtensionDecl;
   class FuncDecl;
   class LinkLibrary;
@@ -430,7 +430,7 @@ public:
   llvm::StructType *FunctionPairTy;    /// { i8*, %swift.refcounted* }
   llvm::StructType *WitnessFunctionPairTy;    /// { i8*, %witness.table* }
   llvm::FunctionType *DeallocatingDtorTy; /// void (%swift.refcounted*)
-  llvm::FunctionType *VisitRefsInHeapObj_dmu_Ty; /// void (%swift.refcounted*) (dmu)
+  llvm::FunctionType *VisitorOfRefsInHeapObj_dmu_Ty; /// void (%swift.refcounted*) (dmu)
   llvm::StructType *TypeMetadataStructTy; /// %swift.type = type { ... }
   llvm::PointerType *TypeMetadataPtrTy;/// %swift.type*
   llvm::PointerType *TupleTypeMetadataPtrTy; /// %swift.tuple_type*

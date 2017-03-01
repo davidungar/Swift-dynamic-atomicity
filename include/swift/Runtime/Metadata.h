@@ -1345,10 +1345,10 @@ struct HeapMetadataHeaderPrefix {
   /// or 0 if the object shouldn't be deallocated.
   void (*destroy)(HeapObject *);
   
-  void (*visitRefsInHeapObj_dmu_)(HeapObject *);
+  void (*visitorOfRefsInHeapObj_dmu_)(HeapObject *);
   
   constexpr HeapMetadataHeaderPrefix(void (*d)(HeapObject *), void (*bea)(HeapObject*)) :
-  destroy(d), visitRefsInHeapObj_dmu_(bea) {}
+  destroy(d), visitorOfRefsInHeapObj_dmu_(bea) {}
 };
 
 /// The header present on all heap metadata.

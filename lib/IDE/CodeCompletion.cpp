@@ -562,8 +562,8 @@ CodeCompletionResult::getCodeCompletionDeclKind(const Decl *D) {
     return CodeCompletionDeclKind::Constructor;
   case DeclKind::Destructor:
     return CodeCompletionDeclKind::Destructor;
-  case DeclKind::VisitRefsInInstance_dmu_: // dmu
-    return CodeCompletionDeclKind::VisitRefsInInstance_dmu_;
+  case DeclKind::VisitorOfRefsInInstance_dmu_: // dmu
+    return CodeCompletionDeclKind::VisitorOfRefsInInstance_dmu_;
   case DeclKind::Func: {
     auto DC = D->getDeclContext();
     auto FD = cast<FuncDecl>(D);
@@ -642,8 +642,8 @@ void CodeCompletionResult::print(raw_ostream &OS) const {
     case CodeCompletionDeclKind::Destructor:
       Prefix.append("[Destructor]");
       break;
-    case CodeCompletionDeclKind::VisitRefsInInstance_dmu_: // dmu
-      Prefix.append("[VisitRefsInInstance_dmu_]");
+    case CodeCompletionDeclKind::VisitorOfRefsInInstance_dmu_: // dmu
+      Prefix.append("[VisitorOfRefsInInstance_dmu_]");
       break;
     case CodeCompletionDeclKind::Subscript:
       Prefix.append("[Subscript]");
@@ -5507,7 +5507,7 @@ void swift::ide::copyCodeCompletionResults(CodeCompletionResultSink &targetSink,
       case CodeCompletionDeclKind::EnumElement:
       case CodeCompletionDeclKind::Constructor:
       case CodeCompletionDeclKind::Destructor:
-      case CodeCompletionDeclKind::VisitRefsInInstance_dmu_: // dmu
+      case CodeCompletionDeclKind::VisitorOfRefsInInstance_dmu_: // dmu
       case CodeCompletionDeclKind::Subscript:
       case CodeCompletionDeclKind::StaticMethod:
       case CodeCompletionDeclKind::InstanceMethod:

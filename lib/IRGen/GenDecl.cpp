@@ -178,7 +178,7 @@ public:
   // Can't be added in an extension.
   void visitDestructorDecl(DestructorDecl *dtor) {}
 
-  void visitVisitRefsInInstance_dmu_Decl(VisitRefsInInstance_dmu_Decl *) {} // dmu
+  void visitVisitorOfRefsInInstance_dmu_Decl(VisitorOfRefsInInstance_dmu_Decl *) {} // dmu
 
   void visitConstructorDecl(ConstructorDecl *constructor) {
     if (!requiresObjCMethodDescriptor(constructor)) return;
@@ -1561,8 +1561,8 @@ void IRGenModule::emitGlobalDecl(Decl *D) {
   case DeclKind::Destructor:
     llvm_unreachable("there are no global destructor");
       
-  case DeclKind::VisitRefsInInstance_dmu_: // dmu
-    llvm_unreachable("there is no global visitRefsInInstance_dmu_");
+  case DeclKind::VisitorOfRefsInInstance_dmu_: // dmu
+    llvm_unreachable("there is no global visitorOfRefsInInstance_dmu_");
       
   case DeclKind::TypeAlias:
   case DeclKind::GenericTypeParam:
@@ -2932,7 +2932,7 @@ void IRGenModule::emitNestedTypeDecls(DeclRange members) {
     case DeclKind::Func:
     case DeclKind::Constructor:
     case DeclKind::Destructor:
-    case DeclKind::VisitRefsInInstance_dmu_: // dmu
+    case DeclKind::VisitorOfRefsInInstance_dmu_: // dmu
     case DeclKind::EnumCase:
     case DeclKind::EnumElement:
       // Skip non-type members.

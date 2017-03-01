@@ -262,7 +262,7 @@ namespace irgen {
     enum : unsigned {
       // Class metadata has two words of head-allocated data: the destructor
       // and the value witness table.
-      Class = 3, // dmu metadata layout, was 2 but I added a visitRefsInHeapObj_dmu_Fn word to HeapMetadata
+      Class = 3, // dmu metadata layout, was 2 but I added a visitorOfRefsInHeapObj_dmu_Fn word to HeapMetadata
       
       // Struct and enum metadata have one word of head-allocated data:
       // the value witness table.

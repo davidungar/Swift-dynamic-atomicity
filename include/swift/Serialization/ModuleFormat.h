@@ -1016,7 +1016,7 @@ namespace decls_block {
     // conformance info (if any).
   >;
 
-  using VisitRefsInInstance_dmu_Layout = BCRecordLayout<
+  using VisitorOfRefsInInstance_dmu_Layout = BCRecordLayout<
     MAKE_CONTAINED_REFERENCES_COUNT_ATOMICALLY_DECL,
     DeclContextIDField, // context decl
     GenericEnvironmentIDField, // generic environment
