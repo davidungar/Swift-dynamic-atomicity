@@ -403,10 +403,7 @@ public:
   virtual void visitRefsInValue_dmu_(IRGenFunction &IGF, Address address, SILType T) const = 0;
   // TODO: (dmu) Urgent: Are next two used???
   virtual void visitRefsInBuffer_dmu_(IRGenFunction &IGF, Address buffer, SILType T) const;
-  virtual void makeContainedReferencesOfElementsOfArrayCountAtomically(IRGenFunction &IGF,
-                                                                       Address base,
-                                                                       llvm::Value *count,
-                                                                       SILType T) const; // dmu
+  virtual void visitRefsInArray_dmu_(IRGenFunction &IGF, Address base, llvm::Value *count, SILType T) const;
 
 
   /// Should optimizations be enabled which rely on the representation

@@ -1719,10 +1719,10 @@ void TypeInfo::destroyArray(IRGenFunction &IGF, Address array,
   IGF.Builder.emitBlock(exit);
 }
 
-void TypeInfo::makeContainedReferencesOfElementsOfArrayCountAtomically(IRGenFunction &IGF,
-                                                                       Address array,
-                                                                       llvm::Value *count,
-                                                                       SILType T) const { // dmu TODO: (dmu) blind clone
+void TypeInfo::visitRefsInArray_dmu_(IRGenFunction &IGF,
+                                     Address array,
+                                     llvm::Value *count,
+                                     SILType T) const { // TODO: (dmu) blind clone
   if (isPOD(ResilienceExpansion::Maximal))
     return;
   

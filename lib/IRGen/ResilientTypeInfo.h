@@ -149,10 +149,7 @@ public:
     emitVisitRefsInBuffer_dmu_Call(IGF, T, buffer);
   }
   
-  void makeContainedReferencesOfElementsOfArrayCountAtomically(IRGenFunction &IGF, // dmu
-                                                               Address addr,
-                                                               llvm::Value *count,
-                                                               SILType T) const override {
+  void visitRefsInArray_dmu_(IRGenFunction &IGF, Address addr, llvm::Value *count, SILType T) const override {
     emitVisitRefsInArray_dmu_Call(IGF, T, addr, count);
   }
 
