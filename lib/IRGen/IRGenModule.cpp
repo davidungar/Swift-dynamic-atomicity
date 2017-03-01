@@ -239,9 +239,9 @@ IRGenModule::IRGenModule(IRGenerator &irgen,
   DeallocatingDtorTy = llvm::FunctionType::get(VoidTy, RefCountedPtrTy, false);
   llvm::Type *dtorPtrTy = DeallocatingDtorTy->getPointerTo();
 
-  // dmu MakeContainedReferencesCountAtomicallyTy  // TODO: (dmu factor) metadata layout
-  MakeContainedReferencesCountAtomicallyTy = llvm::FunctionType::get(VoidTy, RefCountedPtrTy, false);
-  llvm::Type *countAtomicallyPtrTy = MakeContainedReferencesCountAtomicallyTy->getPointerTo(); // dmu
+  // dmu VisitRefsInHeapObj_dmu_Ty  // TODO: (dmu factor) metadata layout
+  VisitRefsInHeapObj_dmu_Ty = llvm::FunctionType::get(VoidTy, RefCountedPtrTy, false);
+  llvm::Type *visitRefsInHeapObj_dmu_PtrTy = VisitRefsInHeapObj_dmu_Ty->getPointerTo(); // dmu
 
   // A full heap metadata is basically just an additional small prefix
   // on a full metadata, used for metadata corresponding to heap
@@ -249,7 +249,7 @@ IRGenModule::IRGenModule(IRGenerator &irgen,
   FullHeapMetadataStructTy =
                   createStructType(*this, "swift.full_heapmetadata", {
     dtorPtrTy,
-    countAtomicallyPtrTy, // TODO: (dmu factor) metadata layout
+    visitRefsInHeapObj_dmu_PtrTy, // TODO: (dmu factor) metadata layout
     WitnessTablePtrTy,
     TypeMetadataStructTy
   });
@@ -260,7 +260,7 @@ IRGenModule::IRGenModule(IRGenerator &irgen,
   FullBoxMetadataStructTy =
                   createStructType(*this, "swift.full_boxmetadata", {
     dtorPtrTy,
-    countAtomicallyPtrTy, // TODO: (dmu factor) metadata layout
+    visitRefsInHeapObj_dmu_PtrTy, // TODO: (dmu factor) metadata layout
     WitnessTablePtrTy,
     TypeMetadataStructTy,
     Int32Ty,

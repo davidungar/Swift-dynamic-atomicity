@@ -91,7 +91,7 @@ std::string ASTMangler::mangleDestructorEntity(const DestructorDecl *decl,
 std::string ASTMangler::mangleVisitRefsInInstance_dmu_Entity(const VisitRefsInInstance_dmu_Decl *decl, // dmu
                                                SymbolKind SKind) {
   beginMangling();
-  appendMakeContainedReferencesCountAtomicallyEntity(decl);
+  appendVisitRefsInInstance_dmu_Entity(decl);
   appendSymbolKind(SKind);
   return finalize();
 }
@@ -301,7 +301,7 @@ std::string ASTMangler::mangleDeclAsUSR(ValueDecl *Decl, StringRef USRPrefix) {
   } else if (auto Dtor = dyn_cast<DestructorDecl>(Decl)) {
     appendDestructorEntity(Dtor, /*isDeallocating=*/false);
   } else if (auto Maker = dyn_cast<VisitRefsInInstance_dmu_Decl>(Decl)) { // dmu
-    appendMakeContainedReferencesCountAtomicallyEntity(Maker);
+    appendVisitRefsInInstance_dmu_Entity(Maker);
   } else if (auto NTD = dyn_cast<NominalTypeDecl>(Decl)) {
     appendNominalType(NTD);
   } else if (isa<TypeAliasDecl>(Decl) || isa<AssociatedTypeDecl>(Decl)) {
@@ -1088,7 +1088,7 @@ void ASTMangler::appendContext(const DeclContext *ctx) {
       return appendDestructorEntity(dtor, /*deallocating*/ false);
 
     if (auto maker = dyn_cast<VisitRefsInInstance_dmu_Decl>(fn)) // dmu
-      return appendMakeContainedReferencesCountAtomicallyEntity(maker);
+      return appendVisitRefsInInstance_dmu_Entity(maker);
     
     return appendEntity(fn);
   }
@@ -1627,7 +1627,7 @@ void ASTMangler::appendDestructorEntity(const DestructorDecl *dtor,
   appendOperator(isDeallocating ? "fD" : "fd");
 }
 
-void ASTMangler::appendMakeContainedReferencesCountAtomicallyEntity(const VisitRefsInInstance_dmu_Decl *maker ) {  // dmu
+void ASTMangler::appendVisitRefsInInstance_dmu_Entity(const VisitRefsInInstance_dmu_Decl *maker ) {  // dmu
   appendContextOf(maker);
   appendOperator("ma");
 }

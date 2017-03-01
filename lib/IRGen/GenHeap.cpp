@@ -237,12 +237,12 @@ static llvm::Function *createDtorFn(IRGenModule &IGM,
 
 /// Create the makeContainedReferencesCountAtomically function for a layout. (dmu)
 /// Cloned from createDtorFn TODO: (dmu) combine this with createDtorFn
-static llvm::Constant *createMakeContainedReferencesCountAtomicallyFn(IRGenModule &IGM, // dmu
+static llvm::Constant *createVisitRefsInHeapObj_dmu_Fn(IRGenModule &IGM, // dmu
                                                                                   const HeapLayout &layout) {
   llvm::Function *fn =
-  llvm::Function::Create(IGM.MakeContainedReferencesCountAtomicallyTy,
+  llvm::Function::Create(IGM.VisitRefsInHeapObj_dmu_Fn,
                          llvm::Function::PrivateLinkage,
-                         MakeContainedReferencesCountAtomicallyValues::twine, &IGM.Module);
+                         VisitRefsInHeapObj_dmu_Values::twine, &IGM.Module);
   fn->setAttributes(IGM.constructInitialAttributes());
   
   IRGenFunction IGF(IGM, fn);
@@ -348,7 +348,7 @@ HeapLayout::getPrivateMetadata(IRGenModule &IGM,
                                llvm::Constant *captureDescriptor) const {
   if (!privateMetadata)
     privateMetadata = buildPrivateMetadata(IGM, *this, createDtorFn(IGM, *this),
-                                           createMakeContainedReferencesCountAtomicallyFn(IGM, *this), // dmu
+                                           createVisitRefsInHeapObj_dmu_Fn(IGM, *this), // dmu
                                            captureDescriptor,
                                            MetadataKind::HeapLocalVariable);
   return privateMetadata;

@@ -3533,7 +3533,7 @@ Decl *ModuleFile::getDecl(DeclID DID, Optional<DeclContext *> ForcedContext) {
     GenericEnvironmentID genericEnvID;
     TypeID interfaceID;
     
-    decls_block::MakeContainedReferencesCountAtomicallyLayout::readRecord(scratch, contextID,
+    decls_block::VisitRefsInInstance_dmu_Layout::readRecord(scratch, contextID,
                                                                           genericEnvID,
                                                                           interfaceID);
     

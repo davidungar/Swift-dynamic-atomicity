@@ -2171,7 +2171,7 @@ void TypeChecker::addImplicitDestructor(ClassDecl *CD) {
 }
 
 // factor with above?
-void TypeChecker::addMakeContainedReferencesCountAtomically(ClassDecl *CD) { // dmu
+void TypeChecker::addVisitRefsInInstance_dmu_(ClassDecl *CD) { // dmu
   auto *selfDecl = ParamDecl::createSelf(CD->getLoc(), CD);
   
   auto *MCRCD = new (Context) VisitRefsInInstance_dmu_Decl(Context.Id_mcrca,

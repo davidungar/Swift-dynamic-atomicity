@@ -3259,7 +3259,7 @@ public:
   /// Retrieve the destructor for this class.
   DestructorDecl *getDestructor();
   
-  VisitRefsInInstance_dmu_Decl *getMakeContainedReferencesCountAtomically(); // dmu
+  VisitRefsInInstance_dmu_Decl *getVisitRefsInInstance_dmu_(); // dmu
 
 
   /// Determine whether this class inherits the convenience initializers

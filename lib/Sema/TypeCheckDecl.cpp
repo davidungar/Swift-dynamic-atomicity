@@ -4236,7 +4236,7 @@ public:
       TC.addImplicitConstructors(CD);
 
     TC.addImplicitDestructor(CD);
-    TC.addMakeContainedReferencesCountAtomically(CD); //dmu
+    TC.addVisitRefsInInstance_dmu_(CD); //dmu
 
     if (!IsFirstPass && !CD->isInvalid())
       TC.checkConformancesInContext(CD, CD);

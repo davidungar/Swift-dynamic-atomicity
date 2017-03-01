@@ -248,7 +248,7 @@ StringRef Decl::getDescriptiveKindName(DescriptiveDeclKind K) {
   ENTRY(Subscript, "subscript");
   ENTRY(Constructor, "initializer");
   ENTRY(Destructor, "deinitializer");
-  ENTRY(MakeContainedReferencesCountAtomically, "makeContainedReferencesCountAtomically"); // dmu TODO: (dmu) fix grammar
+  ENTRY(VisitRefsInInstance_dmu_, "visitRefsInInstance_dmu_"); // dmu TODO: (dmu) fix grammar
   ENTRY(LocalFunction, "local function");
   ENTRY(GlobalFunction, "global function");
   ENTRY(OperatorFunction, "operator function");
@@ -2425,7 +2425,7 @@ DestructorDecl *ClassDecl::getDestructor() {
 }
 
 
-VisitRefsInInstance_dmu_Decl *ClassDecl::getMakeContainedReferencesCountAtomically() { // dmu
+VisitRefsInInstance_dmu_Decl *ClassDecl::getVisitRefsInInstance_dmu_() { // dmu
   auto name = getASTContext().Id_mcrca;
   auto results = lookupDirect(name);
   assert(!results.empty() && "Class without makeContainedReferencesCountAtomically?");

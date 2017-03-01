@@ -113,7 +113,7 @@ DeclName SILGenModule::getMagicFunctionName(SILDeclRef ref) {
     return getMagicFunctionName(cast<ConstructorDecl>(ref.getDecl()));
   case SILDeclRef::Kind::Deallocator:
   case SILDeclRef::Kind::Destroyer:
-  case SILDeclRef::Kind::MakeContainedReferencesCountAtomically: // dmu
+  case SILDeclRef::Kind::VisitRefsInInstance_dmu_: // dmu
     return getMagicFunctionName(cast<VisitRefsInInstance_dmu_Decl>(ref.getDecl())); // dmu
   case SILDeclRef::Kind::GlobalAccessor:
   case SILDeclRef::Kind::GlobalGetter:

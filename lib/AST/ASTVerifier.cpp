@@ -2446,13 +2446,13 @@ struct ASTNodeBase {};
                  "explicitly provided or created by the type checker\n";
           abort();
         }
-        unsigned NumMakeContainedReferencesCountAtomicallys = 0;  // dmu
+        unsigned NumVisitRefsInInstance_dmu_s = 0;  // dmu
         for (auto Member : CD->getMembers()) {
           if (isa<VisitRefsInInstance_dmu_Decl>(Member)) {
-            NumMakeContainedReferencesCountAtomicallys++;
+            NumVisitRefsInInstance_dmu_s++;
           }
         }
-        if (NumMakeContainedReferencesCountAtomicallys != 1) {
+        if (NumVisitRefsInInstance_dmu_s != 1) {
           Out << "every class should have exactly one visitRefsInInstance_dmu_, "
           "explicitly provided or created by the type checker\n";
           abort();

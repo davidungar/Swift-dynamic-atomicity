@@ -3351,7 +3351,7 @@ namespace {
       
       auto expansion = ResilienceExpansion::Minimal;
       auto makeRef = SILDeclRef(Target->getDestructor(),
-                                SILDeclRef::Kind::MakeContainedReferencesCountAtomically,
+                                SILDeclRef::Kind::VisitRefsInInstance_dmu_,
                                 expansion);
       SILFunction *makeFunc = IGM.getSILModule().lookUpFunction(makeRef);
       

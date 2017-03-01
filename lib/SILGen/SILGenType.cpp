@@ -299,7 +299,7 @@ public:
       // that it is referenced and cannot be eliminated by dead function removal.
       // In reality, the ... is referenced directly from
       // the HeapMetadata for the class.
-      addEntry(SILDeclRef(md, SILDeclRef::Kind::MakeContainedReferencesCountAtomically));
+      addEntry(SILDeclRef(md, SILDeclRef::Kind::VisitRefsInInstance_dmu_));
     }
   }
 

@@ -215,7 +215,7 @@ protected:
   
   void appendDestructorEntity(const DestructorDecl *decl, bool isDeallocating);
   
-  void appendMakeContainedReferencesCountAtomicallyEntity(const VisitRefsInInstance_dmu_Decl *decl); // dmu
+  void appendVisitRefsInInstance_dmu_Entity(const VisitRefsInInstance_dmu_Decl *decl); // dmu
   
   void appendAccessorEntity(AccessorKind kind,
                             AddressorKind addressorKind,

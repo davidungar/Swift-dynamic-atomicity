@@ -525,7 +525,7 @@ namespace {
         Text = "dealloc";
         break;
           
-      case SILDeclRef::Kind::MakeContainedReferencesCountAtomically: // dmu
+      case SILDeclRef::Kind::VisitRefsInInstance_dmu_: // dmu
         Text = "refVisitor";
         break;
           

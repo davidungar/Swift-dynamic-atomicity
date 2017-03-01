@@ -2912,8 +2912,8 @@ void Serializer::writeDecl(const Decl *D) {
     
     auto contextID = addDeclContextRef(maker->getDeclContext());
     
-    unsigned abbrCode = DeclTypeAbbrCodes[MakeContainedReferencesCountAtomicallyLayout::Code];
-    MakeContainedReferencesCountAtomicallyLayout::emitRecord(Out, ScratchRecord, abbrCode,
+    unsigned abbrCode = DeclTypeAbbrCodes[VisitRefsInInstance_dmu_Layout::Code];
+    VisitRefsInInstance_dmu_Layout::emitRecord(Out, ScratchRecord, abbrCode,
                                  contextID,
                                  addGenericEnvironmentRef(
                                                           maker->getGenericEnvironment()),

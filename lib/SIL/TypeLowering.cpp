@@ -1722,7 +1722,7 @@ static CanAnyFunctionType getDestructorInterfaceType(DestructorDecl *dd,
 
 /// Get the type of a make... function.
 /// TODO: (dmu) needed?
-static CanAnyFunctionType getMakeContainedReferencesCountAtomicallyInterfaceType(VisitRefsInInstance_dmu_Decl *dd, // dmu
+static CanAnyFunctionType getVisitRefsInInstance_dmu_InterfaceType(VisitRefsInInstance_dmu_Decl *dd, // dmu
                                                                                  ASTContext &C,
                                                                                  bool isForeign) {
   auto classType = dd->getDeclContext()->getDeclaredInterfaceType()
@@ -1898,10 +1898,10 @@ CanAnyFunctionType TypeConverter::makeConstantInterfaceType(SILDeclRef c) {
                              c.isForeign);
       
   // TODO: (dmu) blind clone
-  case SILDeclRef::Kind::MakeContainedReferencesCountAtomically: // dmu
-      return getMakeContainedReferencesCountAtomicallyInterfaceType(cast<VisitRefsInInstance_dmu_Decl>(vd),
-                                        Context,
-                                        c.isForeign);
+  case SILDeclRef::Kind::VisitRefsInInstance_dmu_: // dmu
+      return getVisitRefsInInstance_dmu_InterfaceType(cast<VisitRefsInInstance_dmu_Decl>(vd),
+                                                      Context,
+                                                      c.isForeign);
   
   case SILDeclRef::Kind::GlobalAccessor: {
     VarDecl *var = cast<VarDecl>(vd);
@@ -1960,7 +1960,7 @@ TypeConverter::getConstantGenericEnvironment(SILDeclRef c) {
   case SILDeclRef::Kind::Initializer:
   case SILDeclRef::Kind::Destroyer:
   case SILDeclRef::Kind::Deallocator:
-  case SILDeclRef::Kind::MakeContainedReferencesCountAtomically: // dmu
+  case SILDeclRef::Kind::VisitRefsInInstance_dmu_: // dmu
     {
     auto *afd = cast<AbstractFunctionDecl>(vd);
     auto captureInfo = getLoweredLocalCaptures(afd);
