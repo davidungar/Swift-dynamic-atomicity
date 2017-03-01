@@ -88,8 +88,8 @@ static llvm::Type *createWitnessType(IRGenModule &IGM, ValueWitness index) {
       ->getPointerTo();
   }
       
-  // void (*makeContentsOfArraySafeForConcurrentAccess)(T *object, size_t n, witness_t *self);
-  case ValueWitness::MakeContentsOfArraySafeForConcurrentAccess: { // dmu blind clone
+  // void (*visitRefsInArray_dmu_)(T *object, size_t n, witness_t *self);
+  case ValueWitness::VisitRefsInArray_dmu_: { // dmu blind clone
     llvm::Type *args[] = { IGM.OpaquePtrTy, IGM.SizeTy, IGM.TypeMetadataPtrTy };
     return llvm::FunctionType::get(IGM.VoidTy, args, /*isVarArg*/ false)
     ->getPointerTo();
@@ -291,8 +291,8 @@ static StringRef getValueWitnessLabel(ValueWitness index) {
     return "visitRefsInValue_dmu_";
   case ValueWitness::VisitRefsInBuffer_dmu_:
     return "visitRefsInBuffer_dmu_";
-  case ValueWitness::MakeContentsOfArraySafeForConcurrentAccess: // dmu
-    return "makeContentsOfArraySafeForConcurrentAccess";
+  case ValueWitness::VisitRefsInArray_dmu_:
+    return "visitRefsInArray_dmu_";
   }
   llvm_unreachable("bad value witness index");
 }
@@ -730,14 +730,14 @@ void irgen::emitDestroyArrayCall(IRGenFunction &IGF,
 
 
 
-/// Emit a call to do a 'makeContentsOfArraySafeForConcurrentAccessCall' operation.
-void irgen::emitMakeContentsOfArraySafeForConcurrentAccessCall(IRGenFunction &IGF, // dmu
+/// Emit a call to do a 'visitRefsInArray_dmu_Call' operation.
+void irgen::emitVisitRefsInArray_dmu_Call(IRGenFunction &IGF,
                                                                SILType T,
                                                                Address object,
                                                                llvm::Value *count) {
   auto metadata = IGF.emitTypeMetadataRefForLayout(T);
   llvm::Value *fn = IGF.emitValueWitnessForLayout(T,
-                                                  ValueWitness::MakeContentsOfArraySafeForConcurrentAccess);
+                                                  ValueWitness::VisitRefsInArray_dmu_);
   llvm::CallInst *call =
   IGF.Builder.CreateCall(fn, {object.getAddress(), count, metadata});
   call->setCallingConv(IGF.IGM.DefaultCC);

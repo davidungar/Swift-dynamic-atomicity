@@ -615,7 +615,7 @@ typedef void visitRefsInValue_dmu_(OpaqueValue *object,
                                    const Metadata *self);
 typedef void visitRefsInBuffer_dmu_(ValueBuffer* buffer,
                                     const Metadata *self);
-typedef void makeContentsOfArraySafeForConcurrentAccess(OpaqueValue *array, size_t n, // dmu
+typedef void visitRefsInArray_dmu_(OpaqueValue *array, size_t n,
                                                         const Metadata *self);
 
 /// Given a valid object of this enum type, extracts the tag value indicating
@@ -673,7 +673,7 @@ OpaqueValue *swift_copyPOD(OpaqueValue *dest,
   MACRO(initializeArrayWithTakeBackToFront) \
   MACRO(visitRefsInValue_dmu_) \
   MACRO(visitRefsInBuffer_dmu_) \
-  MACRO(makeContentsOfArraySafeForConcurrentAccess) /*dmu*/
+  MACRO(visitRefsInArray_dmu_) /*dmu*/
   
 
 struct TypeLayout;

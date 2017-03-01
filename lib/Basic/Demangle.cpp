@@ -294,8 +294,8 @@ static StringRef toString(ValueWitnessKind k) {
     return "visitRefsInValue_dmu_";
   case ValueWitnessKind::VisitRefsInBuffer_dmu_:
     return "visitRefsInBuffer_dmu_";
-  case ValueWitnessKind::MakeContentsOfArraySafeForConcurrentAccess: // dmu
-      return "makeContentsOfArraySafeForConcurrentAccess";
+  case ValueWitnessKind::VisitRefsInArray_dmu_:
+      return "visitRefsInArray_dmu_";
   }
   unreachable("bad value witness kind");
 }

@@ -75,7 +75,7 @@ const char *irgen::getValueWitnessName(ValueWitness witness) {
   CASE(ExtraInhabitantFlags)
   CASE(VisitRefsInValue_dmu_)
   CASE(VisitRefsInBuffer_dmu_)
-  CASE(MakeContentsOfArraySafeForConcurrentAccess) // dmu
+  CASE(VisitRefsInArray_dmu_)
 #undef CASE
   }
   llvm_unreachable("bad value witness kind");
@@ -665,7 +665,7 @@ static void buildValueWitnessFunction(IRGenModule &IGM,
     return;
   }
 
-  case ValueWitness::MakeContentsOfArraySafeForConcurrentAccess: { // dmu clone TODO: (dmu) factor with destroyArray?
+  case ValueWitness::VisitRefsInArray_dmu_: { // dmu clone TODO: (dmu) factor with destroyArray?
     Address array = getArgAs(IGF, argv, type, "array");
     llvm::Value *count = getArg(argv, "count");
     getArgAsLocalSelfTypeMetadata(IGF, argv, abstractType);
@@ -1229,7 +1229,7 @@ static llvm::Constant *getValueWitness(IRGenModule &IGM,
     }
     goto standard;
     
-  case ValueWitness::MakeContentsOfArraySafeForConcurrentAccess: // dmu
+  case ValueWitness::VisitRefsInArray_dmu_:
     if (concreteTI.isPOD(ResilienceExpansion::Maximal)) {
       return asOpaquePtr(IGM, getNoOpVoidFunction(IGM));
     }

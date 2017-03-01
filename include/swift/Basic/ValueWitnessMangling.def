@@ -38,6 +38,6 @@ VALUE_WITNESS(ui, DestructiveInjectEnumTag)
 
 VALUE_WITNESS(mc, VisitRefsInValue_dmu_)
 VALUE_WITNESS(mb, VisitRefsInBuffer_dmu_)
-VALUE_WITNESS(ma, MakeContentsOfArraySafeForConcurrentAccess) // dmu
+VALUE_WITNESS(ma, VisitRefsInArray_dmu_)
 
 #undef VALUE_WITNESS

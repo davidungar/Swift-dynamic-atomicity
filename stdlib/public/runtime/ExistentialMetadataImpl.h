@@ -37,7 +37,7 @@ struct LLVM_LIBRARY_VISIBILITY ExistentialBoxBase {
   }
 
   template <class Container, class... A>
-  static void makeContentsOfArraySafeForConcurrentAccess(Container *array, size_t n, A... args) { // dmu blind clone
+  static void visitRefsInArray_dmu_(Container *array, size_t n, A... args) { // dmu blind clone
     size_t stride = Container::getContainerStride(args...);
     char *bytes = (char*)array;
     while (n--) {

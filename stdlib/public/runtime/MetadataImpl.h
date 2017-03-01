@@ -175,7 +175,7 @@ struct NativeBox {
   
   static void visitRefsInBuffer_dmu_(T *value) {}
   
-  static void makeContentsOfArraySafeForConcurrentAccess(T *array, size_t n) {} // dmu
+  static void visitRefsInArray_dmu_(T *array, size_t n) {}
 
 private:
   static T *next(T *ptr, size_t n = 1) {
@@ -218,7 +218,7 @@ template <class Impl, class T> struct RetainableBoxBase {
       Impl::release(*arr++);
   }
   
-  static void makeContentsOfArraySafeForConcurrentAccess(T *arr, size_t n) { // dmu
+  static void visitRefsInArray_dmu_(T *arr, size_t n) {
     while (n--)
       Impl::beSafeForConcurrentAccess(*arr++);
   }
@@ -369,7 +369,7 @@ struct WeakRetainableBoxBase {
     return r;
   }
     
-  static void makeContentsOfArraySafeForConcurrentAccess(T *arr, size_t n) { // dmu
+  static void visitRefsInArray_dmu_(T *arr, size_t n) {
     while (n--)
       Impl::visitRefsInValue_dmu_(arr++);
   }
@@ -788,7 +788,7 @@ struct AggregateBox {
       return;
     Helper::visitRefsInValue_dmu_(value);
   }
-  static void makeContentsOfArraySafeForConcurrentAccess(char *array, size_t n) { // dmu
+  static void visitRefsInArray_dmu_(char *array, size_t n) {
     if (isPOD)
       return;
     while (n--) {
@@ -1023,8 +1023,8 @@ struct ValueWitnesses : BufferValueWitnesses<ValueWitnesses<Box>,
     return Box::destroyArray((typename Box::type*)array, n);
   }
   
-  static void makeContentsOfArraySafeForConcurrentAccess(OpaqueValue *array, size_t n, const Metadata *self) { // dmu
-    return Box::makeContentsOfArraySafeForConcurrentAccess((typename Box::type*)array, n);
+  static void visitRefsInArray_dmu_(OpaqueValue *array, size_t n, const Metadata *self) {
+    return Box::visitRefsInArray_dmu_((typename Box::type*)array, n);
   }
   
   static OpaqueValue *initializeArrayWithCopy(OpaqueValue *dest,
@@ -1105,9 +1105,9 @@ struct NonFixedValueWitnesses :
     return Box::destroyArray((typename Box::type*) array, n, self);
   }
   
-  static void makeContentsOfArraySafeForConcurrentAccess(OpaqueValue *array, size_t n,
+  static void visitRefsInArray_dmu_(OpaqueValue *array, size_t n,
                            const Metadata *self) { // dmu
-    return Box::makeContentsOfArraySafeForConcurrentAccess((typename Box::type*) array, n, self);
+    return Box::visitRefsInArray_dmu_((typename Box::type*) array, n, self);
   }
   
   static OpaqueValue *initializeWithCopy(OpaqueValue *dest, OpaqueValue *src,

@@ -631,7 +631,7 @@ static void tuple_visitRefsInBuffer_dmu_(ValueBuffer *buffer, const Metadata *me
 }
 /// TODO: (dmu) explain
 template <bool IsPOD, bool IsInline>
-static void tuple_makeContentsOfArraySafeForConcurrentAccess(OpaqueValue *array, size_t n, const Metadata *_metadata) { // dmu
+static void tuple_visitRefsInArray_dmu_(OpaqueValue *array, size_t n, const Metadata *_metadata) {
   auto &metadata = *(const TupleTypeMetadata*) _metadata;
   assert(IsPOD == tuple_getValueWitnesses(&metadata)->isPOD());
   assert(IsInline == tuple_getValueWitnesses(&metadata)->isValueInline());
@@ -1297,10 +1297,10 @@ static void pod_direct_destroyArray(OpaqueValue *, size_t, const Metadata *) {
 }
 #define pod_indirect_destroyArray pod_direct_destroyArray
 
-static void pod_direct_makeContentsOfArraySafeForConcurrentAccess(OpaqueValue *, size_t, const Metadata *) { // dmu
+static void pod_direct_visitRefsInArray_dmu_(OpaqueValue *, size_t, const Metadata *) {
   // noop
 }
-#define pod_indirect_makeContentsOfArraySafeForConcurrentAccess pod_direct_makeContentsOfArraySafeForConcurrentAccess //dmu
+#define pod_indirect_visitRefsInArray_dmu_ pod_direct_visitRefsInArray_dmu_ //dmu
 
 
 static OpaqueValue *pod_direct_initializeArrayWithCopy(OpaqueValue *dest,

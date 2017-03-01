@@ -153,7 +153,7 @@ public:
                                                                Address addr,
                                                                llvm::Value *count,
                                                                SILType T) const override {
-    emitMakeContentsOfArraySafeForConcurrentAccessCall(IGF, T, addr, count);
+    emitVisitRefsInArray_dmu_Call(IGF, T, addr, count);
   }
 
   void destroyArray(IRGenFunction &IGF, Address addr, llvm::Value *count,

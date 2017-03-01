@@ -164,7 +164,7 @@ namespace irgen {
                             llvm::Value *count);
 
   /// Emit a call to do a 'destroyArray' operation.
-  void emitMakeContentsOfArraySafeForConcurrentAccessCall(IRGenFunction &IGF, // dmu xxxxxx
+  void emitVisitRefsInArray_dmu_Call(IRGenFunction &IGF, // dmu xxxxxx
                                                           SILType T,
                                                           Address object,
                                                           llvm::Value *count);
