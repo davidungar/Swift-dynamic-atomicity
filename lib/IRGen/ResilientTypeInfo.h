@@ -141,7 +141,7 @@ public:
     emitDestroyCall(IGF, T, addr);
   }
 
-  void visitRefsInValue_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override { // dmu
+  void visitRefsInValue_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
     emitMakeContentsSafeForConcurrentAccessCall(IGF, T, addr);
   }
   

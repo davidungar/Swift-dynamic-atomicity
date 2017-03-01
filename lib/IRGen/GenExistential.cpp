@@ -361,7 +361,7 @@ public:
     emitDestroyExistential(IGF, addr, getLayout());
   }
                
-  void visitRefsInValue_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override { // dmu
+  void visitRefsInValue_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
     emitMakeContentsSafeForConcurrentAccessExistential(IGF, addr, getLayout());
   }
 
@@ -443,7 +443,7 @@ public:
     asDerived().emitValueDestroy(IGF, valueAddr);
   }
 
-  void visitRefsInValue_dmu_(IRGenFunction &IGF, Address existential, SILType T) const override { // dmu
+  void visitRefsInValue_dmu_(IRGenFunction &IGF, Address existential, SILType T) const override {
     Address valueAddr = projectValue(IGF, existential);
     asDerived().emitValueBeSafeForConcurrentAccess(IGF, valueAddr);
   }
@@ -862,7 +862,7 @@ public:
     asDerived().emitValueRelease(IGF, value, Atomicity::Atomic);
   }
 
-  void visitRefsInValue_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override { // dmu
+  void visitRefsInValue_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
     llvm::Value *value = asDerived().loadValue(IGF, addr);
     asDerived().emitValueBeSafeForConcurrentAccess(IGF, value);
   }

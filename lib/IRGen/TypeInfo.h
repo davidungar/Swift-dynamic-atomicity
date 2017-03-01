@@ -400,7 +400,7 @@ public:
 
   /// Output code to visit each reference in this element and make its reference count atomic
   
-  virtual void visitRefsInValue_dmu_(IRGenFunction &IGF, Address address, SILType T) const = 0; // dmu
+  virtual void visitRefsInValue_dmu_(IRGenFunction &IGF, Address address, SILType T) const = 0;
   virtual void makeContainedReferencesOfElementsOfBufferCountAtomically(IRGenFunction &IGF, Address buffer, SILType T) const; // dmu
   virtual void makeContainedReferencesOfElementsOfArrayCountAtomically(IRGenFunction &IGF,
                                                                        Address base,

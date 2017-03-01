@@ -559,7 +559,7 @@ namespace {
       IGF.emitNativeWeakDestroy(addr);
     }
 
-    void visitRefsInValue_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override { // dmu
+    void visitRefsInValue_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
       IGF.emitNativeWeakBeSafeForConcurrentAccess(addr);
     }
 
@@ -720,7 +720,7 @@ namespace {
       IGF.emitUnknownUnownedDestroy(addr);
     }
 
-    void visitRefsInValue_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override { // dmu
+    void visitRefsInValue_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
       IGF.emitUnknownUnownedBeSafeForConcurrentAccess(addr);
     }
 
@@ -795,7 +795,7 @@ namespace {
       IGF.emitUnknownWeakDestroy(addr);
     }
                                 
-    void visitRefsInValue_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override { // dmu
+    void visitRefsInValue_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
       IGF.emitUnknownWeakBeSafeForConcurrentAccess(addr);
     }
                                 

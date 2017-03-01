@@ -200,7 +200,7 @@ public:
     }
   }
   
-  void visitRefsInValue_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override { // dmu
+  void visitRefsInValue_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
     if (!Derived::IsScalarPOD) {
       addr = asDerived().projectScalar(IGF, addr);
       llvm::Value *value = IGF.Builder.CreateLoad(addr, "toDestroy");

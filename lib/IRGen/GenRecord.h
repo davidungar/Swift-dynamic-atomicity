@@ -214,7 +214,7 @@ public:
     }
   }
       
-  void visitRefsInValue_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override { // dmu
+  void visitRefsInValue_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
     auto offsets = asImpl().getNonFixedOffsets(IGF, T);
     for (auto &field : getFields()) {
       if (field.isPOD())

@@ -510,7 +510,7 @@ namespace {
                                 getSingletonType(IGF.IGM, T));
     }
 
-    void visitRefsInValue_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override { // dmu
+    void visitRefsInValue_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
       if (getSingleton() &&
           !getSingleton()->isPOD(ResilienceExpansion::Maximal)) {
         getSingleton()->visitRefsInValue_dmu_(
@@ -2434,7 +2434,7 @@ namespace {
     }
 
     // TODO: (dmu) factor with destroy above
-    void visitRefsInValue_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override { // dmu
+    void visitRefsInValue_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
       switch (CopyDestroyKind) {
         case POD:
           return;
@@ -4426,7 +4426,7 @@ namespace {
       }
     }
 
-    void visitRefsInValue_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override { // dmu
+    void visitRefsInValue_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
       
       // assignWithCopy emitIndirectAssign(IGF, dest, src, T, false);
       
@@ -5006,7 +5006,7 @@ namespace {
       emitDestroyCall(IGF, T, addr);
     }
 
-    void visitRefsInValue_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override { // dmu
+    void visitRefsInValue_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
       emitMakeContentsSafeForConcurrentAccessCall(IGF, T, addr);
     }
 
@@ -5379,7 +5379,7 @@ namespace {
     void destroy(IRGenFunction &IGF, Address addr, SILType T) const override {
       return Strategy.destroy(IGF, addr, T);
     }
-    void visitRefsInValue_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override { // dmu
+    void visitRefsInValue_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
       Strategy.visitRefsInValue_dmu_(IGF, addr, T);
     }
     void initializeFromParams(IRGenFunction &IGF, Explosion &params,
