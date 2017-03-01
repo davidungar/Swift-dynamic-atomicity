@@ -356,7 +356,7 @@ public:
     llvm_unreachable("illegal deinitialization");
   }
   bool visitVisitRefAtAddr_dmu_Inst(VisitRefAtAddr_dmu_Inst *VisitRefAtAddr_dmu_Inst) {
-    llvm_unreachable("illegal deinitialization");
+    llvm_unreachable("illegal visiting ref at address");
   }
   bool visitUncheckedTakeEnumDataAddrInst(
     UncheckedTakeEnumDataAddrInst *UserInst) {
