@@ -3213,7 +3213,7 @@ void IRGenSILFunction::visitStoreInst(swift::StoreInst *i) {
 
   if (isDestGlobal) { // TODO: (dmu urgent) maybe also if dest has unimplemented beSafe in metadata? what if dest resilient or unknown?
     Explosion concurrentAccessSource = getLoweredExplosion(i->getSrc());
-    typeInfo.makeSourceSafeForConcurrentAccess( *this, concurrentAccessSource); // dmu
+    typeInfo.visitRefsInValues_dmu_( *this, concurrentAccessSource);
   }
   // This is only here if you run the compiler without the pass that transforms stores -- dmu
   else if (isDestBeingAssigned) {
@@ -3248,7 +3248,7 @@ void IRGenSILFunction::visitStoreBarrier_dmu_Inst(StoreBarrier_dmu_Inst *i) { //
   
   if (isDestGlobal) { // TODO: (dmu urgent) maybe also if dest has unimplemented beSafe in metadata? what if dest resilient or unknown?
     Explosion concurrentAccessSource = getLoweredExplosion(i->getSrc());
-    typeInfo.makeSourceSafeForConcurrentAccess( *this, concurrentAccessSource); // dmu
+    typeInfo.visitRefsInValues_dmu_( *this, concurrentAccessSource);
   }
   else {
     Explosion concurrentAccessSource = getLoweredExplosion(i->getSrc());
@@ -3367,7 +3367,7 @@ void IRGenSILFunction::visitLoadWeakInst(swift::LoadWeakInst *i) {
 }
 
 void IRGenSILFunction::visitStoreWeakInst(swift::StoreWeakInst *i) {
-  // TODO: (dmu check) add call to makeSourceSafeForConcurrentAccess or checkHolderThenVisitHeldRefs_dmu_ ala visitStore or be sure DestSafe node is created for these nodes
+  // TODO: (dmu check) add call to visitRefsInValues_dmu_ or checkHolderThenVisitHeldRefs_dmu_ ala visitStore or be sure DestSafe node is created for these nodes
   Explosion source = getLoweredExplosion(i->getSrc());
   Address dest = getLoweredAddress(i->getDest());
 
@@ -3489,7 +3489,7 @@ void IRGenSILFunction::visitLoadUnownedInst(swift::LoadUnownedInst *i) {
 }
 
 void IRGenSILFunction::visitStoreUnownedInst(swift::StoreUnownedInst *i) {
-  // TODO: (dmu check) add call to makeSourceSafeForConcurrentAccess or checkHolderThenVisitHeldRefs_dmu_ ala visitStore or be sure DestSafe node is created for these nodes
+  // TODO: (dmu check) add call to visitRefsInValues_dmu_ or checkHolderThenVisitHeldRefs_dmu_ ala visitStore or be sure DestSafe node is created for these nodes
   Explosion source = getLoweredExplosion(i->getSrc());
   Address dest = getLoweredAddress(i->getDest());
 

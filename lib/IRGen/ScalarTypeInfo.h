@@ -157,12 +157,12 @@ public:
     }
   }
 
-  void makeSourceSafeForConcurrentAccess(IRGenFunction &IGF, Explosion &src) const override { // dmu
+  void visitRefsInValues_dmu_(IRGenFunction &IGF, Explosion &src) const override { // dmu
     if (Derived::IsScalarPOD) {
       (void)src.claimAll();
       return;
     }
-    asDerived().emitBeSafeForConcurrentAccess(IGF, src.claimNext());
+    asDerived().emitVisitRefInScalar_dmu_(IGF, src.claimNext());
   }
   
   void checkHolderThenVisitHeldRefs_dmu_(IRGenFunction &IGF, Explosion &src, Address dest) const override {
@@ -204,9 +204,8 @@ public:
   void visitRefsInValue_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
     if (!Derived::IsScalarPOD) {
       addr = asDerived().projectScalar(IGF, addr);
-      llvm::Value *value = IGF.Builder.CreateLoad(addr, "toDestroy");
-      asDerived().emitBeSafeForConcurrentAccess
-      (IGF, value);
+      llvm::Value *value = IGF.Builder.CreateLoad(addr, "toVisit");
+      asDerived().emitVisitRefInScalar_dmu_(IGF, value);
     }
   }
   
@@ -260,8 +259,8 @@ private:
   void emitScalarFixLifetime(IRGenFunction &IGF, llvm::Value *value) const {
   }
   
-  void emitBeSafeForConcurrentAccess(IRGenFunction &IGF, // dmu
-                                     llvm::Value *objToSet) const {}
+  void emitVisitRefInScalar_dmu_(IRGenFunction &IGF,
+                                  llvm::Value *objToSet) const {}
   void emitCheckHolderThenVisitHeldRefs_dmu_(IRGenFunction &IGF, // dmu
                                              llvm::Value *objToCheck, llvm::Value *objToSet) const {}
 };

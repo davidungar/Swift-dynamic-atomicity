@@ -475,7 +475,7 @@ namespace {
                                          getSingletonType(IGF.IGM, T));
     }
 
-    void makeSourceSafeForConcurrentAccess(IRGenFunction &IGF, Explosion &e) const override { // dmu makeSourceSafeForConcurrentAccess
+    void visitRefsInValues_dmu_(IRGenFunction &IGF, Explosion &e) const override {
       (void)e.claimAll(); // TODO: (dmu implement enums)
     }
     void checkHolderThenVisitHeldRefs_dmu_(IRGenFunction &IGF, Explosion &e, Address dest) const override {
@@ -882,8 +882,8 @@ namespace {
                            Atomicity atomicity) const {}
     void emitScalarFixLifetime(IRGenFunction &IGF, llvm::Value *value) const {}
 
-    void emitBeSafeForConcurrentAccess(IRGenFunction &IGF, // dmu
-                                       llvm::Value *objToSet) const {}
+    void emitVisitRefInScalar_dmu_(IRGenFunction &IGF,
+                                    llvm::Value *objToSet) const {}
 
     void emitCheckHolderThenVisitHeldRefs_dmu_(IRGenFunction &IGF,
                                                         llvm::Value *objToCheck, llvm::Value *objToSet) const {}
@@ -1324,7 +1324,7 @@ namespace {
         IGF.Builder.CreateStore(e.claimNext(), projectExtraTagBits(IGF, addr));
     }
 
-    void makeSourceSafeForConcurrentAccess(IRGenFunction &IGF, Explosion &e) const override { // dmu
+    void visitRefsInValues_dmu_(IRGenFunction &IGF, Explosion &e) const override {
       (void)e.claimAll();  // TODO: (dmu implement enums)
     }
     void checkHolderThenVisitHeldRefs_dmu_(IRGenFunction &IGF, Explosion &e, Address dest) const override {
@@ -2273,7 +2273,7 @@ namespace {
                                   llvm::Value *ptr) const {
       switch (CopyDestroyKind) {
         case NullableRefcounted:
-          IGF.emitBeSafeForConcurrentAccess(ptr, Refcounting);
+          IGF.emitVisitRefInScalar_dmu_(ptr, Refcounting);
           return;
         case POD:
         case Normal:
@@ -3046,7 +3046,7 @@ namespace {
         Explosion value;
         projectPayloadValue(IGF, parts.payload, tagIndex, lti, value);
         
-        lti.makeSourceSafeForConcurrentAccess(IGF, value);
+        lti.visitRefsInValues_dmu_(IGF, value);
       });
       
       IGF.Builder.CreateRetVoid();
@@ -3237,7 +3237,7 @@ namespace {
                                                       llvm::Value *ptr) const {
       switch (CopyDestroyKind) {
         case TaggedRefcounted:
-          IGF.emitBeSafeForConcurrentAccess(ptr, Refcounting);
+          IGF.emitVisitRefInScalar_dmu_(ptr, Refcounting);
           return;
         case POD:
         case BitwiseTakable:
@@ -5095,7 +5095,7 @@ namespace {
       llvm_unreachable("resilient enums are always indirect");
     }
 
-    void makeSourceSafeForConcurrentAccess(IRGenFunction &IGF, Explosion &e) const override { // dmu
+    void visitRefsInValues_dmu_(IRGenFunction &IGF, Explosion &e) const override {
       llvm_unreachable("resilient enums are always indirect");
     }
     void checkHolderThenVisitHeldRefs_dmu_(IRGenFunction &IGF, Explosion &e, Address dest) const override {
@@ -5487,8 +5487,8 @@ namespace {
                     Address addr) const override {
       return Strategy.initialize(IGF, e, addr);
     }
-    void makeSourceSafeForConcurrentAccess(IRGenFunction &IGF, Explosion &e) const override { // dmu
-      return Strategy.makeSourceSafeForConcurrentAccess(IGF, e);
+    void visitRefsInValues_dmu_(IRGenFunction &IGF, Explosion &e) const override {
+      return Strategy.visitRefsInValues_dmu_(IGF, e);
     }
     void checkHolderThenVisitHeldRefs_dmu_(IRGenFunction &IGF, Explosion &e,
                                            Address dest) const override {

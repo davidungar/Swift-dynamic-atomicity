@@ -103,9 +103,8 @@ public:
   }
 
   
-  void emitBeSafeForConcurrentAccess(IRGenFunction &IGF, // dmu
-                                     llvm::Value *objToSet) const {
-    IGF.emitBeSafeForConcurrentAccess(objToSet, asDerived().getReferenceCounting());
+  void emitVisitRefInScalar_dmu_(IRGenFunction &IGF, llvm::Value *objToSet) const {
+    IGF.emitVisitRefInScalar_dmu_(objToSet, asDerived().getReferenceCounting());
   }
   void emitCheckHolderThenVisitHeldRefs_dmu_(IRGenFunction &IGF,
                                      llvm::Value *objToCheck, llvm::Value *objToSet) const {

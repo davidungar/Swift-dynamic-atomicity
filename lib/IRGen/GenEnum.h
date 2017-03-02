@@ -409,7 +409,7 @@ public:
   virtual void initialize(IRGenFunction &IGF, Explosion &e,
                           Address addr) const = 0;
   
-  virtual void makeSourceSafeForConcurrentAccess(IRGenFunction &IGF, Explosion &e) const = 0; // dmu
+  virtual void visitRefsInValues_dmu_(IRGenFunction &IGF, Explosion &e) const = 0;
   virtual void checkHolderThenVisitHeldRefs_dmu_(IRGenFunction &IGF, Explosion &e,
                                                  Address dest) const = 0;
   

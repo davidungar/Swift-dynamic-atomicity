@@ -401,7 +401,7 @@ namespace {
     void initialize(IRGenFunction &IGF, Explosion &e,
                     Address addr) const override {}
 
-    void makeSourceSafeForConcurrentAccess(IRGenFunction &IGF, Explosion &e) const override { // dmu
+    void visitRefsInValues_dmu_(IRGenFunction &IGF, Explosion &e) const override {
       (void)e.claimAll(); // TODO: (dmu cleanup) should not be needed, should be empty
     }
     void checkHolderThenVisitHeldRefs_dmu_(IRGenFunction &IGF, Explosion &e, Address dest) const override {
@@ -531,7 +531,7 @@ namespace {
       IGF.Builder.CreateStore(explosion.claimNext(), addr);
     }
     
-    void makeSourceSafeForConcurrentAccess(IRGenFunction &IGF, Explosion &e) const override { // dmu
+    void visitRefsInValues_dmu_(IRGenFunction &IGF, Explosion &e) const override {
       (void)e.claimAll(); // TODO: (dmu implementOpaqueStorageTypeInfo)
     }
     void checkHolderThenVisitHeldRefs_dmu_(IRGenFunction &IGF, Explosion &e, Address dest) const override {

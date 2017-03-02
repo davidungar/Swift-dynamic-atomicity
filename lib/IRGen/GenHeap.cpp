@@ -483,9 +483,9 @@ namespace {
       IGF.emitFixLifetime(value);
     }
     
-    void emitBeSafeForConcurrentAccess(IRGenFunction &IGF, // dmu
+    void emitVisitRefInScalar_dmu_(IRGenFunction &IGF,
                                        llvm::Value *objToSet) const {
-      IGF.emitBeSafeForConcurrentAccess(objToSet, ReferenceCounting::Native);
+      IGF.emitVisitRefInScalar_dmu_(objToSet, ReferenceCounting::Native);
     }
     void emitCheckHolderThenVisitHeldRefs_dmu_(IRGenFunction &IGF,
                                        llvm::Value *objToCheck, llvm::Value *objToSet) const {
@@ -1127,11 +1127,11 @@ void IRGenFunction::emitStrongRetain(llvm::Value *value,
 }
 
 
-void IRGenFunction::emitBeSafeForConcurrentAccess(llvm::Value *objToSet, //dmu
-                                                  ReferenceCounting refcounting) {
+void IRGenFunction::emitVisitRefInScalar_dmu_(llvm::Value *objToSet,
+                                               ReferenceCounting refcounting) {
   switch (refcounting) {
     case ReferenceCounting::Native:
-      return emitNativeBeSafeForConcurrentAccess(objToSet);
+      return emitVisitNativeRefInScalar_dmu_(objToSet);
     case ReferenceCounting::ObjC:
     case ReferenceCounting::Block:
     case ReferenceCounting::Unknown:
@@ -1284,7 +1284,11 @@ void IRGenFunction::emitNativeSetDeallocating(llvm::Value *value) {
   emitUnaryRefCountCall(*this, IGM.getNativeSetDeallocatingFn(), value);
 }
 
-void IRGenFunction::emitNativeBeSafeForConcurrentAccess(llvm::Value *objToSet) { // dmu
+void IRGenFunction::emitVisitNativeRefInScalar_dmu_(llvm::Value *objToSet) {
+  emitNativeBeSafeForConcurrentAccess_dmu_(objToSet); // dmu level-shift
+}
+
+void IRGenFunction::emitNativeBeSafeForConcurrentAccess_dmu_(llvm::Value *objToSet) {
   if (doesNotRequireRefCounting(objToSet)) {
     return;
   }
@@ -1353,7 +1357,7 @@ void IRGenFunction::emitNativeUnownedDestroy(Address ref) {
 void IRGenFunction::emitNativeUnownedBeSafeForConcurrentAccess(Address ref) {
   ref = Builder.CreateStructGEP(ref, 0, Size(0));
   llvm::Value *value = Builder.CreateLoad(ref);
-  emitNativeBeSafeForConcurrentAccess(value);
+  emitVisitNativeRefInScalar_dmu_(value);
 }
 
 

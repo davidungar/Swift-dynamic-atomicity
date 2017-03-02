@@ -1048,11 +1048,11 @@ static llvm::Constant *getDestroyStrongFunction(IRGenModule &IGM) {
 /// TODO: (dmu) generializing, level shifts here
 static llvm::Constant *getVisitRefsInValue_dmu_Function(IRGenModule &IGM) {
   llvm::Type *argTys[] = { IGM.Int8PtrPtrTy, IGM.WitnessTablePtrTy };
-  return IGM.getOrCreateHelperFunction("__swift_beSafeForConcurrentAccess_dmu_",
+  return IGM.getOrCreateHelperFunction("emitVisitNativeRefInScalar_dmu_",
                                        IGM.VoidTy, argTys,
                                        [&](IRGenFunction &IGF) {
                                          Address arg(&*IGF.CurFn->arg_begin(), IGM.getPointerAlignment());
-                                         IGF.emitNativeBeSafeForConcurrentAccess(IGF.Builder.CreateLoad(arg));
+                                         IGF.emitVisitNativeRefInScalar_dmu_(IGF.Builder.CreateLoad(arg));
                                          IGF.Builder.CreateRetVoid();
                                        });
 }

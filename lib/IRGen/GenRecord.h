@@ -474,10 +474,9 @@ private:
     }
   }
 
-  // Just for makeSourceSafeForConcurrentAccess -- dmu
-  template <void (LoadableTypeInfo::*Op)(IRGenFunction &IGF, // dmu
+  template <void (LoadableTypeInfo::*Op)(IRGenFunction &IGF,
                                          Explosion &in) const>
-  void forAllFields(IRGenFunction &IGF, Explosion &in) const {
+  void forAllFields_dmu_(IRGenFunction &IGF, Explosion &in) const {
     auto offsets = asImpl().getNonFixedOffsets(IGF);
     for (auto &field : getFields()) {
       if (field.isEmpty()) continue;
@@ -510,13 +509,13 @@ public:
   }
 
       
-  void makeSourceSafeForConcurrentAccess(IRGenFunction &IGF, Explosion &e) const override { // dmu
+  void visitRefsInValues_dmu_(IRGenFunction &IGF, Explosion &e) const override { // dmu
 #if 1 // TODO: (dmu implement) structs in classes in structs
     (void)e.claimAll();
 #else
     // temporary stubbed out above to prevent too much claiming
     // is dest the same for all, how does this work?
-    forAllFields<&LoadableTypeInfo::makeSourceSafeForConcurrentAccess>(IGF, e, dest, assumeDestIsConcurrentlyAccessed);
+    forAllFields_dmu_<&LoadableTypeInfo::makeSourceSafeForConcurrentAccess or visitRefsInValues_dmu_XXX>(IGF, e, dest, assumeDestIsConcurrentlyAccessed);
 #endif
 
   }
@@ -526,7 +525,7 @@ public:
 #else
     /// temporary stubbed out above to prevent too much claiming
     // is dest the same for all, how does this work?
-    forAllFields<&LoadableTypeInfo::makeSourceSafeForConcurrentAccess>(IGF, e, dest, assumeDestIsConcurrentlyAccessed);
+    forAllFields_dmu_<&LoadableTypeInfo::visitRefsInValues_dmu_>(IGF, e, dest, assumeDestIsConcurrentlyAccessed);
 #endif
   }
 

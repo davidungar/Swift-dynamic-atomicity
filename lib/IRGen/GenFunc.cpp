@@ -294,7 +294,7 @@ namespace {
         IGF.emitNativeStrongInit(context, dataAddr);
     }
 
-     void makeSourceSafeForConcurrentAccess(IRGenFunction &IGF, Explosion &e) const override { // dmu
+     void visitRefsInValues_dmu_(IRGenFunction &IGF, Explosion &e) const override {
        (void)e.claimAll(); // TODO: (dmu implement funcs)
      }
      void checkHolderThenVisitHeldRefs_dmu_(IRGenFunction &IGF, Explosion &e, Address dest) const override {
@@ -384,8 +384,8 @@ namespace {
 
     void visitRefsInValue_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
       auto data = IGF.Builder.CreateLoad(projectData(IGF, addr));
-      if (!isPOD(ResilienceExpansion::Maximal)) // blind clone
-        IGF.emitNativeBeSafeForConcurrentAccess(data);
+      if (!isPOD(ResilienceExpansion::Maximal)) // dmu blind clone
+        IGF.emitVisitNativeRefInScalar_dmu_(data);
     }
 
     void packIntoEnumPayload(IRGenFunction &IGF,

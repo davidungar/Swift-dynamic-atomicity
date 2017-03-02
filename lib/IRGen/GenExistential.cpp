@@ -819,7 +819,7 @@ public:
   }
 
   // dmu
-  void makeSourceSafeForConcurrentAccess(IRGenFunction &IGF, Explosion &e) const override { // dmu
+  void visitRefsInValues_dmu_(IRGenFunction &IGF, Explosion &e) const override {
     (void)e.claimAll();  // TODO: (dmu implement existentials)
   }
   void checkHolderThenVisitHeldRefs_dmu_(IRGenFunction &IGF, Explosion &e, Address dest) const override {
@@ -1195,8 +1195,8 @@ public:
     IGF.emitStrongRelease(value, Refcounting, atomicity);
   }
 
-  void emitValueBeSafeForConcurrentAccess(IRGenFunction &IGF, llvm::Value *value) const { // dmu
-    IGF.emitBeSafeForConcurrentAccess(value, Refcounting);
+  void emitVisitRefInScalar_dmu_(IRGenFunction &IGF, llvm::Value *value) const {
+    IGF.emitVisitRefInScalar_dmu_(value, Refcounting);
   }
 
 
