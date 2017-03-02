@@ -514,8 +514,8 @@ namespace {
       if (getSingleton() &&
           !getSingleton()->isPOD(ResilienceExpansion::Maximal)) {
         getSingleton()->visitRefsInValue_dmu_(
-                                                                        IGF, getSingletonAddress(IGF, addr),
-                                                                        getSingletonType(IGF.IGM, T));
+                                              IGF, getSingletonAddress(IGF, addr),
+                                              getSingletonType(IGF.IGM, T));
       }
     }
 
@@ -2269,8 +2269,8 @@ namespace {
     }
 
     // TODO: (dmu) factor with releaseRefcountedPayload?
-    void beSafeForConcurrentAccessForRefcountedPayload(IRGenFunction &IGF, // dmu
-                                  llvm::Value *ptr) const {
+    void visitRefsInRefcountedPayload_dmu_(IRGenFunction &IGF,
+                                           llvm::Value *ptr) const {
       switch (CopyDestroyKind) {
         case NullableRefcounted:
           IGF.emitVisitRefInScalar_dmu_(ptr, Refcounting);
@@ -2460,7 +2460,7 @@ namespace {
           addr = IGF.Builder.CreateBitCast(addr,
                                            getRefcountedPtrType(IGF.IGM)->getPointerTo());
           llvm::Value *ptr = IGF.Builder.CreateLoad(addr);
-          beSafeForConcurrentAccessForRefcountedPayload(IGF, ptr);
+          visitRefsInRefcountedPayload_dmu_(IGF, ptr);
           return;
         }
       }
