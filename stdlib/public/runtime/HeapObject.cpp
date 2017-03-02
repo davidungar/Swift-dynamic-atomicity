@@ -391,7 +391,7 @@ void swift::swift_unownedRetain_n(HeapObject *object, int n)
   object->weakRefCount.increment(n);
 }
 
-void swift::swift_unownedBeSafeForConcurrentAccess(HeapObject *object) // dmu
+void swift::swift_unownedBeSafeForConcurrentAccess_dmu_(HeapObject *object)
 SWIFT_CC(RegisterPreservingCC_IMPL) {
   SWIFT_RT_ENTRY_CALL(swift_beSafeForConcurrentAccess_dmu(object));
 }

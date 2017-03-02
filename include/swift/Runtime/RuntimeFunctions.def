@@ -183,7 +183,7 @@ FUNCTION_WITH_GLOBAL_SYMBOL_AND_IMPL(IfDestIsSafeForConcurrentAccessMakeSrcSafe_
          ATTRS(NoUnwind))
 
 // void swift_beSafeForConcurrentAccess_dmu(void* ptr);
-FUNCTION_WITH_GLOBAL_SYMBOL_AND_IMPL(BeSafeForConcurrentAccess, swift_beSafeForConcurrentAccess_dmu, /* dmu */
+FUNCTION_WITH_GLOBAL_SYMBOL_AND_IMPL(BeSafeForConcurrentAccess_dmu_, swift_beSafeForConcurrentAccess_dmu, /* dmu */
         _swift_beSafeForConcurrentAccess_dmu_, _swift_beSafeForConcurrentAccess_dmu_,
         DefaultCC, // TODO: (dmu optimize) I think this may be conservative
         RETURNS(VoidTy),
@@ -385,8 +385,8 @@ FUNCTION(NativeUnownedRelease, swift_unownedRelease, RegisterPreservingCC,
          ARGS(RefCountedPtrTy),
          ATTRS(NoUnwind))
 
-// void swift_unownedBeSafeForConcurrentAccess(void *ptr);
-FUNCTION(NativeUnownedBeSafeForConcurrentAccess, swift_unownedBeSafeForConcurrentAccess, RegisterPreservingCC, // dmu
+// void swift_unownedBeSafeForConcurrentAccess_dmu_(void *ptr);
+FUNCTION(NativeUnownedBeSafeForConcurrentAccess_dmu_, swift_unownedBeSafeForConcurrentAccess_dmu_, RegisterPreservingCC,
          RETURNS(VoidTy),
          ARGS(RefCountedPtrTy),
          ATTRS(NoUnwind))
@@ -424,8 +424,8 @@ FUNCTION(NativeWeakDestroy, swift_weakDestroy, DefaultCC,
          ARGS(WeakReferencePtrTy),
          ATTRS(NoUnwind))
 
-// void swift_weakBeSafeForConcurrentAccess(WeakReference *object);
-FUNCTION(NativeWeakBeSafeForConcurrentAccess, swift_weakBeSafeForConcurrentAccess, DefaultCC, // dmu
+// void swift_weakBeSafeForConcurrentAccess_dmu_(WeakReference *object);
+FUNCTION(NativeWeakBeSafeForConcurrentAccess_dmu_, swift_weakBeSafeForConcurrentAccess_dmu_, DefaultCC,
          RETURNS(VoidTy),
          ARGS(WeakReferencePtrTy),
          ATTRS(NoUnwind))
@@ -484,8 +484,8 @@ FUNCTION(UnknownWeakDestroy, swift_unknownWeakDestroy, DefaultCC,
          ARGS(WeakReferencePtrTy),
          ATTRS(NoUnwind))
 
-// void swift_unknownWeakBeSafeForConcurrentAccess(WeakReference *object); // dmu TODO: (dmu) check needed?
-FUNCTION(UnknownWeakBeSafeForConcurrentAccess, swift_unknownWeakBeSafeForConcurrentAccess, DefaultCC,
+// void swift_unknownWeakBeSafeForConcurrentAccess_dmu_(WeakReference *object); // TODO: (dmu) check needed?
+FUNCTION(UnknownWeakBeSafeForConcurrentAccess_dmu_, swift_unknownWeakBeSafeForConcurrentAccess_dmu_, DefaultCC,
           RETURNS(VoidTy),
           ARGS(WeakReferencePtrTy),
           ATTRS(NoUnwind))
@@ -544,8 +544,8 @@ FUNCTION(UnknownUnownedDestroy, swift_unknownUnownedDestroy, DefaultCC,
          ARGS(UnownedReferencePtrTy),
          ATTRS(NoUnwind))
 
-// void swift_unknownUnownedBeSafeForConcurrentAccess(UnownedReference *object);
-FUNCTION(UnknownUnownedBeSafeForConcurrentAccess, swift_unknownUnownedBeSafeForConcurrentAccess, DefaultCC, // dmu
+// void swift_unknownUnownedBeSafeForConcurrentAccess_dmu_(UnownedReference *object);
+FUNCTION(UnknownUnownedBeSafeForConcurrentAccess_dmu_, swift_unknownUnownedBeSafeForConcurrentAccess_dmu_, DefaultCC,
          RETURNS(VoidTy),
          ARGS(UnownedReferencePtrTy),
          ATTRS(NoUnwind))

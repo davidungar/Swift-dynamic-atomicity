@@ -385,7 +385,7 @@ namespace {
     void visitRefsInValue_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
       auto data = IGF.Builder.CreateLoad(projectData(IGF, addr));
       if (!isPOD(ResilienceExpansion::Maximal)) // dmu blind clone
-        IGF.emitVisitNativeRefInScalar_dmu_(data);
+        IGF.emitNativeVisitRefInScalar_dmu_(data);
     }
 
     void packIntoEnumPayload(IRGenFunction &IGF,

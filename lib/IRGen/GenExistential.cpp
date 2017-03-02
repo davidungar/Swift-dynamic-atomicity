@@ -620,7 +620,7 @@ public:
     IGF.emitUnownedDestroy(addr, Refcounting);
   }
 
-  void emitValueVisitRefInScalar_dmu_(IRGenFunction &IGF, Address addr) const {
+  void emitValueVisitRefInValue_dmu_(IRGenFunction &IGF, Address addr) const {
     IGF.emitUnownedVisitRefInValue_dmu_(addr, Refcounting);
   }
 
@@ -990,7 +990,7 @@ public:
   }
 
   void emitValueVisitRefInScalar_dmu_(IRGenFunction &IGF, llvm::Value *value) const {
-    IGF.emitVisitRefInUnownedScalar_dmu_(value, Refcounting);
+    IGF.emitUnownedVisitRefInScalar_dmu_(value, Refcounting);
   }
 
   void emitValueFixLifetime(IRGenFunction &IGF, llvm::Value *value) const {
@@ -1195,7 +1195,7 @@ public:
     IGF.emitStrongRelease(value, Refcounting, atomicity);
   }
 
-  void emitVisitRefInScalar_dmu_(IRGenFunction &IGF, llvm::Value *value) const {
+  void emitValueVisitRefInScalar_dmu_(IRGenFunction &IGF, llvm::Value *value) const {
     IGF.emitVisitRefInScalar_dmu_(value, Refcounting);
   }
 

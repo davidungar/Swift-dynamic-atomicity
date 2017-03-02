@@ -464,7 +464,7 @@ void swift::swift_unknownRetain(void *object)
 }
 
 
-void swift::swift_unknownBeSafeForConcurrentAccess(void *object) // dmu TODO: (dmu) are my routines needed in this file?
+void swift::swift_unknownBeSafeForConcurrentAccess_dmu_(void *object) // TODO: (dmu) are my routines needed in this file?
 SWIFT_CC(DefaultCC_IMPL) {
   if (isObjCTaggedPointerOrNull(object)) return;
   if (usesNativeSwiftReferenceCounting_allocated(object)) {
@@ -708,7 +708,7 @@ void swift::swift_nonatomic_bridgeObjectRelease_n(void *object, int n)
 }
 
 
-void swift::swift_bridgeObjectBeSafeForConcurrentAccess(void *object) // dmu
+void swift::swift_bridgeObjectBeSafeForConcurrentAccess_dmu_(void *object)
 SWIFT_CC(DefaultCC_IMPL) {
 #if SWIFT_OBJC_INTEROP
   if (isObjCTaggedPointer(object))
@@ -1073,7 +1073,7 @@ void swift::swift_unknownWeakDestroy(WeakReference *addr) {
   objc_destroyWeak((id*) &addr->Value);
 }
 
-void swift::swift_unknownWeakBeSafeForConcurrentAccess(WeakReference *addr) { // dmu
+void swift::swift_unknownWeakBeSafeForConcurrentAccess_dmu_(WeakReference *addr) {
   if (isNativeSwiftWeakReference(addr)) {
     swift_weakVisitRefsInValue_dmu_(addr);
   }

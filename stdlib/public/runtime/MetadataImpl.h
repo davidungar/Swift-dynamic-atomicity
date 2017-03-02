@@ -300,7 +300,7 @@ struct SwiftUnownedRetainableBox :
   }
 
   static void beSafeForConcurrentAccess(HeapObject *obj) { // dmu
-    swift_unownedBeSafeForConcurrentAccess(obj);
+    swift_unownedBeSafeForConcurrentAccess_dmu_(obj);
   }
 
 #if SWIFT_OBJC_INTEROP
@@ -492,7 +492,7 @@ struct ObjCWeakRetainableBox :
     return dest;
   }
   static void visitRefsInValue_dmu_(WeakReference *ref) {
-    swift_unknownBeSafeForConcurrentAccess(ref); // Note: breaks the symmetry
+    swift_unknownBeSafeForConcurrentAccess_dmu_(ref); // Note: breaks the symmetry
   }
 };
 
@@ -520,7 +520,7 @@ struct UnknownRetainableBox : RetainableBoxBase<UnknownRetainableBox, void*> {
   
   static void beSafeForConcurrentAccess_dmu(void *obj) {
 #if SWIFT_OBJC_INTEROP
-    swift_unknownBeSafeForConcurrentAccess(obj);
+    swift_unknownBeSafeForConcurrentAccess_dmu_(obj);
 #else
     swift_beSafeForConcurrentAccess_dmu(static_cast<HeapObject *>(obj));
 #endif
@@ -550,7 +550,7 @@ struct BridgeObjectBox :
   }
       
   static void beSafeForConcurrentAccess(void *obj) { // dmu
-    swift_bridgeObjectBeSafeForConcurrentAccess(obj);
+    swift_bridgeObjectBeSafeForConcurrentAccess_dmu_(obj);
   }
 };
   

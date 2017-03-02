@@ -1052,7 +1052,7 @@ static llvm::Constant *getVisitRefsInValue_dmu_Function(IRGenModule &IGM) {
                                        IGM.VoidTy, argTys,
                                        [&](IRGenFunction &IGF) {
                                          Address arg(&*IGF.CurFn->arg_begin(), IGM.getPointerAlignment());
-                                         IGF.emitVisitNativeRefInScalar_dmu_(IGF.Builder.CreateLoad(arg));
+                                         IGF.emitNativeVisitRefInScalar_dmu_(IGF.Builder.CreateLoad(arg));
                                          IGF.Builder.CreateRetVoid();
                                        });
 }

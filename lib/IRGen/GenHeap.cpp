@@ -721,7 +721,7 @@ namespace {
     }
 
     void visitRefsInValue_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
-      IGF.emitUnknownUnownedBeSafeForConcurrentAccess(addr);
+      IGF.emitUnknownUnownedVisitRefInValue_dmu_(addr);
     }
 
     // Unowned types have the same extra inhabitants as normal pointers.
@@ -1247,7 +1247,7 @@ void IRGenFunction::emitUnownedRelease(llvm::Value *value,
   emitNativeUnownedRelease(value);
 }
 
-void IRGenFunction::emitVisitRefInUnownedScalar_dmu_(llvm::Value *value,
+void IRGenFunction::emitUnownedVisitRefInScalar_dmu_(llvm::Value *value,
                                                      ReferenceCounting style) {
   assert(style == ReferenceCounting::Native &&
          "only native references support scalar unowned reference-counting");
@@ -1284,7 +1284,7 @@ void IRGenFunction::emitNativeSetDeallocating(llvm::Value *value) {
   emitUnaryRefCountCall(*this, IGM.getNativeSetDeallocatingFn(), value);
 }
 
-void IRGenFunction::emitVisitNativeRefInScalar_dmu_(llvm::Value *objToSet) {
+void IRGenFunction::emitNativeVisitRefInScalar_dmu_(llvm::Value *objToSet) {
   emitNativeBeSafeForConcurrentAccess_dmu_(objToSet); // dmu level-shift
 }
 
@@ -1292,7 +1292,7 @@ void IRGenFunction::emitNativeBeSafeForConcurrentAccess_dmu_(llvm::Value *objToS
   if (doesNotRequireRefCounting(objToSet)) {
     return;
   }
-  emitUnaryRefCountCall(*this, IGM.getBeSafeForConcurrentAccessFn(), objToSet);
+  emitUnaryRefCountCall(*this, IGM.getBeSafeForConcurrentAccess_dmu_Fn(), objToSet);
 }
 
 void IRGenFunction::emitNativeCheckHolderThenVisitHeldRefs_dmu_(llvm::Value *objToCheck, llvm::Value *objToSet) {
@@ -1354,10 +1354,10 @@ void IRGenFunction::emitNativeUnownedDestroy(Address ref) {
 }
 
 
-void IRGenFunction::emitNativeUnownedBeSafeForConcurrentAccess(Address ref) {
+void IRGenFunction::emitNativeUnownedVisitRefInValue_dmu_(Address ref) {
   ref = Builder.CreateStructGEP(ref, 0, Size(0));
   llvm::Value *value = Builder.CreateLoad(ref);
-  emitVisitNativeRefInScalar_dmu_(value);
+  emitNativeVisitRefInScalar_dmu_(value);
 }
 
 
@@ -1844,13 +1844,19 @@ DEFINE_VALUE_OP(NativeStrongRetainUnowned)
 DEFINE_VALUE_OP(NativeStrongRetainAndUnownedRelease)
 DEFINE_VALUE_OP(NativeUnownedRelease)
 DEFINE_VALUE_OP(NativeUnownedRetain)
-DEFINE_VALUE_OP(NativeUnownedBeSafeForConcurrentAccess) // dmu
+DEFINE_VALUE_OP(NativeUnownedBeSafeForConcurrentAccess_dmu_)
 DEFINE_LOAD_WEAK_OP(NativeWeakLoadStrong)
 DEFINE_LOAD_WEAK_OP(NativeWeakTakeStrong)
 DEFINE_STORE_WEAK_OP(NativeWeakInit)
 DEFINE_STORE_WEAK_OP(NativeWeakAssign)
 DEFINE_ADDR_OP(NativeWeakDestroy)
-DEFINE_ADDR_OP(NativeWeakVisitRefInValue_dmu_)
+
+void IRGenFunction::emitNativeWeakVisitRefInValue_dmu_(Address addr) {
+  emitNativeWeakBeSafeForConcurrentAccess_dmu_(addr);// level shift
+}
+DEFINE_ADDR_OP(NativeWeakBeSafeForConcurrentAccess_dmu_)
+
+
 DEFINE_COPY_OP(NativeWeakCopyInit)
 DEFINE_COPY_OP(NativeWeakCopyAssign)
 DEFINE_COPY_OP(NativeWeakTakeInit)
@@ -1860,7 +1866,7 @@ DEFINE_LOAD_WEAK_OP(UnknownUnownedTakeStrong)
 DEFINE_STORE_WEAK_OP(UnknownUnownedInit)
 DEFINE_STORE_WEAK_OP(UnknownUnownedAssign)
 DEFINE_ADDR_OP(UnknownUnownedDestroy)
-DEFINE_ADDR_OP(UnknownUnownedBeSafeForConcurrentAccess) // dmu
+DEFINE_ADDR_OP(UnknownUnownedBeSafeForConcurrentAccess_dmu_)
 DEFINE_COPY_OP(UnknownUnownedCopyInit)
 DEFINE_COPY_OP(UnknownUnownedCopyAssign)
 DEFINE_COPY_OP(UnknownUnownedTakeInit)
@@ -1870,7 +1876,10 @@ DEFINE_LOAD_WEAK_OP(UnknownWeakTakeStrong)
 DEFINE_STORE_WEAK_OP(UnknownWeakInit)
 DEFINE_STORE_WEAK_OP(UnknownWeakAssign)
 DEFINE_ADDR_OP(UnknownWeakDestroy)
-DEFINE_ADDR_OP(UnknownWeakVisitRefInValue_dmu_)
+void IRGenFunction::emitUnknownWeakVisitRefInValue_dmu_(Address addr) {
+  emitUnknownWeakBeSafeForConcurrentAccess_dmu_(addr);// level shift
+}
+DEFINE_ADDR_OP(UnknownWeakBeSafeForConcurrentAccess_dmu_)
 DEFINE_COPY_OP(UnknownWeakCopyInit)
 DEFINE_COPY_OP(UnknownWeakCopyAssign)
 DEFINE_COPY_OP(UnknownWeakTakeInit)

@@ -262,7 +262,7 @@ struct LLVM_LIBRARY_VISIBILITY ClassExistentialBoxBase
       
   template <class Container, class... A>
   static void visitRefsInValue_dmu_(Container *value, A... args) {
-    swift_unknownBeSafeForConcurrentAccess(*value->getValueSlot());
+    swift_unknownBeSafeForConcurrentAccess_dmu_(*value->getValueSlot());
   }
   
   template <class Container, class... A>

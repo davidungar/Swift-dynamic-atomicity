@@ -544,7 +544,7 @@ void swift_unownedRelease(HeapObject *value)
   
 /// TODO: (dmu) comment
 SWIFT_RT_ENTRY_VISIBILITY
-void swift_unownedBeSafeForConcurrentAccess(HeapObject *value) // dmu
+void swift_unownedBeSafeForConcurrentAccess_dmu_(HeapObject *value)
   SWIFT_CC(RegisterPreservingCC);
   
 
@@ -638,7 +638,7 @@ static inline void swift_unownedTakeAssign(UnownedReference *dest,
   swift_unownedRelease(oldValue);
 }
   
-static inline void swift_unownedBeSafeForConcurrentAccess(UnownedReference *ref) { // dmu
+  static inline void swift_unownedBeSafeForConcurrentAccess_dmu_(UnownedReference *ref) {
   swift_beSafeForConcurrentAccess_dmu_(ref->Value);
 }
 
@@ -748,7 +748,7 @@ void *swift_nonatomic_bridgeObjectRetain_n(void *value, int n)
     SWIFT_CC(DefaultCC);
   
 SWIFT_RUNTIME_EXPORT
-void swift_bridgeObjectBeSafeForConcurrentAccess(void *value) // dmu
+void swift_bridgeObjectBeSafeForConcurrentAccess_dmu_(void *value)
 SWIFT_CC(DefaultCC);
 
 
@@ -782,7 +782,7 @@ void swift_nonatomic_unknownRetain_n(void *value, int n)
 
   /// TODO: (dmu): comment
 SWIFT_RUNTIME_EXPORT
-void swift_unknownBeSafeForConcurrentAccess(void *value) // dmu
+void swift_unknownBeSafeForConcurrentAccess_dmu_(void *value)
     SWIFT_CC(DefaultCC);
 
 
@@ -808,7 +808,7 @@ static inline void swift_nonatomic_unknownRetain_n(void *value, int n)
   swift_nonatomic_retain_n(static_cast<HeapObject *>(value), n);
 }
 
-static inline void swift_unknownBeSafeForConcurrentAccess(void *value) // dmu
+static inline void swift_unknownBeSafeForConcurrentAccess_dmu_(void *value)
 SWIFT_CC(DefaultCC) {
   swift_beSafeForConcurrentAccess_dmu_(static_cast<HeapObject *>(value));
 }
@@ -974,11 +974,11 @@ static inline void swift_unknownWeakDestroy(WeakReference *object) {
   
   /// TODO: (dmu) comment
   SWIFT_RUNTIME_EXPORT
-  void swift_unknownWeakBeSafeForConcurrentAccess(WeakReference *object); // dmu
+  void swift_unknownWeakBeSafeForConcurrentAccess_dmu_(WeakReference *object);
   
 #else
   
-  static inline void swift_unknownWeakBeSafeForConcurrentAccess(WeakReference *object) { // dmu
+  static inline void swift_unknownWeakBeSafeForConcurrentAccess_dmu_(WeakReference *object) {
     swift_beSafeForConcurrentAccess_dmu_(object);
   }
   
@@ -1211,7 +1211,7 @@ static inline void swift_unknownUnownedTakeAssign(UnownedReference *dest,
 #else
   
   static inline void swift_unknownUnownedVisitRefsInValue_dmu_(UnownedReference *ref) {
-    swift_unownedBeSafeForConcurrentAccess(ref);
+    swift_unownedBeSafeForConcurrentAccess_dmu_(ref);
   }
   
 #endif /* SWIFT_OBJC_INTEROP */

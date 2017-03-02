@@ -252,7 +252,6 @@ public:
 
   //   - unowned references
   void emitUnownedRetain(llvm::Value *value, ReferenceCounting style);
-  void emitUnownedVisitRefInScalar_dmu_(llvm::Value *value, ReferenceCounting style);
   void emitUnownedRelease(llvm::Value *value, ReferenceCounting style);
   void emitStrongRetainUnowned(llvm::Value *value, ReferenceCounting style);
   void emitStrongRetainAndUnownedRelease(llvm::Value *value,
@@ -273,6 +272,7 @@ public:
   llvm::Value *emitUnownedTakeStrong(Address src, llvm::Type *resultType,
                                      ReferenceCounting style);
   void emitUnownedDestroy(Address addr, ReferenceCounting style);
+  void emitUnownedVisitRefInScalar_dmu_(llvm::Value *value, ReferenceCounting style);
   void emitUnownedVisitRefInValue_dmu_(Address addr, ReferenceCounting style);
   llvm::Value *getUnownedExtraInhabitantIndex(Address src,
                                               ReferenceCounting style);
@@ -314,7 +314,7 @@ public:
   //   - unowned references
   void emitNativeUnownedRetain(llvm::Value *value);
   void emitNativeUnownedRelease(llvm::Value *value);
-  void emitNativeUnownedBeSafeForConcurrentAccess(llvm::Value *value);
+  void emitNativeUnownedBeSafeForConcurrentAccess_dmu_(llvm::Value *value);
   void emitNativeStrongRetainUnowned(llvm::Value *value);
   void emitNativeStrongRetainAndUnownedRelease(llvm::Value *value);
   void emitNativeUnownedInit(llvm::Value *val, Address dest);
@@ -327,6 +327,7 @@ public:
   llvm::Value *emitNativeUnownedTakeStrong(Address src, llvm::Type *resultType);
   void emitNativeUnownedDestroy(Address addr);
   void emitNativeUnownedVisitRefInValue_dmu_(Address addr);
+  void emitNativeUnownedVisitRefInScalar_dmu_(llvm::Value *value);
 
   //   - weak references
   void emitNativeWeakInit(llvm::Value *value, Address dest);
@@ -335,6 +336,8 @@ public:
   llvm::Value *emitNativeWeakTakeStrong(Address src, llvm::Type *type);
   void emitNativeWeakDestroy(Address addr);
   void emitNativeWeakVisitRefInValue_dmu_(Address addr);
+  void emitNativeWeakBeSafeForConcurrentAccess_dmu_(Address addr);
+  void emitBeSafeForConcurrentAccess_dmu_(Address addr);
   void emitNativeWeakCopyInit(Address destAddr, Address srcAddr);
   void emitNativeWeakTakeInit(Address destAddr, Address srcAddr);
   void emitNativeWeakCopyAssign(Address destAddr, Address srcAddr);
@@ -369,10 +372,12 @@ public:
   llvm::Value *emitUnknownUnownedLoadStrong(Address src, llvm::Type *resultTy);
   llvm::Value *emitUnknownUnownedTakeStrong(Address src, llvm::Type *resultTy);
   void emitUnknownUnownedDestroy(Address addr);
-  void emitUnknownUnownedBeSafeForConcurrentAccess(Address addr); // dmu
+  void emitUnknownUnownedVisitRefInValue_dmu_(Address addr);
+  void emitUnknownUnownedBeSafeForConcurrentAccess_dmu_(Address addr);
   //   - weak references
   void emitUnknownWeakDestroy(Address addr);
-  void emitUnknownWeakVisitRefInValue(Address addr);
+  void emitUnknownWeakVisitRefInValue_dmu_(Address addr);
+  void emitUnknownWeakBeSafeForConcurrentAccess_dmu_(Address addr);
   void emitUnknownWeakCopyInit(Address destAddr, Address srcAddr);
   void emitUnknownWeakTakeInit(Address destAddr, Address srcAddr);
   void emitUnknownWeakCopyAssign(Address destAddr, Address srcAddr);
