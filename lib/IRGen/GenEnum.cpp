@@ -478,7 +478,7 @@ namespace {
     void makeSourceSafeForConcurrentAccess(IRGenFunction &IGF, Explosion &e) const override { // dmu makeSourceSafeForConcurrentAccess
       (void)e.claimAll(); // TODO: (dmu implement enums)
     }
-    void ifDestIsSafeForConcurrentAccessMakeSrcSafe(IRGenFunction &IGF, Explosion &e, Address dest) const override { // dmu
+    void checkHolderThenVisitHeldRefs_dmu_(IRGenFunction &IGF, Explosion &e, Address dest) const override {
       (void)e.claimAll(); // TODO: (dmu implement enums)
     }
 
@@ -885,7 +885,7 @@ namespace {
     void emitBeSafeForConcurrentAccess(IRGenFunction &IGF, // dmu
                                        llvm::Value *objToSet) const {}
 
-    void emitIfDestIsSafeForConcurrentAccessMakeSrcSafe(IRGenFunction &IGF, // dmu
+    void emitCheckHolderThenVisitHeldRefs_dmu_(IRGenFunction &IGF,
                                                         llvm::Value *objToCheck, llvm::Value *objToSet) const {}
     
     void initializeWithTake(IRGenFunction &IGF, Address dest, Address src,
@@ -1327,7 +1327,7 @@ namespace {
     void makeSourceSafeForConcurrentAccess(IRGenFunction &IGF, Explosion &e) const override { // dmu
       (void)e.claimAll();  // TODO: (dmu implement enums)
     }
-    void ifDestIsSafeForConcurrentAccessMakeSrcSafe(IRGenFunction &IGF, Explosion &e, Address dest) const override { // dmu
+    void checkHolderThenVisitHeldRefs_dmu_(IRGenFunction &IGF, Explosion &e, Address dest) const override {
       (void)e.claimAll(); // TODO: (dmu implement enums)
     }
 
@@ -2775,7 +2775,7 @@ namespace {
     }
 
      // TODO: (dmu implement enums)
-    void emitIfDestIsSafeForConcurrentAccessMakeSrcSafe(IRGenFunction &IGF, // dmu
+    void emitCheckHolderThenVisitHeldRefs_dmu_(IRGenFunction &IGF,
                                                         llvm::Value *objToCheck,
                                                         llvm::Value *objToSet) const {}
 
@@ -5098,7 +5098,7 @@ namespace {
     void makeSourceSafeForConcurrentAccess(IRGenFunction &IGF, Explosion &e) const override { // dmu
       llvm_unreachable("resilient enums are always indirect");
     }
-    void ifDestIsSafeForConcurrentAccessMakeSrcSafe(IRGenFunction &IGF, Explosion &e, Address dest) const override { // dmu
+    void checkHolderThenVisitHeldRefs_dmu_(IRGenFunction &IGF, Explosion &e, Address dest) const override {
       llvm_unreachable("resilient enums are always indirect");
     }
 
@@ -5490,9 +5490,9 @@ namespace {
     void makeSourceSafeForConcurrentAccess(IRGenFunction &IGF, Explosion &e) const override { // dmu
       return Strategy.makeSourceSafeForConcurrentAccess(IGF, e);
     }
-    void ifDestIsSafeForConcurrentAccessMakeSrcSafe(IRGenFunction &IGF, Explosion &e, //dmu
+    void checkHolderThenVisitHeldRefs_dmu_(IRGenFunction &IGF, Explosion &e,
                                            Address dest) const override {
-      return Strategy.ifDestIsSafeForConcurrentAccessMakeSrcSafe(IGF, e, dest);
+      return Strategy.checkHolderThenVisitHeldRefs_dmu_(IGF, e, dest);
     }
     void reexplode(IRGenFunction &IGF, Explosion &src,
                    Explosion &dest) const override {

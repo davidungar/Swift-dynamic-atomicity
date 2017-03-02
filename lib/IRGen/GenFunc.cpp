@@ -297,7 +297,7 @@ namespace {
      void makeSourceSafeForConcurrentAccess(IRGenFunction &IGF, Explosion &e) const override { // dmu
        (void)e.claimAll(); // TODO: (dmu implement funcs)
      }
-     void ifDestIsSafeForConcurrentAccessMakeSrcSafe(IRGenFunction &IGF, Explosion &e, Address dest) const override { // dmu
+     void checkHolderThenVisitHeldRefs_dmu_(IRGenFunction &IGF, Explosion &e, Address dest) const override {
        (void)e.claimAll(); // TODO: (dmu implement funcs)
      }
 

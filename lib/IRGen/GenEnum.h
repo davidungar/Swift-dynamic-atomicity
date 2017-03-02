@@ -410,7 +410,7 @@ public:
                           Address addr) const = 0;
   
   virtual void makeSourceSafeForConcurrentAccess(IRGenFunction &IGF, Explosion &e) const = 0; // dmu
-  virtual void ifDestIsSafeForConcurrentAccessMakeSrcSafe(IRGenFunction &IGF, Explosion &e, // dmu
+  virtual void checkHolderThenVisitHeldRefs_dmu_(IRGenFunction &IGF, Explosion &e,
                                                  Address dest) const = 0;
   
   virtual void reexplode(IRGenFunction &IGF, Explosion &src,

@@ -404,7 +404,7 @@ namespace {
     void makeSourceSafeForConcurrentAccess(IRGenFunction &IGF, Explosion &e) const override { // dmu
       (void)e.claimAll(); // TODO: (dmu cleanup) should not be needed, should be empty
     }
-    void ifDestIsSafeForConcurrentAccessMakeSrcSafe(IRGenFunction &IGF, Explosion &e, Address dest) const override { // dmu
+    void checkHolderThenVisitHeldRefs_dmu_(IRGenFunction &IGF, Explosion &e, Address dest) const override {
       (void)e.claimAll(); // TODO: (dmu cleanup) should not be needed, should be empty
     }
 
@@ -534,7 +534,7 @@ namespace {
     void makeSourceSafeForConcurrentAccess(IRGenFunction &IGF, Explosion &e) const override { // dmu
       (void)e.claimAll(); // TODO: (dmu implementOpaqueStorageTypeInfo)
     }
-    void ifDestIsSafeForConcurrentAccessMakeSrcSafe(IRGenFunction &IGF, Explosion &e, Address dest) const override { // dmu
+    void checkHolderThenVisitHeldRefs_dmu_(IRGenFunction &IGF, Explosion &e, Address dest) const override {
       (void)e.claimAll(); // TODO: (dmu implementOpaqueStorageTypeInfo)
     }
     

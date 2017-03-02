@@ -107,9 +107,9 @@ public:
                                      llvm::Value *objToSet) const {
     IGF.emitBeSafeForConcurrentAccess(objToSet, asDerived().getReferenceCounting());
   }
-  void emitIfDestIsSafeForConcurrentAccessMakeSrcSafe(IRGenFunction &IGF, // dmu
+  void emitCheckHolderThenVisitHeldRefs_dmu_(IRGenFunction &IGF,
                                      llvm::Value *objToCheck, llvm::Value *objToSet) const {
-    IGF.emitIfDestIsSafeForConcurrentAccessMakeSrcSafe(objToCheck, objToSet, asDerived().getReferenceCounting());
+    IGF.emitCheckHolderThenVisitHeldRefs_dmu_(objToCheck, objToSet, asDerived().getReferenceCounting());
   }
   
 

@@ -164,13 +164,14 @@ public:
     }
     asDerived().emitBeSafeForConcurrentAccess(IGF, src.claimNext());
   }
-  void ifDestIsSafeForConcurrentAccessMakeSrcSafe(IRGenFunction &IGF, Explosion &src, Address dest) const override { // dmu
+  
+  void checkHolderThenVisitHeldRefs_dmu_(IRGenFunction &IGF, Explosion &src, Address dest) const override {
     if (Derived::IsScalarPOD) {
       (void)src.claimAll();
       return;
     }
 // TODO: (dmu check) is the getAddress right???
-    asDerived().emitIfDestIsSafeForConcurrentAccessMakeSrcSafe(IGF, dest.getAddress(), src.claimNext());
+    asDerived().emitCheckHolderThenVisitHeldRefs_dmu_(IGF, dest.getAddress(), src.claimNext());
   }
 
 
@@ -261,8 +262,8 @@ private:
   
   void emitBeSafeForConcurrentAccess(IRGenFunction &IGF, // dmu
                                      llvm::Value *objToSet) const {}
-  void emitIfDestIsSafeForConcurrentAccessMakeSrcSafe(IRGenFunction &IGF, // dmu
-                                                      llvm::Value *objToCheck, llvm::Value *objToSet) const {}
+  void emitCheckHolderThenVisitHeldRefs_dmu_(IRGenFunction &IGF, // dmu
+                                             llvm::Value *objToCheck, llvm::Value *objToSet) const {}
 };
 
 }

@@ -520,7 +520,7 @@ public:
 #endif
 
   }
-  void ifDestIsSafeForConcurrentAccessMakeSrcSafe(IRGenFunction &IGF, Explosion &e, Address dest) const override { // dmu
+  void checkHolderThenVisitHeldRefs_dmu_(IRGenFunction &IGF, Explosion &e, Address dest) const override {
 #if 1 // TODO: (dmu implement) structs in classes in structs
     (void)e.claimAll();
 #else

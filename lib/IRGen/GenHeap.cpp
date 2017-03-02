@@ -487,9 +487,9 @@ namespace {
                                        llvm::Value *objToSet) const {
       IGF.emitBeSafeForConcurrentAccess(objToSet, ReferenceCounting::Native);
     }
-    void emitIfDestIsSafeForConcurrentAccessMakeSrcSafe(IRGenFunction &IGF, // dmu
+    void emitCheckHolderThenVisitHeldRefs_dmu_(IRGenFunction &IGF,
                                        llvm::Value *objToCheck, llvm::Value *objToSet) const {
-      IGF.emitIfDestIsSafeForConcurrentAccessMakeSrcSafe(objToCheck, objToSet, ReferenceCounting::Native);
+      IGF.emitCheckHolderThenVisitHeldRefs_dmu_(objToCheck, objToSet, ReferenceCounting::Native);
     }
     
     unsigned getFixedExtraInhabitantCount(IRGenModule &IGM) const override {
@@ -1140,12 +1140,12 @@ void IRGenFunction::emitBeSafeForConcurrentAccess(llvm::Value *objToSet, //dmu
       break;
   }
 }
-void IRGenFunction::emitIfDestIsSafeForConcurrentAccessMakeSrcSafe(llvm::Value *objToCheck, //dmu
+void IRGenFunction::emitCheckHolderThenVisitHeldRefs_dmu_(llvm::Value *objToCheck,
                                                                    llvm::Value *objToSet,
                                                                    ReferenceCounting refcounting) {
   switch (refcounting) {
     case ReferenceCounting::Native:
-      return emitNativeIfDestIsSafeForConcurrentAccessMakeSrcSafe(objToCheck, objToSet);
+      return emitNativeCheckHolderThenVisitHeldRefs_dmu_(objToCheck, objToSet);
     case ReferenceCounting::ObjC:
     case ReferenceCounting::Block:
     case ReferenceCounting::Unknown:
@@ -1291,12 +1291,17 @@ void IRGenFunction::emitNativeBeSafeForConcurrentAccess(llvm::Value *objToSet) {
   emitUnaryRefCountCall(*this, IGM.getBeSafeForConcurrentAccessFn(), objToSet);
 }
 
-void IRGenFunction::emitNativeIfDestIsSafeForConcurrentAccessMakeSrcSafe(llvm::Value *objToCheck, llvm::Value *objToSet) { // dmu
+void IRGenFunction::emitNativeCheckHolderThenVisitHeldRefs_dmu_(llvm::Value *objToCheck, llvm::Value *objToSet) {
+  emitIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(objToCheck, objToSet); // dmu level-shift
+}
+
+void IRGenFunction::emitIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(llvm::Value *objToCheck, llvm::Value *objToSet) {
   if (doesNotRequireRefCounting(objToSet)) {
     return;
   }
-  emitBinaryRefCountCall(*this, IGM.getIfDestIsSafeForConcurrentAccessMakeSrcSafeFn(), objToCheck, objToSet);
+  emitBinaryRefCountCall(*this, IGM.getIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_Fn(), objToCheck, objToSet);
 }
+
 
 
 void IRGenFunction::emitNativeUnownedInit(llvm::Value *value,
