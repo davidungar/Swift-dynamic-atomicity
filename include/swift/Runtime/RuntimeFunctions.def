@@ -174,9 +174,9 @@ FUNCTION(NativeSetDeallocating, swift_setDeallocating,
          ARGS(RefCountedPtrTy),
          ATTRS(NoUnwind))
 
-// void swift_ifDestIsSafeForConcurrentAccessMakeSrcSafe(HeapObject *dst, HeapObject *src);
-FUNCTION_WITH_GLOBAL_SYMBOL_AND_IMPL(IfDestIsSafeForConcurrentAccessMakeSrcSafe, swift_ifDestIsSafeForConcurrentAccessMakeSrcSafe, /* dmu */
-         _swift_ifDestIsSafeForConcurrentAccessMakeSrcSafe, _swift_ifDestIsSafeForConcurrentAccessMakeSrcSafe_,
+// void swift_ifDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(HeapObject *dst, HeapObject *src);
+FUNCTION_WITH_GLOBAL_SYMBOL_AND_IMPL(IfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_, swift_ifDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_,
+         _swift_ifDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_, _swift_ifDestIsSafeForConcurrentAccessMakeSrcSafe_dmu__,
          DefaultCC, // TODO: (dmu optimize) I think this may be conservative
          RETURNS(VoidTy),
          ARGS(RefCountedPtrTy, RefCountedPtrTy),

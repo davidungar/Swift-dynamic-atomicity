@@ -336,11 +336,11 @@ void (*SWIFT_CC(RegisterPreservingCC)
   
 // dmu storeBarrier sharing
 SWIFT_RT_ENTRY_VISIBILITY
-void swift_ifDestIsSafeForConcurrentAccessMakeSrcSafe(HeapObject *dst, HeapObject *src) // dmu
+void swift_ifDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(HeapObject *dst, HeapObject *src)
       SWIFT_CC(DefaultCC);
 
 SWIFT_RUNTIME_EXPORT
-void (*SWIFT_CC(DefaultCC)_swift_ifDestIsSafeForConcurrentAccessMakeSrcSafe)(HeapObject *dst, HeapObject *src); // dmu
+void (*SWIFT_CC(DefaultCC)_swift_ifDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_)(HeapObject *dst, HeapObject *src);
 
 SWIFT_RT_ENTRY_VISIBILITY
 void swift_beSafeForConcurrentAccess_dmu_(HeapObject *object)

@@ -300,14 +300,14 @@ void swift::swift_setDeallocating(HeapObject *object) {
 
 // dmu storeBarrier sharing
 
-void swift::swift_ifDestIsSafeForConcurrentAccessMakeSrcSafe(HeapObject *dst, HeapObject *src) // dmu
+void swift::swift_ifDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(HeapObject *dst, HeapObject *src)
 SWIFT_CC(DefaultCC_IMPL) {
-  return SWIFT_RT_ENTRY_REF(swift_ifDestIsSafeForConcurrentAccessMakeSrcSafe)(dst, src);
+  return SWIFT_RT_ENTRY_REF(swift_ifDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_)(dst, src);
 }
 
 SWIFT_RT_ENTRY_IMPL_VISIBILITY
 extern "C"
-void SWIFT_RT_ENTRY_IMPL(swift_ifDestIsSafeForConcurrentAccessMakeSrcSafe)(HeapObject *dst, HeapObject *src) { // dmu
+void SWIFT_RT_ENTRY_IMPL(swift_ifDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_)(HeapObject *dst, HeapObject *src) {
   if (dst->refCount.isSafeForConcurrentAccess()) {
     SWIFT_RT_ENTRY_CALL(swift_beSafeForConcurrentAccess_dmu_)(src);
   }
