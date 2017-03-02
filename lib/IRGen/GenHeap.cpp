@@ -925,10 +925,10 @@ static void emitUnaryRefCountCall(IRGenFunction &IGF,
 /// Emit a binary call to perform a ref-counting operation.
 ///
 /// \param fn - expected signature 'void (T, T)'
-static void emitBinaryRefCountCall(IRGenFunction &IGF,
-                                   llvm::Constant *fn,
-                                   llvm::Value *value1,
-                                   llvm::Value *value2) {
+static void emitBinaryRefCountCall_dmu_(IRGenFunction &IGF,
+                                        llvm::Constant *fn,
+                                        llvm::Value *value1,
+                                        llvm::Value *value2) {
   std::initializer_list<llvm::Value*>  values     = {value1,            value2};
   std::initializer_list<llvm::Type* >  valueTypes = {value1->getType(), value2->getType()};
   auto cc = IGF.IGM.DefaultCC;
@@ -1299,7 +1299,10 @@ void IRGenFunction::emitIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(llvm::Va
   if (doesNotRequireRefCounting(objToSet)) {
     return;
   }
-  emitBinaryRefCountCall(*this, IGM.getIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_Fn(), objToCheck, objToSet);
+  emitBinaryRefCountCall_dmu_(*this,
+                              IGM.getIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_Fn(),
+                              objToCheck,
+                              objToSet);
 }
 
 
