@@ -248,7 +248,7 @@ StringRef Decl::getDescriptiveKindName(DescriptiveDeclKind K) {
   ENTRY(Subscript, "subscript");
   ENTRY(Constructor, "initializer");
   ENTRY(Destructor, "deinitializer");
-  ENTRY(VisitorOfRefsInInstance_dmu_, "visitorOfRefsInInstance_dmu_"); // dmu TODO: (dmu) fix grammar
+  ENTRY(VisitorOfRefsInInstance_dmu_, "visitorOfRefsInInstance_dmu_");
   ENTRY(LocalFunction, "local function");
   ENTRY(GlobalFunction, "global function");
   ENTRY(OperatorFunction, "operator function");
