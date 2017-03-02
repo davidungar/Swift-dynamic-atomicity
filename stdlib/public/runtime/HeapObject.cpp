@@ -309,18 +309,18 @@ SWIFT_RT_ENTRY_IMPL_VISIBILITY
 extern "C"
 void SWIFT_RT_ENTRY_IMPL(swift_ifDestIsSafeForConcurrentAccessMakeSrcSafe)(HeapObject *dst, HeapObject *src) { // dmu
   if (dst->refCount.isSafeForConcurrentAccess()) {
-    SWIFT_RT_ENTRY_CALL(swift_beSafeForConcurrentAccess)(src);
+    SWIFT_RT_ENTRY_CALL(swift_beSafeForConcurrentAccess_dmu_)(src);
   }
 }
 
-void swift::swift_beSafeForConcurrentAccess(HeapObject *object) // dmu
+void swift::swift_beSafeForConcurrentAccess_dmu_(HeapObject *object)
 SWIFT_CC(DefaultCC_IMPL) {
-  return SWIFT_RT_ENTRY_REF(swift_beSafeForConcurrentAccess)(object);
+  return SWIFT_RT_ENTRY_REF(swift_beSafeForConcurrentAccess_dmu)(object);
 }
 
 SWIFT_RT_ENTRY_IMPL_VISIBILITY
 extern "C"
-void SWIFT_RT_ENTRY_IMPL(swift_beSafeForConcurrentAccess)(HeapObject *object) { // dmu
+void SWIFT_RT_ENTRY_IMPL(swift_beSafeForConcurrentAccess_dmu)(HeapObject *object) {
   if (object == nullptr)
     return; // TODO: (dmu) Can this check be optimized out by using compile-time type info?
   if (object->refCount.isSafeForConcurrentAccess()) {
@@ -393,7 +393,7 @@ void swift::swift_unownedRetain_n(HeapObject *object, int n)
 
 void swift::swift_unownedBeSafeForConcurrentAccess(HeapObject *object) // dmu
 SWIFT_CC(RegisterPreservingCC_IMPL) {
-  SWIFT_RT_ENTRY_CALL(swift_beSafeForConcurrentAccess(object));
+  SWIFT_RT_ENTRY_CALL(swift_beSafeForConcurrentAccess_dmu(object));
 }
 
 void swift::swift_unownedRelease_n(HeapObject *object, int n)
@@ -854,7 +854,7 @@ void swift::swift_weakTakeAssign(WeakReference *dest, WeakReference *src) {
 
 void swift::swift_weakVisitRefsInValue_dmu_(WeakReference *ref) {
   auto tmp = (HeapObject*) (ref->Value & ~WR_NATIVE);
-  SWIFT_RT_ENTRY_CALL(swift_beSafeForConcurrentAccess)(tmp);
+  SWIFT_RT_ENTRY_CALL(swift_beSafeForConcurrentAccess_dmu)(tmp); // TODO: (dmu) level shift
 }
 
 

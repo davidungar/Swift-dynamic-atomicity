@@ -1044,10 +1044,11 @@ static llvm::Constant *getDestroyStrongFunction(IRGenModule &IGM) {
 
 
 /// Return a function which takes two pointer arguments, loads a
-/// pointer from the first, and calls swift_beSafeForConcurrentAccess on it immediately.
+/// pointer from the first, and calls what!? general or specific?? on it immediately.
+/// TODO: (dmu) generializing, level shifts here
 static llvm::Constant *getVisitRefsInValue_dmu_Function(IRGenModule &IGM) {
   llvm::Type *argTys[] = { IGM.Int8PtrPtrTy, IGM.WitnessTablePtrTy };
-  return IGM.getOrCreateHelperFunction("__swift_beSafeForConcurrentAccess",
+  return IGM.getOrCreateHelperFunction("__swift_beSafeForConcurrentAccess_dmu_",
                                        IGM.VoidTy, argTys,
                                        [&](IRGenFunction &IGF) {
                                          Address arg(&*IGF.CurFn->arg_begin(), IGM.getPointerAlignment());

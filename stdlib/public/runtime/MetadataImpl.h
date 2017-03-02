@@ -282,8 +282,8 @@ struct SwiftRetainableBox :
     swift_release(obj);
   }
       
-  static void beSafeForConcurrentAccess(HeapObject *obj) { // dmu
-    swift_beSafeForConcurrentAccess(obj);
+  static void beSafeForConcurrentAccess_dmu_(HeapObject *obj) {
+    swift_beSafeForConcurrentAccess_dmu_(obj);
   }
 };
 
@@ -518,11 +518,11 @@ struct UnknownRetainableBox : RetainableBoxBase<UnknownRetainableBox, void*> {
 #endif
   }
   
-  static void beSafeForConcurrentAccess(void *obj) { // dmu
+  static void beSafeForConcurrentAccess_dmu(void *obj) {
 #if SWIFT_OBJC_INTEROP
     swift_unknownBeSafeForConcurrentAccess(obj);
 #else
-    swift_beSafeForConcurrentAccess(static_cast<HeapObject *>(obj));
+    swift_beSafeForConcurrentAccess_dmu(static_cast<HeapObject *>(obj));
 #endif
   }
 };

@@ -343,11 +343,11 @@ SWIFT_RUNTIME_EXPORT
 void (*SWIFT_CC(DefaultCC)_swift_ifDestIsSafeForConcurrentAccessMakeSrcSafe)(HeapObject *dst, HeapObject *src); // dmu
 
 SWIFT_RT_ENTRY_VISIBILITY
-void swift_beSafeForConcurrentAccess(HeapObject *object) // dmu
+void swift_beSafeForConcurrentAccess_dmu_(HeapObject *object)
     SWIFT_CC(DefaultCC);
 
 SWIFT_RUNTIME_EXPORT
-void (*SWIFT_CC(DefaultCC)_swift_beSafeForConcurrentAccess)(HeapObject *object); // dmu
+void (*SWIFT_CC(DefaultCC)_swift_beSafeForConcurrentAccess_dmu_)(HeapObject *object);
 
 
 // Refcounting observation hooks for memory tools. Don't use these.
@@ -639,7 +639,7 @@ static inline void swift_unownedTakeAssign(UnownedReference *dest,
 }
   
 static inline void swift_unownedBeSafeForConcurrentAccess(UnownedReference *ref) { // dmu
-  swift_beSafeForConcurrentAccess(ref->Value);
+  swift_beSafeForConcurrentAccess_dmu_(ref->Value);
 }
 
 /*****************************************************************************/
@@ -810,7 +810,7 @@ static inline void swift_nonatomic_unknownRetain_n(void *value, int n)
 
 static inline void swift_unknownBeSafeForConcurrentAccess(void *value) // dmu
 SWIFT_CC(DefaultCC) {
-  swift_beSafeForConcurrentAccess(static_cast<HeapObject *>(value));
+  swift_beSafeForConcurrentAccess_dmu_(static_cast<HeapObject *>(value));
 }
   
 
@@ -979,7 +979,7 @@ static inline void swift_unknownWeakDestroy(WeakReference *object) {
 #else
   
   static inline void swift_unknownWeakBeSafeForConcurrentAccess(WeakReference *object) { // dmu
-    swift_beSafeForConcurrentAccess(object);
+    swift_beSafeForConcurrentAccess_dmu_(object);
   }
   
 #endif /* SWIFT_OBJC_INTEROP */
