@@ -134,6 +134,11 @@ void SILGenFunction::emitClassMemberDestruction(SILValue selfValue,
     }
   }
 }
+
+void SILGenFunction::emitVisitorOfRefsInInstance_dmu_(VisitorOfRefsInInstance_dmu_Decl *dd) {
+  abort(); // dmu unimp needed?
+}
+
 void SILGenFunction::emitVisitorOfRefsInInstance_dmu_(SILValue selfValue,
                                                 ClassDecl *cd,
                                                 CleanupLocation cleanupLoc) { // yyyyyy dmu
