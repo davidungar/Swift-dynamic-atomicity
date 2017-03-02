@@ -1295,6 +1295,13 @@ void IRGenFunction::emitNativeBeSafeForConcurrentAccess_dmu_(llvm::Value *objToS
   emitUnaryRefCountCall(*this, IGM.getBeSafeForConcurrentAccess_dmu_Fn(), objToSet);
 }
 
+
+void IRGenFunction::emitNativeUnownedVisitRefInScalar_dmu_(llvm::Value *objToSet) {
+  emitNativeUnownedBeSafeForConcurrentAccess_dmu_(objToSet); // dmu level-shift
+}
+
+
+
 void IRGenFunction::emitNativeCheckHolderThenVisitHeldRefs_dmu_(llvm::Value *objToCheck, llvm::Value *objToSet) {
   emitIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(objToCheck, objToSet); // dmu level-shift
 }
@@ -1866,11 +1873,15 @@ DEFINE_LOAD_WEAK_OP(UnknownUnownedTakeStrong)
 DEFINE_STORE_WEAK_OP(UnknownUnownedInit)
 DEFINE_STORE_WEAK_OP(UnknownUnownedAssign)
 DEFINE_ADDR_OP(UnknownUnownedDestroy)
+void IRGenFunction::emitUnknownUnownedVisitRefInValue_dmu_(Address addr) {
+  emitUnknownUnownedBeSafeForConcurrentAccess_dmu_(addr); // dmu level-shift
+}
 DEFINE_ADDR_OP(UnknownUnownedBeSafeForConcurrentAccess_dmu_)
 DEFINE_COPY_OP(UnknownUnownedCopyInit)
 DEFINE_COPY_OP(UnknownUnownedCopyAssign)
 DEFINE_COPY_OP(UnknownUnownedTakeInit)
 DEFINE_COPY_OP(UnknownUnownedTakeAssign)
+
 DEFINE_LOAD_WEAK_OP(UnknownWeakLoadStrong)
 DEFINE_LOAD_WEAK_OP(UnknownWeakTakeStrong)
 DEFINE_STORE_WEAK_OP(UnknownWeakInit)
