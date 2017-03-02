@@ -877,10 +877,10 @@ public:
   
   void visitVisitorOfRefsInInstance_dmu_Decl(VisitorOfRefsInInstance_dmu_Decl *DD) {
     auto ResultDD = std::make_shared<sma::VisitorOfRefsInInstance_dmu_Decl>();
-    ResultDD->Name.Name = "visitorOfRefsInInstance_dmu_Decl";
+    ResultDD->Name.Name = "visitorOfRefsInInstance_dmu_";
     // FIXME
     // ResultDD->Attributes = ?;
-    Result.Makers.emplace_back(std::move(ResultDD));
+    Result.Makers.emplace_back(std::move(ResultDD)); // TODO: (dmu) is this right???
   }
 };
 

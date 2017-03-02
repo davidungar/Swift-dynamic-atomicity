@@ -1629,7 +1629,7 @@ void ASTMangler::appendDestructorEntity(const DestructorDecl *dtor,
 
 void ASTMangler::appendVisitorOfRefsInInstance_dmu_Entity(const VisitorOfRefsInInstance_dmu_Decl *maker ) { 
   appendContextOf(maker);
-  appendOperator("ma");
+  appendOperator("vr");
 }
 
 static StringRef getCodeForAccessorKind(AccessorKind kind,

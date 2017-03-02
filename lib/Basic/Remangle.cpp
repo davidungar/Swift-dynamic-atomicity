@@ -786,6 +786,10 @@ void Remangler::mangleDestructor(Node *node, EntityContext &ctx) {
   mangleSimpleEntity(node, 'F', "d", ctx);
 }
 
+void Remangler::mangleVisitorOfRefsInInstance_dmu_(Node *node, EntityContext &ctx) {
+  mangleSimpleEntity(node, 'v', "r", ctx); // TODO: (dmu) check those arguments
+}
+
 void Remangler::mangleAllocator(Node *node, EntityContext &ctx) {
   mangleTypedEntity(node, 'F', "C", ctx);
 }

@@ -990,6 +990,62 @@ static void VisitNodeDestructor(
   }
 }
 
+static void VisitNodeVisitorOfRefsInInstance_dmu_(
+                                ASTContext *ast, std::vector<Demangle::NodePointer> &nodes,
+                                Demangle::NodePointer &cur_node, VisitNodeResult &result,
+                                const VisitNodeResult &generic_context) { // set by GenericType case
+  VisitNodeResult kind_type_result;
+  
+  Demangle::Node::iterator end = cur_node->end();
+  for (Demangle::Node::iterator pos = cur_node->begin(); pos != end; ++pos) {
+    const Demangle::Node::Kind child_node_kind = (*pos)->getKind();
+    switch (child_node_kind) {
+      case Demangle::Node::Kind::Enum:
+      case Demangle::Node::Kind::Class:
+      case Demangle::Node::Kind::Structure:
+        nodes.push_back(*pos);
+        VisitNode(ast, nodes, kind_type_result, generic_context);
+        break;
+      default:
+        break;
+    }
+  }
+  
+  if (kind_type_result.HasSingleType()) {
+    // TODO: (dmu) factor: Same as VisitNodeDestructor EXCEPT for next line:
+    const size_t n = FindNamedDecls(ast, StringRef("visitorOfRefsInInstance_dmu_"), kind_type_result);
+    if (n == 1) {
+      kind_type_result._types[0] = FixCallingConv(
+                                                  kind_type_result._decls[0], kind_type_result._types[0].getPointer());
+      result = kind_type_result;
+    } else if (n > 0) {
+      // I can't think of a reason why we would get more than one decl called
+      // deinit here, but
+      // just in case, if it is a function type, we should remember it.
+      bool found = false;
+      const size_t num_kind_type_results = kind_type_result._types.size();
+      for (size_t i = 0; i < num_kind_type_results && !found; ++i) {
+        auto &identifier_type = kind_type_result._types[i];
+        if (identifier_type) {
+          switch (identifier_type->getKind()) {
+            default:
+              break;
+            case TypeKind::Function: {
+              result._module = kind_type_result._module;
+              result._decls.push_back(kind_type_result._decls[i]);
+              result._types.push_back(
+                                      FixCallingConv(kind_type_result._decls[i],
+                                                     kind_type_result._types[i].getPointer()));
+              found = true;
+            } break;
+          }
+        }
+      }
+    }
+  }
+}
+
+
 static void VisitNodeDeclContext(
     ASTContext *ast, std::vector<Demangle::NodePointer> &nodes,
     Demangle::NodePointer &cur_node, VisitNodeResult &result,
@@ -2060,6 +2116,10 @@ static void visitNodeImpl(
     VisitNodeDestructor(ast, nodes, node, result, genericContext);
     break;
 
+    case Demangle::Node::Kind::VisitorOfRefsInInstance_dmu_:
+      VisitNodeVisitorOfRefsInInstance_dmu_(ast, nodes, node, result, genericContext);
+      break;
+      
   case Demangle::Node::Kind::DeclContext:
     VisitNodeDeclContext(ast, nodes, node, result, genericContext);
     break;
