@@ -560,7 +560,7 @@ namespace {
     }
 
     void visitRefsInValue_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
-      IGF.emitNativeWeakBeSafeForConcurrentAccess(addr);
+      IGF.emitNativeWeakVisitRefInValue_dmu_(addr);
     }
 
     llvm::Type *getOptionalIntType() const {
@@ -796,7 +796,7 @@ namespace {
     }
                                 
     void visitRefsInValue_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
-      IGF.emitUnknownWeakBeSafeForConcurrentAccess(addr);
+      IGF.emitUnknownWeakVisitRefInValue_dmu_(addr);
     }
                                 
     llvm::Type *getOptionalIntType() const {
@@ -1131,7 +1131,7 @@ void IRGenFunction::emitVisitRefInScalar_dmu_(llvm::Value *objToSet,
                                                ReferenceCounting refcounting) {
   switch (refcounting) {
     case ReferenceCounting::Native:
-      return emitVisitNativeRefInScalar_dmu_(objToSet);
+      return emitNativeVisitRefInScalar_dmu_(objToSet);
     case ReferenceCounting::ObjC:
     case ReferenceCounting::Block:
     case ReferenceCounting::Unknown:
@@ -1217,7 +1217,7 @@ DEFINE_BINARY_OPERATION(WeakAssign, void, llvm::Value *, Address)
 DEFINE_BINARY_OPERATION(WeakLoadStrong, llvm::Value *, Address, llvm::Type *)
 DEFINE_BINARY_OPERATION(WeakTakeStrong, llvm::Value *, Address, llvm::Type *)
 DEFINE_UNARY_OPERATION(WeakDestroy, void, Address)
-DEFINE_UNARY_OPERATION(WeakBeSafeForConcurrentAccess, void, Address) // dmu
+DEFINE_UNARY_OPERATION(WeakVisitRefInValue_dmu_, void, Address)
 
 DEFINE_BINARY_OPERATION(UnownedCopyInit, void, Address, Address)
 DEFINE_BINARY_OPERATION(UnownedTakeInit, void, Address, Address)
@@ -1228,7 +1228,7 @@ DEFINE_BINARY_OPERATION(UnownedAssign, void, llvm::Value *, Address)
 DEFINE_BINARY_OPERATION(UnownedLoadStrong, llvm::Value *, Address, llvm::Type *)
 DEFINE_BINARY_OPERATION(UnownedTakeStrong, llvm::Value *, Address, llvm::Type *)
 DEFINE_UNARY_OPERATION(UnownedDestroy, void, Address)
-DEFINE_UNARY_OPERATION(UnownedBeSafeForConcurrentAccess, void, Address) // dmu
+DEFINE_UNARY_OPERATION(UnownedVisitRefInValue_dmu_, void, Address)
 
 #undef DEFINE_UNARY_OPERATION
 #undef DEFINE_BINARY_OPERATION
@@ -1247,11 +1247,11 @@ void IRGenFunction::emitUnownedRelease(llvm::Value *value,
   emitNativeUnownedRelease(value);
 }
 
-void IRGenFunction::emitUnownedBeSafeForConcurrentAccess(llvm::Value *value, //dmu
-                                       ReferenceCounting style) {
+void IRGenFunction::emitVisitRefInUnownedScalar_dmu_(llvm::Value *value,
+                                                     ReferenceCounting style) {
   assert(style == ReferenceCounting::Native &&
          "only native references support scalar unowned reference-counting");
-  emitNativeUnownedBeSafeForConcurrentAccess(value);
+  emitNativeUnownedVisitRefInScalar_dmu_(value);
 }
 
 void IRGenFunction::emitStrongRetainUnowned(llvm::Value *value,
@@ -1850,7 +1850,7 @@ DEFINE_LOAD_WEAK_OP(NativeWeakTakeStrong)
 DEFINE_STORE_WEAK_OP(NativeWeakInit)
 DEFINE_STORE_WEAK_OP(NativeWeakAssign)
 DEFINE_ADDR_OP(NativeWeakDestroy)
-DEFINE_ADDR_OP(NativeWeakBeSafeForConcurrentAccess)  // dmu
+DEFINE_ADDR_OP(NativeWeakVisitRefInValue_dmu_)
 DEFINE_COPY_OP(NativeWeakCopyInit)
 DEFINE_COPY_OP(NativeWeakCopyAssign)
 DEFINE_COPY_OP(NativeWeakTakeInit)
@@ -1870,7 +1870,7 @@ DEFINE_LOAD_WEAK_OP(UnknownWeakTakeStrong)
 DEFINE_STORE_WEAK_OP(UnknownWeakInit)
 DEFINE_STORE_WEAK_OP(UnknownWeakAssign)
 DEFINE_ADDR_OP(UnknownWeakDestroy)
-DEFINE_ADDR_OP(UnknownWeakBeSafeForConcurrentAccess) // dmu
+DEFINE_ADDR_OP(UnknownWeakVisitRefInValue_dmu_)
 DEFINE_COPY_OP(UnknownWeakCopyInit)
 DEFINE_COPY_OP(UnknownWeakCopyAssign)
 DEFINE_COPY_OP(UnknownWeakTakeInit)

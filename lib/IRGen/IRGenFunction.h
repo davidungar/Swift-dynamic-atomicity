@@ -252,7 +252,7 @@ public:
 
   //   - unowned references
   void emitUnownedRetain(llvm::Value *value, ReferenceCounting style);
-  void emitUnownedBeSafeForConcurrentAccess(llvm::Value *value, ReferenceCounting style); // dmu
+  void emitUnownedVisitRefInScalar_dmu_(llvm::Value *value, ReferenceCounting style);
   void emitUnownedRelease(llvm::Value *value, ReferenceCounting style);
   void emitStrongRetainUnowned(llvm::Value *value, ReferenceCounting style);
   void emitStrongRetainAndUnownedRelease(llvm::Value *value,
@@ -273,7 +273,7 @@ public:
   llvm::Value *emitUnownedTakeStrong(Address src, llvm::Type *resultType,
                                      ReferenceCounting style);
   void emitUnownedDestroy(Address addr, ReferenceCounting style);
-  void emitUnownedBeSafeForConcurrentAccess(Address addr, ReferenceCounting style);
+  void emitUnownedVisitRefInValue_dmu_(Address addr, ReferenceCounting style);
   llvm::Value *getUnownedExtraInhabitantIndex(Address src,
                                               ReferenceCounting style);
   void storeUnownedExtraInhabitant(llvm::Value *index, Address dest,
@@ -296,7 +296,7 @@ public:
                                   ReferenceCounting style);
   void emitWeakDestroy(Address addr, ReferenceCounting style);
   
-  void emitWeakBeSafeForConcurrentAccess(Address addr, ReferenceCounting style); // dmu
+  void emitWeakVisitRefInValue_dmu_(Address addr, ReferenceCounting style);
 
   // Routines for the Swift native reference-counting style.
   //   - strong references
@@ -307,7 +307,7 @@ public:
   void emitNativeStrongRelease(llvm::Value *value,
                                Atomicity atomicity = Atomicity::Atomic);
   void emitNativeSetDeallocating(llvm::Value *value);
-  void emitVisitNativeRefInScalar_dmu_(llvm::Value *objToSet);
+  void emitNativeVisitRefInScalar_dmu_(llvm::Value *objToSet);
   void emitNativeBeSafeForConcurrentAccess_dmu_(llvm::Value *objToSet);
   void emitNativeCheckHolderThenVisitHeldRefs_dmu_(llvm::Value *objToCheck, llvm::Value *objToSet);
   void emitIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(llvm::Value *objToCheck, llvm::Value *objToSet);
@@ -326,7 +326,7 @@ public:
   llvm::Value *emitNativeUnownedLoadStrong(Address src, llvm::Type *resultType);
   llvm::Value *emitNativeUnownedTakeStrong(Address src, llvm::Type *resultType);
   void emitNativeUnownedDestroy(Address addr);
-  void emitNativeUnownedBeSafeForConcurrentAccess(Address addr); // dmu
+  void emitNativeUnownedVisitRefInValue_dmu_(Address addr);
 
   //   - weak references
   void emitNativeWeakInit(llvm::Value *value, Address dest);
@@ -334,7 +334,7 @@ public:
   llvm::Value *emitNativeWeakLoadStrong(Address src, llvm::Type *type);
   llvm::Value *emitNativeWeakTakeStrong(Address src, llvm::Type *type);
   void emitNativeWeakDestroy(Address addr);
-  void emitNativeWeakBeSafeForConcurrentAccess(Address addr); // dmu
+  void emitNativeWeakVisitRefInValue_dmu_(Address addr);
   void emitNativeWeakCopyInit(Address destAddr, Address srcAddr);
   void emitNativeWeakTakeInit(Address destAddr, Address srcAddr);
   void emitNativeWeakCopyAssign(Address destAddr, Address srcAddr);
@@ -372,7 +372,7 @@ public:
   void emitUnknownUnownedBeSafeForConcurrentAccess(Address addr); // dmu
   //   - weak references
   void emitUnknownWeakDestroy(Address addr);
-  void emitUnknownWeakBeSafeForConcurrentAccess(Address addr); // dmu
+  void emitUnknownWeakVisitRefInValue(Address addr);
   void emitUnknownWeakCopyInit(Address destAddr, Address srcAddr);
   void emitUnknownWeakTakeInit(Address destAddr, Address srcAddr);
   void emitUnknownWeakCopyAssign(Address destAddr, Address srcAddr);

@@ -445,7 +445,7 @@ public:
 
   void visitRefsInValue_dmu_(IRGenFunction &IGF, Address existential, SILType T) const override {
     Address valueAddr = projectValue(IGF, existential);
-    asDerived().emitValueBeSafeForConcurrentAccess(IGF, valueAddr);
+    asDerived().emitValueVisitRefInValue_dmu_(IGF, valueAddr);
   }
 
 
@@ -526,8 +526,8 @@ public:
     IGF.emitWeakDestroy(addr, Refcounting);
   }
 
-  void emitValueBeSafeForConcurrentAccess(IRGenFunction &IGF, Address addr) const { // dmu
-    IGF.emitWeakBeSafeForConcurrentAccess(addr, Refcounting);
+  void emitValueVisitRefInValue_dmu_(IRGenFunction &IGF, Address addr) const {
+    IGF.emitWeakVisitRefInValue_dmu_(addr, Refcounting);
   }
 
   // These explosions must follow the same schema as
@@ -620,8 +620,8 @@ public:
     IGF.emitUnownedDestroy(addr, Refcounting);
   }
 
-  void emitValueBeSafeForConcurrentAccess(IRGenFunction &IGF, Address addr) const { // dmu
-    IGF.emitUnownedBeSafeForConcurrentAccess(addr, Refcounting);
+  void emitValueVisitRefInScalar_dmu_(IRGenFunction &IGF, Address addr) const {
+    IGF.emitUnownedVisitRefInValue_dmu_(addr, Refcounting);
   }
 
 
@@ -864,7 +864,7 @@ public:
 
   void visitRefsInValue_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
     llvm::Value *value = asDerived().loadValue(IGF, addr);
-    asDerived().emitValueBeSafeForConcurrentAccess(IGF, value);
+    asDerived().emitValueVisitRefInScalar_dmu_(IGF, value);
   }
 
 
@@ -989,8 +989,8 @@ public:
     IGF.emitUnownedRelease(value, Refcounting);
   }
 
-  void emitValueBeSafeForConcurrentAccess(IRGenFunction &IGF, llvm::Value *value) const { // dmu
-    IGF.emitUnownedBeSafeForConcurrentAccess(value, Refcounting);
+  void emitValueVisitRefInScalar_dmu_(IRGenFunction &IGF, llvm::Value *value) const {
+    IGF.emitVisitRefInUnownedScalar_dmu_(value, Refcounting);
   }
 
   void emitValueFixLifetime(IRGenFunction &IGF, llvm::Value *value) const {
@@ -1067,7 +1067,7 @@ public:
     // do nothing
   }
 
-  void emitValueBeSafeForConcurrentAccess(IRGenFunction &IGF, llvm::Value *value) const { // dmu
+  void emitValueVisitRefInScalar_dmu_(IRGenFunction &IGF, llvm::Value *value) const {
    // Nothing to do be done for unmanaged
   }
 
@@ -1318,7 +1318,7 @@ public:
     // do nothing
   }
 
-  void emitValueBeSafeForConcurrentAccess(IRGenFunction &IGF, llvm::Value *value) const { // dmu
+  void emitValueVisitRefInScalar_dmu_(IRGenFunction &IGF, llvm::Value *value) const {
    // do nothing
   }
 
