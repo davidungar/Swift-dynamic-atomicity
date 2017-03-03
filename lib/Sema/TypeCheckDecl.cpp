@@ -4232,11 +4232,12 @@ public:
     }
 
     // If this class needs an implicit constructor, add it.
-    if (!IsFirstPass)
+    if (!IsFirstPass)   
       TC.addImplicitConstructors(CD);
 
     TC.addImplicitDestructor(CD);
-    TC.addVisitorOfRefsInInstance_dmu_(CD); //dmu
+    if (!IsFirstPass) // only need to add this once
+      TC.addVisitorOfRefsInInstance_dmu_(CD);
 
     if (!IsFirstPass && !CD->isInvalid())
       TC.checkConformancesInContext(CD, CD);

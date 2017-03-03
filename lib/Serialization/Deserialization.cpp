@@ -3533,9 +3533,10 @@ Decl *ModuleFile::getDecl(DeclID DID, Optional<DeclContext *> ForcedContext) {
     GenericEnvironmentID genericEnvID;
     TypeID interfaceID;
     
-    decls_block::VisitorOfRefsInInstance_dmu_Layout::readRecord(scratch, contextID,
-                                                                          genericEnvID,
-                                                                          interfaceID);
+    decls_block::VisitorOfRefsInInstance_dmu_Layout::readRecord(scratch,
+                                                                contextID,
+                                                                genericEnvID,
+                                                                interfaceID);
     
     DeclContext *MC = getDeclContext(contextID);
     if (declOrOffset.isComplete())

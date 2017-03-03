@@ -1025,13 +1025,13 @@ namespace decls_block {
   >;
   
   using DestructorLayout = BCRecordLayout<
-  DESTRUCTOR_DECL,
-  DeclContextIDField, // context decl
-  BCFixed<1>,  // implicit?
-  BCFixed<1>,  // objc?
-  GenericEnvironmentIDField, // generic environment
-  TypeIDField  // interface type
-  // Trailed by a pattern for self.
+    DESTRUCTOR_DECL,
+    DeclContextIDField, // context decl
+    BCFixed<1>,  // implicit?
+    BCFixed<1>,  // objc?
+    GenericEnvironmentIDField, // generic environment
+    TypeIDField  // interface type
+    // Trailed by a pattern for self.
   >;
 
   using ParameterListLayout = BCRecordLayout<

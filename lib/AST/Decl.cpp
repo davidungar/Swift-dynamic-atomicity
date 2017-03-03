@@ -4681,10 +4681,13 @@ void DestructorDecl::setSelfDecl(ParamDecl *selfDecl) {
 
 // TODO: (dmu) factor with above??
 VisitorOfRefsInInstance_dmu_Decl::VisitorOfRefsInInstance_dmu_Decl(Identifier NameHack,
-                                                                                       SourceLoc makeLoc,                                                                            ParamDecl *selfDecl,
-                                                                                       DeclContext *Parent)
-: AbstractFunctionDecl(DeclKind::VisitorOfRefsInInstance_dmu_, Parent, NameHack, makeLoc,
-                       /*Throws=*/false, /*ThrowsLoc=*/SourceLoc(),
+                                                                   SourceLoc makeLoc,
+                                                                   ParamDecl *selfDecl,
+                                                                   DeclContext *Parent)
+: AbstractFunctionDecl(DeclKind::VisitorOfRefsInInstance_dmu_,
+                       Parent, NameHack, makeLoc,
+                       /*Throws=*/false,
+                       /*ThrowsLoc=*/SourceLoc(),
                        /*NumParameterLists=*/1, nullptr) {
   setSelfDecl(selfDecl);
 }
