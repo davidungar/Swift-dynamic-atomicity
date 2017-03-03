@@ -969,8 +969,7 @@ void swift::swift_unknownUnownedVisitRefsInValue_dmu_(UnownedReference *ref) {
     return;
   } else if (auto objcRef = dyn_cast<ObjCUnownedReference>(ref)) {
   } else {
-#error dmu next line must be wrong
-    swift_unownedVisitRefsInValue_dmu_(ref);
+    swift_unownedBeSafeForConcurrentAccess_dmu_(ref);
   }
 }
 

@@ -200,7 +200,7 @@ template <class Impl, class T> struct RetainableBoxBase {
   }
   
   static void visitRefsInValue_dmu_(T *addr) {
-    Impl::beSafeForConcurrentAccess(*addr);
+    Impl::visitRefsInScalar_dmu_(*addr);
   }
 
   static T *initializeWithCopy(T *dest, T *src) {
@@ -220,7 +220,7 @@ template <class Impl, class T> struct RetainableBoxBase {
   
   static void visitRefsInArray_dmu_(T *arr, size_t n) {
     while (n--)
-      Impl::beSafeForConcurrentAccess(*arr++);
+      Impl::visitRefsInScalar_dmu_(*arr++);
   }
 
   static T *initializeArrayWithCopy(T *dest, T *src, size_t n) {
@@ -282,7 +282,7 @@ struct SwiftRetainableBox :
     swift_release(obj);
   }
       
-  static void beSafeForConcurrentAccess_dmu_(HeapObject *obj) {
+  static void visitRefsInScalar_dmu_(HeapObject *obj) {
     swift_beSafeForConcurrentAccess_dmu_(obj);
   }
 };
@@ -299,7 +299,7 @@ struct SwiftUnownedRetainableBox :
     swift_unownedRelease(obj);
   }
 
-  static void beSafeForConcurrentAccess(HeapObject *obj) { // dmu
+  static void visitRefsInScalar_dmu_(HeapObject *obj) {
     swift_unownedBeSafeForConcurrentAccess_dmu_(obj);
   }
 
@@ -420,7 +420,7 @@ struct ObjCRetainableBox : RetainableBoxBase<ObjCRetainableBox, void*> {
     objc_release((id)obj);
   }
   
-  static void beSafeForConcurrentAccess(void*) { // dmu
+  static void visitRefsInScalar_dmu_(void*) {
   }
 };
 
@@ -518,7 +518,7 @@ struct UnknownRetainableBox : RetainableBoxBase<UnknownRetainableBox, void*> {
 #endif
   }
   
-  static void beSafeForConcurrentAccess_dmu(void *obj) {
+  static void visitRefsInScalar_dmu_(void *obj) {
 #if SWIFT_OBJC_INTEROP
     swift_unknownBeSafeForConcurrentAccess_dmu_(obj);
 #else
@@ -549,7 +549,7 @@ struct BridgeObjectBox :
     return *src == nullptr ? 0 : -1;
   }
       
-  static void beSafeForConcurrentAccess(void *obj) { // dmu
+  static void visitRefsInScalar_dmu_(void *obj) {
     swift_bridgeObjectBeSafeForConcurrentAccess_dmu_(obj);
   }
 };
