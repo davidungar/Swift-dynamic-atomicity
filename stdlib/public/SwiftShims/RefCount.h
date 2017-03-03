@@ -50,16 +50,16 @@ typedef struct {
 // of the object's contents that were made before the object was released.
 
 // dmu
-enum NonatomicBenchmarkOptions {
-  baseline,            // should introduce no overhead
-  alwaysNonatomic,     // unsafe, but omits bit check
-  nonatomicIfBitSet,   // for benchmarking before bit is ever set;
-  nonatomicIfBitClear  // the eventual target scheme
+enum NonatomicBenchmarkOptions_dmu_ {
+  baseline_dmu,            // should introduce no overhead
+  alwaysNonatomic_dmu_,     // unsafe, but omits bit check
+  nonatomicIfBitSet_dmu_,   // for benchmarking before bit is ever set;
+  nonatomicIfBitClear_dmu_  // the eventual target scheme
 };
 
 
 
-template <NonatomicBenchmarkOptions nonatomicOption> class StrongRefCount_t { //dmu
+template <NonatomicBenchmarkOptions_dmu_ nonatomicOption_dmu_> class StrongRefCount_t_dmu_ {
   uint32_t refCount;
 
   // The low bit is the pinned marker.
@@ -69,7 +69,7 @@ template <NonatomicBenchmarkOptions nonatomicOption> class StrongRefCount_t { //
   enum : uint32_t {
     RC_PINNED_FLAG = 0x1,
     RC_DEALLOCATING_FLAG = 0x2,
-    RC_MIGHT_BE_CONCURRENTLY_ACCESSED_FLAG = 0x4, // dmu conservative
+    RC_MIGHT_BE_CONCURRENTLY_ACCESSED_FLAG_dmu_ = 0x4, // conservative
 
     RC_FLAGS_COUNT = 3, // dmu
     RC_FLAGS_MASK = 7,  // dmu
@@ -79,7 +79,7 @@ template <NonatomicBenchmarkOptions nonatomicOption> class StrongRefCount_t { //
   };
 
 
-  static_assert(RC_ONE == RC_MIGHT_BE_CONCURRENTLY_ACCESSED_FLAG << 1, // dmu
+  static_assert(RC_ONE == RC_MIGHT_BE_CONCURRENTLY_ACCESSED_FLAG_dmu_ << 1, // dmu
                 "deallocating bit must be adjacent to refcount bits");
   static_assert(RC_ONE == 1 << RC_FLAGS_COUNT,
                 "inconsistent refcount flags");
@@ -89,42 +89,42 @@ template <NonatomicBenchmarkOptions nonatomicOption> class StrongRefCount_t { //
 private:
 
   // start dmu
-  bool isSafeToUseNonatomic() {
-    switch (nonatomicOption) {
-      case baseline:
+  bool isSafeToUseNonatomic_dmu_() {
+    switch (nonatomicOption_dmu_) {
+      case baseline_dmu:
         return false;
-      case alwaysNonatomic:
+      case alwaysNonatomic_dmu_:
         return true;
-      case nonatomicIfBitSet: // just a crazy option for benchmarking
-        return   __atomic_load_n(&refCount, __ATOMIC_RELAXED)  &  RC_MIGHT_BE_CONCURRENTLY_ACCESSED_FLAG;
-      case nonatomicIfBitClear:
+      case nonatomicIfBitSet_dmu_: // just a crazy option for benchmarking
+        return   __atomic_load_n(&refCount, __ATOMIC_RELAXED)  &  RC_MIGHT_BE_CONCURRENTLY_ACCESSED_FLAG_dmu_;
+      case nonatomicIfBitClear_dmu_:
         // The real McCoy.
         // No need for atomicity because I assume that the reference count increment happens AFTER
         // the flag is set, and the flag setting is NOT RELAXED
-        return !(__atomic_load_n(&refCount, __ATOMIC_RELAXED)  &  RC_MIGHT_BE_CONCURRENTLY_ACCESSED_FLAG);
+        return !(__atomic_load_n(&refCount, __ATOMIC_RELAXED)  &  RC_MIGHT_BE_CONCURRENTLY_ACCESSED_FLAG_dmu_);
     }
   }
   
-  static const bool isSettingMightBeCurrentlyAccessedFlagImplemented = nonatomicOption == NonatomicBenchmarkOptions::nonatomicIfBitClear;
+  static const bool isSettingMightBeCurrentlyAccessedFlagImplemented_dmu_ = nonatomicOption_dmu_ == NonatomicBenchmarkOptions_dmu_::nonatomicIfBitClear_dmu_;
   
-  uint32_t expectedStateOfConcurrentlyAccessibleFlagWhenInAtomicVariant() {
-    if (!isSettingMightBeCurrentlyAccessedFlagImplemented) { return 0; }
-    assert( !isSafeToUseNonatomic() ); // because in atomic variant
-    switch (nonatomicOption) {
-      case baseline: return 0;
-      case alwaysNonatomic: return 0;
-      case nonatomicIfBitSet: return 0;
-      case nonatomicIfBitClear: return RC_MIGHT_BE_CONCURRENTLY_ACCESSED_FLAG;
+  uint32_t expectedStateOfConcurrentlyAccessibleFlagWhenInAtomicVariant_dmu_() {
+    if (!isSettingMightBeCurrentlyAccessedFlagImplemented_dmu_) { return 0; }
+    assert( !isSafeToUseNonatomic_dmu_() ); // because in atomic variant
+    switch (nonatomicOption_dmu_) {
+      case baseline_dmu: return 0;
+      case alwaysNonatomic_dmu_: return 0;
+      case nonatomicIfBitSet_dmu_: return 0;
+      case nonatomicIfBitClear_dmu_: return RC_MIGHT_BE_CONCURRENTLY_ACCESSED_FLAG_dmu_;
     }
   }
-  uint32_t expectedStateOfConcurrentlyAccessibleFlagWhenInNonatomicVariant() {
-    if (!isSettingMightBeCurrentlyAccessedFlagImplemented) { return 0; }
-    assert( isSafeToUseNonatomic() ); // because in nonatomic variant
-    switch (nonatomicOption) {
-      case baseline: return 0;
-      case alwaysNonatomic: return 0;
-      case nonatomicIfBitSet: return RC_MIGHT_BE_CONCURRENTLY_ACCESSED_FLAG;
-      case nonatomicIfBitClear: return 0;
+  uint32_t expectedStateOfConcurrentlyAccessibleFlagWhenInNonatomicVariant_dmu_() {
+    if (!isSettingMightBeCurrentlyAccessedFlagImplemented_dmu_) { return 0; }
+    assert( isSafeToUseNonatomic_dmu_() ); // because in nonatomic variant
+    switch (nonatomicOption_dmu_) {
+      case baseline_dmu: return 0;
+      case alwaysNonatomic_dmu_: return 0;
+      case nonatomicIfBitSet_dmu_: return RC_MIGHT_BE_CONCURRENTLY_ACCESSED_FLAG_dmu_;
+      case nonatomicIfBitClear_dmu_: return 0;
     }
   }
   // end dmu
@@ -135,10 +135,10 @@ private:
   // StrongRefCount must be trivially constructible to avoid ObjC++
   // destruction overhead at runtime. Use StrongRefCount(Initialized) to produce
   // an initialized instance.
-  StrongRefCount_t() = default;
+  StrongRefCount_t_dmu_() = default;
   
   // Refcount of a new object is 1.
-  constexpr StrongRefCount_t(Initialized_t)
+  constexpr StrongRefCount_t_dmu_(Initialized_t)
     : refCount(RC_ONE) { }
 
   void init() {
@@ -147,7 +147,7 @@ private:
 
   // Increment the reference count.
   void increment() {
-    if (isSafeToUseNonatomic()) {
+    if (isSafeToUseNonatomic_dmu_()) {
       incrementNonAtomic();
       return;
     }
@@ -162,7 +162,7 @@ private:
 
   // Increment the reference count by n.
   void increment(uint32_t n) {
-    if (isSafeToUseNonatomic()) {
+    if (isSafeToUseNonatomic_dmu_()) {
       incrementNonAtomic(n);
       return;
     }
@@ -185,7 +185,7 @@ private:
   //
   // Postcondition: the flag is set.
   bool tryIncrementAndPin() {
-    if (isSafeToUseNonatomic()) {
+    if (isSafeToUseNonatomic_dmu_()) {
       return tryIncrementAndPinNonAtomic();
     }
     uint32_t oldval = __atomic_load_n(&refCount, __ATOMIC_RELAXED);
@@ -221,7 +221,7 @@ private:
 
   // Increment the reference count, unless the object is deallocating.
   bool tryIncrement() {
-    if (isSafeToUseNonatomic()) {
+    if (isSafeToUseNonatomic_dmu_()) {
       return tryIncrementNonAtomic();
     }
     // FIXME: this could be better on LL/SC architectures like arm64
@@ -249,7 +249,7 @@ private:
   //
   // Precondition: the pinned flag is set.
   bool decrementAndUnpinShouldDeallocate() {
-    if (isSafeToUseNonatomic()) {
+    if (isSafeToUseNonatomic_dmu_()) {
       return decrementAndUnpinShouldDeallocateNonAtomic();
     }
     return doDecrementShouldDeallocate<true>();
@@ -262,7 +262,7 @@ private:
   // Decrement the reference count.
   // Return true if the caller should now deallocate the object.
   bool decrementShouldDeallocate() {
-    if (isSafeToUseNonatomic()) {
+    if (isSafeToUseNonatomic_dmu_()) {
       return decrementShouldDeallocateNonAtomic();
     }
     return doDecrementShouldDeallocate<false>();
@@ -322,24 +322,24 @@ private:
     return __atomic_load_n(&refCount, __ATOMIC_RELAXED) & RC_DEALLOCATING_FLAG;
   }
 
-  bool isSafeForConcurrentAccess() {
-    assert(isSettingMightBeCurrentlyAccessedFlagImplemented); // can modify this when start implementing
-    return 0 != (__atomic_load_n(&refCount, __ATOMIC_RELAXED)  &  RC_MIGHT_BE_CONCURRENTLY_ACCESSED_FLAG);
+  bool isSafeForConcurrentAccess_dmu_() {
+    assert(isSettingMightBeCurrentlyAccessedFlagImplemented_dmu_); // can modify this when start implementing
+    return 0 != (__atomic_load_n(&refCount, __ATOMIC_RELAXED)  &  RC_MIGHT_BE_CONCURRENTLY_ACCESSED_FLAG_dmu_);
   }
   // When something in the heap can be accessed by >1 thread, the bit must be set
   // Need not be atomic because this must happen BEFORE the object gets shared by another thread
   void beSafeForConcurrentAccess() {
-    assert(isSettingMightBeCurrentlyAccessedFlagImplemented); // can modify this when start implementing
+    assert(isSettingMightBeCurrentlyAccessedFlagImplemented_dmu_); // can modify this when start implementing
     uint32_t oldval = __atomic_load_n(&refCount, __ATOMIC_RELAXED);
     // Make sure that other threads see this:
     // I *think* release is needed -- dmu 12/16
-    __atomic_store_n(&refCount, oldval |  RC_MIGHT_BE_CONCURRENTLY_ACCESSED_FLAG, __ATOMIC_RELEASE);
+    __atomic_store_n(&refCount, oldval |  RC_MIGHT_BE_CONCURRENTLY_ACCESSED_FLAG_dmu_, __ATOMIC_RELEASE);
   }
 
 private:
   template <bool ClearPinnedFlag>
   bool doDecrementShouldDeallocate() {
-    if (isSafeToUseNonatomic()) {
+    if (isSafeToUseNonatomic_dmu_()) {
       return doDecrementShouldDeallocateNonAtomic<ClearPinnedFlag>();
     }
 
@@ -391,7 +391,7 @@ private:
 
     assert(newval + quantum >= RC_ONE &&
            "releasing reference with a refcount of zero");
-    return finishDoDecrementShouldDeallocateNonAtomic<ClearPinnedFlag>(newval);
+    return finishDoDecrementShouldDeallocateNonAtomic_dmu_<ClearPinnedFlag>(newval);
   }
 
   template <bool ClearPinnedFlag>
@@ -405,7 +405,7 @@ private:
            "unpinning reference that was not pinned");
     assert(newval + delta >= RC_ONE &&
            "releasing reference with a refcount of zero");
-    return finishDoDecrementShouldDeallocateNonAtomic<ClearPinnedFlag>(newval);
+    return finishDoDecrementShouldDeallocateNonAtomic_dmu_<ClearPinnedFlag>(newval);
 
     // If we didn't drop the reference count to zero, or if the
     // deallocating flag is already set, we're done; don't start
@@ -424,9 +424,9 @@ private:
     //
     // This also performs the before-deinit acquire barrier if we set the flag.
     static_assert(RC_FLAGS_COUNT == 3,
-                  "fix finishDoDecrementShouldDeallocate() if you add more flags");
-    uint32_t oldval = 0           | expectedStateOfConcurrentlyAccessibleFlagWhenInAtomicVariant();
-    newval = RC_DEALLOCATING_FLAG | expectedStateOfConcurrentlyAccessibleFlagWhenInAtomicVariant();
+                  "fix finishDoDecrementShouldDeallocate_dmu_() if you add more flags");
+    uint32_t oldval = 0           | expectedStateOfConcurrentlyAccessibleFlagWhenInAtomicVariant_dmu_();
+    newval = RC_DEALLOCATING_FLAG | expectedStateOfConcurrentlyAccessibleFlagWhenInAtomicVariant_dmu_();
     return __atomic_compare_exchange(&refCount, &oldval, &newval, 0,
                                      __ATOMIC_ACQUIRE, __ATOMIC_RELAXED);
   }
@@ -445,11 +445,11 @@ private:
            "unpinning reference that was not pinned");
     assert(newval + delta >= RC_ONE &&
            "releasing reference with a refcount of zero");
-    return finishDoDecrementShouldDeallocateNonAtomic<ClearPinnedFlag>(newval); // dmu
+    return finishDoDecrementShouldDeallocateNonAtomic_dmu_<ClearPinnedFlag>(newval);
   }
 
   template <bool ClearPinnedFlag>
-  bool finishDoDecrementShouldDeallocateNonAtomic(uint32_t newval) { // dmu
+  bool finishDoDecrementShouldDeallocateNonAtomic_dmu_(uint32_t newval) {
     assert((!ClearPinnedFlag || !(newval & RC_PINNED_FLAG)) &&
            "unpinning reference that was not pinned");
     
@@ -470,15 +470,15 @@ private:
     //
     // This also performs the before-deinit acquire barrier if we set the flag.
     static_assert(RC_FLAGS_COUNT == 3,
-                  "fix finishDoDecrementShouldDeallocateNonAtomic() if you add more flags");
-    uint32_t oldval = 0           | expectedStateOfConcurrentlyAccessibleFlagWhenInNonatomicVariant();
-    newval = RC_DEALLOCATING_FLAG | expectedStateOfConcurrentlyAccessibleFlagWhenInNonatomicVariant();
+                  "fix finishDoDecrementShouldDeallocateNonAtomic_dmu_() if you add more flags");
+    uint32_t oldval = 0           | expectedStateOfConcurrentlyAccessibleFlagWhenInNonatomicVariant_dmu_();
+    newval = RC_DEALLOCATING_FLAG | expectedStateOfConcurrentlyAccessibleFlagWhenInNonatomicVariant_dmu_();
     return __atomic_compare_exchange(&refCount, &oldval, &newval, 0,
                                      __ATOMIC_ACQUIRE, __ATOMIC_RELAXED);
   }
 };
 
-typedef StrongRefCount_t<nonatomicIfBitClear> StrongRefCount; // dmu
+typedef StrongRefCount_t_dmu_<nonatomicIfBitClear_dmu_> StrongRefCount;
 
 
 
