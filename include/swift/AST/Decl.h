@@ -5725,7 +5725,7 @@ public:
   SourceRange getSourceRange() const;
   
   static bool classof(const Decl *D) {
-    return D->getKind() == DeclKind::Destructor;
+    return D->getKind() == DeclKind::VisitorOfRefsInInstance_dmu_;
   }
   static bool classof(const AbstractFunctionDecl *D) {
     return classof(static_cast<const Decl*>(D));
