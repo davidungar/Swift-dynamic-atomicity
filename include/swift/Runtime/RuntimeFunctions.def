@@ -183,8 +183,8 @@ FUNCTION_WITH_GLOBAL_SYMBOL_AND_IMPL(IfDestIsSafeForConcurrentAccessMakeSrcSafe_
          ATTRS(NoUnwind))
 
 // void swift_beSafeForConcurrentAccess_dmu(void* ptr);
-FUNCTION_WITH_GLOBAL_SYMBOL_AND_IMPL(BeSafeForConcurrentAccess_dmu_, swift_beSafeForConcurrentAccess_dmu, /* dmu */
-        _swift_beSafeForConcurrentAccess_dmu_, _swift_beSafeForConcurrentAccess_dmu_,
+FUNCTION_WITH_GLOBAL_SYMBOL_AND_IMPL(BeSafeForConcurrentAccess_dmu_, swift_beSafeForConcurrentAccess_dmu_, /* dmu */
+        _swift_beSafeForConcurrentAccess_dmu_, _swift_beSafeForConcurrentAccess_dmu__,
         DefaultCC, // TODO: (dmu optimize) I think this may be conservative
         RETURNS(VoidTy),
         ARGS(RefCountedPtrTy),

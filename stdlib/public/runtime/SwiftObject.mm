@@ -468,7 +468,7 @@ void swift::swift_unknownBeSafeForConcurrentAccess_dmu_(void *object) // TODO: (
 SWIFT_CC(DefaultCC_IMPL) {
   if (isObjCTaggedPointerOrNull(object)) return;
   if (usesNativeSwiftReferenceCounting_allocated(object)) {
-    swift_beSafeForConcurrentAccess_dmu(static_cast<HeapObject *>(object));
+    swift_beSafeForConcurrentAccess_dmu_(static_cast<HeapObject *>(object));
     return;
   }
 }
@@ -721,7 +721,7 @@ SWIFT_CC(DefaultCC_IMPL) {
   if (isNonNative_unTagged_bridgeObject(object))
     return;
 #endif
-  swift::swift_beSafeForConcurrentAccess_dmu(static_cast<HeapObject *>(objectRef));
+  swift::swift_beSafeForConcurrentAccess_dmu_(static_cast<HeapObject *>(objectRef));
 }
 
 
