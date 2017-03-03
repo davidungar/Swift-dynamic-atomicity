@@ -1900,8 +1900,8 @@ CanAnyFunctionType TypeConverter::makeConstantInterfaceType(SILDeclRef c) {
   // TODO: (dmu) blind clone
   case SILDeclRef::Kind::VisitorOfRefsInInstance_dmu_:
       return getVisitorOfRefsInInstance_dmu_InterfaceType(cast<VisitorOfRefsInInstance_dmu_Decl>(vd),
-                                                      Context,
-                                                      c.isForeign);
+                                                          Context,
+                                                          c.isForeign);
   
   case SILDeclRef::Kind::GlobalAccessor: {
     VarDecl *var = cast<VarDecl>(vd);
