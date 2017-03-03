@@ -349,6 +349,19 @@ void SideEffectAnalysis::analyzeInstruction(FunctionInfo *FInfo,
       // destructors might be called.
       FInfo->FE.setWorstEffects();
       return;
+
+    case ValueKind::VisitRefAtAddr_dmu_Inst:
+      FInfo->FE.getEffectsOn(I->getOperand(0))->Reads = true;
+      FInfo->FE.getEffectsOn(I->getOperand(0))->Writes = true;
+      return;
+
+    case ValueKind::StoreBarrier_dmu_Inst: {
+      auto *SBI = cast<StoreBarrier_dmu_Inst>(I);
+      FInfo->FE.getEffectsOn(SBI->getDest())->Reads = true;
+      FInfo->FE.getEffectsOn(SBI->getSrc() )->Writes = true;
+      return;
+    }
+      
     case ValueKind::LoadInst:
       FInfo->FE.getEffectsOn(cast<LoadInst>(I)->getOperand())->Reads = true;
       return;

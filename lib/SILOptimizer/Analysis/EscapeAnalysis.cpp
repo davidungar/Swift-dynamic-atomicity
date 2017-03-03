@@ -1533,6 +1533,7 @@ void EscapeAnalysis::analyzeInstruction(SILInstruction *I,
         ConGraph->defer(ConGraph->getReturnNode(), ValueNd);
       }
       return;
+    case ValueKind::VisitRefAtAddr_dmu_Inst: // be conservate for now TODO: (dmu) Is there something better?
     default:
       // We handle all other instructions conservatively.
       setAllEscaping(I, ConGraph);

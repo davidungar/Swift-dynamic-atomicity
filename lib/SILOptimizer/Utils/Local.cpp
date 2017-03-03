@@ -1004,6 +1004,7 @@ static bool useDoesNotKeepClosureAlive(const SILInstruction *I) {
   case ValueKind::RetainValueInst:
   case ValueKind::ReleaseValueInst:
   case ValueKind::DebugValueInst:
+  case ValueKind::VisitRefAtAddr_dmu_Inst:
     return true;
   default:
     return false;

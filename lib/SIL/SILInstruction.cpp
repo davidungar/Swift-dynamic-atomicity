@@ -867,6 +867,9 @@ bool SILInstruction::mayRelease() const {
   case ValueKind::UnownedReleaseInst:
   case ValueKind::ReleaseValueInst:
     return true;
+      
+  case ValueKind::VisitRefAtAddr_dmu_Inst:
+    return false;
 
   case ValueKind::UnconditionalCheckedCastAddrInst: {
     // Failing casts with take_always can release.

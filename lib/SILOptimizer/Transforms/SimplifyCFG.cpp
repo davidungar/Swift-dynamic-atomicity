@@ -1746,6 +1746,7 @@ bool SimplifyCFG::simplifyUnreachableBlock(UnreachableInst *UI) {
     case ValueKind::StrongReleaseInst:
     case ValueKind::RetainValueInst:
     case ValueKind::ReleaseValueInst:
+    case ValueKind::VisitRefAtAddr_dmu_Inst: // blind clone
       break;
 
     default:
