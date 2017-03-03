@@ -3348,6 +3348,12 @@ namespace {
     
     // TODO: (dmu) factor with addDestructorFunction above
     void addVisitorOfRefsInInstance_dmu_Function() {
+      auto none = llvm::ConstantPointerNull::get(IGM.FunctionPtrTy);
+      
+      if (Target->correctNumberOf_VisitorOfRefsInInstance_dmu_Decl() == 0) {
+        addWord(none);
+        return;
+      }
       
       auto expansion = ResilienceExpansion::Minimal;
       auto makeRef = SILDeclRef(Target->getVisitorOfRefsInInstance_dmu_(),
@@ -3360,7 +3366,7 @@ namespace {
       } else {
         // In case it is unimplemented
 
-        addWord(llvm::ConstantPointerNull::get(IGM.FunctionPtrTy));
+        addWord(none);
       }
    }
            
