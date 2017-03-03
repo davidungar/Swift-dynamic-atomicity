@@ -1074,7 +1074,7 @@ void swift::swift_unknownWeakDestroy(WeakReference *addr) {
 
 void swift::swift_unknownWeakBeSafeForConcurrentAccess_dmu_(WeakReference *addr) {
   if (isNativeSwiftWeakReference(addr)) {
-    swift_weakVisitRefsInValue_dmu_(addr);
+    swift_weakBeSafeForConcurrentAccess_dmu_(addr);
   }
 }
 

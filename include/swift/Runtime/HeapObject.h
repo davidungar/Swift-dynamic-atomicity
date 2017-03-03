@@ -693,7 +693,13 @@ HeapObject *swift_weakTakeStrong(WeakReference *ref);
 /// \param ref - never null, but can refer to a null object
 SWIFT_RUNTIME_EXPORT
 void swift_weakDestroy(WeakReference *ref);
-
+  
+/// TODO: (dmu) comment
+///
+/// \param ref - never null, but can refer to a null object
+SWIFT_RUNTIME_EXPORT
+void swift_weakBeSafeForConcurrentAccess_dmu_(WeakReference *ref);
+  
 /// Copy initialize a weak reference.
 ///
 /// \param dest - never null, but can refer to a null object
@@ -979,7 +985,7 @@ static inline void swift_unknownWeakDestroy(WeakReference *object) {
 #else
   
   static inline void swift_unknownWeakBeSafeForConcurrentAccess_dmu_(WeakReference *object) {
-    swift_beSafeForConcurrentAccess_dmu_(object);
+    swift_weakBeSafeForConcurrentAccess_dmu_(object);
   }
   
 #endif /* SWIFT_OBJC_INTEROP */

@@ -789,6 +789,13 @@ void swift::swift_weakDestroy(WeakReference *ref) {
   SWIFT_RT_ENTRY_CALL(swift_unownedRelease)(tmp);
 }
 
+void swift::swift_weakBeSafeForConcurrentAccess_dmu_(WeakReference *ref) {
+  if (ref->Value & WR_NATIVE) {
+    auto tmp = (HeapObject*) (ref->Value & ~WR_NATIVE);
+    SWIFT_RT_ENTRY_CALL(swift_beSafeForConcurrentAccess_dmu_)(tmp);
+  }
+}
+
 void swift::swift_weakCopyInit(WeakReference *dest, WeakReference *src) {
   if (src->Value == (uintptr_t)nullptr) {
     dest->Value = (uintptr_t)nullptr;
