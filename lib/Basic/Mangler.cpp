@@ -30,6 +30,8 @@ llvm::cl::opt<bool> NewManglingForTests(
                        "new-mangling-for-tests", llvm::cl::init(false),
                        llvm::cl::desc("Use new mangling for compiler tests"));
 
+#undef CHECK_MANGLING_AGAINST_OLD // dmu
+
 #ifndef USE_NEW_MANGLING
 
 static bool containsNonSwiftModule(Demangle::NodePointer Nd) {
