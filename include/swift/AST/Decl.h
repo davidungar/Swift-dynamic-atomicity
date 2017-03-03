@@ -6099,7 +6099,7 @@ AbstractFunctionDecl::getParameterLists() {
     return cast<ConstructorDecl>(this)->getParameterLists();
   case DeclKind::Destructor:
     return cast<DestructorDecl>(this)->getParameterLists();
-    case DeclKind::VisitorOfRefsInInstance_dmu_:
+  case DeclKind::VisitorOfRefsInInstance_dmu_:
     return cast<VisitorOfRefsInInstance_dmu_Decl>(this)->getParameterLists();
   case DeclKind::Func:
     return cast<FuncDecl>(this)->getParameterLists();
