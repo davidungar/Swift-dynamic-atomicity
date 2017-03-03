@@ -4236,7 +4236,7 @@ public:
       TC.addImplicitConstructors(CD);
 
     TC.addImplicitDestructor(CD);
-    if (!IsFirstPass) // only need to add this once
+    if (!IsFirstPass && !CD->isObjC()) // only need to add this once
       TC.addVisitorOfRefsInInstance_dmu_(CD);
 
     if (!IsFirstPass && !CD->isInvalid())
