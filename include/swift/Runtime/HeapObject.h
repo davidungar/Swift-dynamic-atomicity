@@ -1139,6 +1139,22 @@ static inline void swift_unknownUnownedDestroy(UnownedReference *ref) {
 
 #endif /* SWIFT_OBJC_INTEROP */
   
+  
+#if SWIFT_OBJC_INTEROP
+
+/// TODO: (dmu) comment
+SWIFT_RUNTIME_EXPORT
+void swift_unknownUnownedBeSafeForConcurrentAccess_dmu_(UnownedReference *ref);
+
+#else
+
+static inline void swift_unknownUnownedBeSafeForConcurrentAccess_dmu_(UnownedReference *ref) {
+  swift_unownedBeSafeForConcurrentAccess_dmu_(ref);
+}
+
+#endif /* SWIFT_OBJC_INTEROP */
+
+  
 #if SWIFT_OBJC_INTEROP
 
 /// Copy-initialize an unowned reference variable from one that might not
