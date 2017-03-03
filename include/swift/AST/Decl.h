@@ -3335,6 +3335,30 @@ public:
   bool hasKnownSwiftImplementation() const {
     return !hasClangNode();
   }
+  
+  
+  
+  int correctNumberOf_VisitorOfRefsInInstance_dmu_Decl() {
+    return isObjC() ? 0 : 1;
+  }
+  
+  const char* wrongNumberOf_VisitorOfRefsInInstance_dmu_Decl( int howMany) {
+    return  howMany == correctNumberOf_VisitorOfRefsInInstance_dmu_Decl()
+    ? nullptr
+    :  isObjC()
+      ?  "ObjC class should not have any VisitorOfRefsInInstance_dmu_"
+      :  "Swift class should have 1 VisitorOfRefsInInstance_dmu_";
+  }
+  
+  void assertCorrectNumberOf_VisitorOfRefsInInstance_dmu_Decl( int howMany) {
+    
+    if  (howMany == correctNumberOf_VisitorOfRefsInInstance_dmu_Decl())
+      return;
+    if (isObjC())
+      assert(false && "ObjC class should not have any VisitorOfRefsInInstance_dmu_");
+    else
+      assert(false && "Swift class should have 1 VisitorOfRefsInInstance_dmu_");
+  }
 };
 
 

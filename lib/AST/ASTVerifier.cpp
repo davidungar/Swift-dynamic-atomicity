@@ -2452,14 +2452,8 @@ struct ASTNodeBase {};
             NumVisitorOfRefsInInstance_dmu_s++;
           }
         }
-        if (NumVisitorOfRefsInInstance_dmu_s !=  (CD->isObjC() ? 0 : 1)) {
-          if (CD->isObjC()) {
-            Out << "every ObjC class should have no visitorOfRefsInInstance_dmu_\n";
-          }
-          else {
-            Out << "every class should have exactly one visitorOfRefsInInstance_dmu_, "
-            "created by the type checker\n";
-          }
+        if (const char* msg = CD->wrongNumberOf_VisitorOfRefsInInstance_dmu_Decl(NumVisitorOfRefsInInstance_dmu_s)) {
+          Out << msg;
           abort();
         }
       }

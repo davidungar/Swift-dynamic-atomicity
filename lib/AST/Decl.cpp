@@ -2428,8 +2428,8 @@ DestructorDecl *ClassDecl::getDestructor() {
 VisitorOfRefsInInstance_dmu_Decl *ClassDecl::getVisitorOfRefsInInstance_dmu_() {
   auto name = getASTContext().Id_refVisitor_dmu_;
   auto results = lookupDirect(name);
-  assert(!results.empty() && "Class without visitorOfRefsInInstance_dmu_?");
-  assert(results.size() == 1 && "More than one visitorOfRefsInInstance_dmu_?");
+
+  assertCorrectNumberOf_VisitorOfRefsInInstance_dmu_Decl(results.size());
   return cast<VisitorOfRefsInInstance_dmu_Decl>(results.front());
 }
 
