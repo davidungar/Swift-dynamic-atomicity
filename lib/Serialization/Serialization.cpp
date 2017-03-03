@@ -3507,6 +3507,7 @@ void Serializer::writeAllDeclsAndTypes() {
   registerDeclTypeAbbr<SubscriptLayout>();
   registerDeclTypeAbbr<ExtensionLayout>();
   registerDeclTypeAbbr<DestructorLayout>();
+  registerDeclTypeAbbr<VisitorOfRefsInInstance_dmu_Layout>();
 
   registerDeclTypeAbbr<ParameterListLayout>();
   registerDeclTypeAbbr<ParameterListEltLayout>();
