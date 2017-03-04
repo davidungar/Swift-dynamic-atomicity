@@ -31,16 +31,24 @@ static void destroyTestObject(HeapObject *_object) {
 }
 
 static const FullMetadata<ClassMetadata> TestClassObjectMetadata = {
-  { { &destroyTestObject, VisitorOfRefsInHeapObj_dmu_Values::unimplemented }, { &VALUE_WITNESS_SYM(Bo) } },
+  { { &destroyTestObject, nullptr /* VisitorOfRefsInHeapObj_dmu_Values::unimplemented */ }, { &VALUE_WITNESS_SYM(Bo) } },
   { { { MetadataKind::Class } }, 0, /*rodata*/ 1,
   ClassFlags::UsesSwift1Refcounting, nullptr, 0, 0, 0, 0, 0 }
 };
 
+static void dummy_VisitorOfRefsInHeapObj_dmu_(HeapObject* obj) {}
+
+static const FullMetadata<ClassMetadata> TestClassObjectNonAtomicMetadata_dmu_ = {
+  { { &destroyTestObject, dummy_VisitorOfRefsInHeapObj_dmu_ }, { &VALUE_WITNESS_SYM(Bo) } },
+  { { { MetadataKind::Class } }, 0, /*rodata*/ 1,
+    ClassFlags::UsesSwift1Refcounting, nullptr, 0, 0, 0, 0, 0 }
+};
+
 /// Create an object that, when deallocated, stores the given value to
 /// the given pointer.
-static TestObject *allocTestObject(size_t *addr, size_t value) {
+static TestObject *allocTestObject(size_t *addr, size_t value, bool nonatomic) {
   auto result =
-    static_cast<TestObject *>(swift_allocObject(&TestClassObjectMetadata,
+    static_cast<TestObject *>(swift_allocObject(nonatomic ? &TestClassObjectNonAtomicMetadata_dmu_ : &TestClassObjectMetadata,
                                                 sizeof(TestObject),
                                                 alignof(TestObject) - 1));
   result->Addr = addr;
@@ -80,7 +88,7 @@ const uint64_t maxRC = (1ULL << (32 - 2 - extraBitFor_RC_MIGHT_BE_CONCURRENTLY_A
 
 TEST(LongRefcountingTest, retain_max) {
   size_t deallocated = 0;
-  auto object = allocTestObject(&deallocated, 1);
+  auto object = allocTestObject(&deallocated, 1, /*nonatomic*/false);
 
   // RC is 1.
   // Retain to maxRC, release back to 1, then release and verify deallocation.
@@ -95,7 +103,7 @@ TEST(LongRefcountingTest, retain_max) {
 
 TEST(LongRefcountingTest, nonatomic_retain_max) {
   size_t deallocated = 0;
-  auto object = allocTestObject(&deallocated, 1);
+  auto object = allocTestObject(&deallocated, 1, /*nonatomic*/false);
 
   // RC is 1.
   // Retain to maxRC, release back to 1, then release and verify deallocation.
@@ -110,7 +118,7 @@ TEST(LongRefcountingTest, nonatomic_retain_max) {
 
 TEST(RefcountingTest, retain_overflow) {
   size_t deallocated = 0;
-  auto object = allocTestObject(&deallocated, 1);
+  auto object = allocTestObject(&deallocated, 1, /*nonatomic*/false);
 
   // RC is 1. Retain to maxRC, then retain again and verify overflow.
   retainALot<true>(object, deallocated, maxRC - 1);
@@ -126,7 +134,7 @@ TEST(RefcountingTest, retain_overflow) {
 
 TEST(RefcountingTest, nonatomic_retain_overflow) {
   size_t deallocated = 0;
-  auto object = allocTestObject(&deallocated, 1);
+  auto object = allocTestObject(&deallocated, 1, /*nonatomic*/false);
 
   // RC is 1. Retain to maxRC, then retain again and verify overflow.
   retainALot<false>(object, deallocated, maxRC - 1);

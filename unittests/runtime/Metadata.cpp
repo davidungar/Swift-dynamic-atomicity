@@ -290,8 +290,10 @@ TEST(MetadataTest, getGenericMetadata) {
     });
 }
 
+static void dummy_VisitorOfRefsInHeapObj_dmu_(HeapObject* obj) {}
+
 FullMetadata<ClassMetadata> MetadataTest2 = {
-  { { nullptr, VisitorOfRefsInHeapObj_dmu_Values::unimplemented }, { &VALUE_WITNESS_SYM(Bo) } },
+  { { nullptr, dummy_VisitorOfRefsInHeapObj_dmu_ }, { &VALUE_WITNESS_SYM(Bo) } },
   { { { MetadataKind::Class } }, nullptr, /*rodata*/ 1,
     ClassFlags(), nullptr, 0, 0, 0, 0, 0 }
 };
@@ -545,7 +547,7 @@ struct {
   FullMetadata<ClassMetadata> Metadata;
 } SuperclassWithPrefix = {
   { &Global1, &Global3, &Global2, &Global3 },
-  { { { &destroySuperclass, VisitorOfRefsInHeapObj_dmu_Values::unimplemented }, { &VALUE_WITNESS_SYM(Bo) } },
+  { { { &destroySuperclass, dummy_VisitorOfRefsInHeapObj_dmu_ }, { &VALUE_WITNESS_SYM(Bo) } },
     { { { MetadataKind::Class } }, nullptr, /*rodata*/ 1, ClassFlags(), nullptr,
       0, 0, 0, sizeof(SuperclassWithPrefix),
       sizeof(SuperclassWithPrefix.Prefix) + sizeof(HeapMetadataHeader) } }
@@ -577,7 +579,7 @@ struct {
     sizeof(HeapMetadataHeader), // address point
     {} // private data
   },
-  { { { &destroySubclass, VisitorOfRefsInHeapObj_dmu_Values::unimplemented }, { &VALUE_WITNESS_SYM(Bo) } },
+  { { { &destroySubclass, dummy_VisitorOfRefsInHeapObj_dmu_ }, { &VALUE_WITNESS_SYM(Bo) } },
     { { { MetadataKind::Class } }, nullptr, /*rodata*/ 1, ClassFlags(), nullptr,
       0, 0, 0,
       sizeof(GenericSubclass.Pattern) + sizeof(GenericSubclass.Suffix),
@@ -596,9 +598,9 @@ TEST(MetadataTest, getGenericMetadata_SuperclassWithUnexpectedPrefix) {
         swift_getGenericMetadata(metadataTemplate, args));
       void * const *fields = reinterpret_cast<void * const *>(inst);
 
-      int const extraWordCountFor_visitorOfRefsInHeapObj_dmu_ = 1; // dmu metadata layout
+      int const extraWordCountFor_visitorOfRefsInHeapObj_dmu_ = 1;
       // No instance variables that are reference counted
-      void* const expectedValueFor_visitorOfRefsInHeapObj_dmu_ = reinterpret_cast<void* const>(VisitorOfRefsInHeapObj_dmu_Values::unimplemented);
+      void* const expectedValueFor_visitorOfRefsInHeapObj_dmu_ = reinterpret_cast<void* const>(dummy_VisitorOfRefsInHeapObj_dmu_);
       
       // Assert that we copied the extra prefix data from the superclass.
       EXPECT_EQ(&Global1, fields[-6 - extraWordCountFor_visitorOfRefsInHeapObj_dmu_]); // TODO: (dmu factor extra metadata layotu)

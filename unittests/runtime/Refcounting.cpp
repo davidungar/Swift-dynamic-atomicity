@@ -30,16 +30,25 @@ static void destroyTestObject(HeapObject *_object) {
 }
 
 static const FullMetadata<ClassMetadata> TestClassObjectMetadata = {
-  { { &destroyTestObject, nullptr /* visitorOfRefsInHeapObj_dmu_ */ }, { &VALUE_WITNESS_SYM(Bo) } },
+  { { &destroyTestObject, nullptr /* VisitorOfRefsInHeapObj_dmu_Values::unimplemented */ }, { &VALUE_WITNESS_SYM(Bo) } },
   { { { MetadataKind::Class } }, 0, /*rodata*/ 1,
-  ClassFlags::UsesSwift1Refcounting, nullptr, 0, 0, 0, 0, 0 }
+    ClassFlags::UsesSwift1Refcounting, nullptr, 0, 0, 0, 0, 0 }
 };
+
+static void dummy_VisitorOfRefsInHeapObj_dmu_(HeapObject* obj) {}
+
+static const FullMetadata<ClassMetadata> TestClassObjectNonAtomicMetadata_dmu_ = {
+  { { &destroyTestObject, dummy_VisitorOfRefsInHeapObj_dmu_ }, { &VALUE_WITNESS_SYM(Bo) } },
+  { { { MetadataKind::Class } }, 0, /*rodata*/ 1,
+    ClassFlags::UsesSwift1Refcounting, nullptr, 0, 0, 0, 0, 0 }
+};
+
 
 /// Create an object that, when deallocated, stores the given value to
 /// the given pointer.
-static TestObject *allocTestObject(size_t *addr, size_t value) {
+static TestObject *allocTestObject(size_t *addr, size_t value, bool nonatomic) {
   auto result =
-    static_cast<TestObject *>(swift_allocObject(&TestClassObjectMetadata,
+    static_cast<TestObject *>(swift_allocObject(nonatomic ? &TestClassObjectNonAtomicMetadata_dmu_ : &TestClassObjectMetadata,
                                                 sizeof(TestObject),
                                                 alignof(TestObject) - 1));
   result->Addr = addr;
@@ -49,7 +58,7 @@ static TestObject *allocTestObject(size_t *addr, size_t value) {
 
 TEST(RefcountingTest, release) {
   size_t value = 0;
-  auto object = allocTestObject(&value, 1);
+  auto object = allocTestObject(&value, 1, /*nonatomic*/false);
   EXPECT_EQ(0u, value);
   swift_release(object);
   EXPECT_EQ(1u, value);
@@ -57,7 +66,7 @@ TEST(RefcountingTest, release) {
 
 TEST(RefcountingTest, retain_release) {
   size_t value = 0;
-  auto object = allocTestObject(&value, 1);
+  auto object = allocTestObject(&value, 1, /*nonatomic*/false);
   EXPECT_EQ(0u, value);
   swift_retain(object);
   EXPECT_EQ(0u, value);
@@ -69,7 +78,7 @@ TEST(RefcountingTest, retain_release) {
 
 TEST(RefcountingTest, pin_unpin) {
   size_t value = 0;
-  auto object = allocTestObject(&value, 1);
+  auto object = allocTestObject(&value, 1, /*nonatomic*/false);
   EXPECT_EQ(0u, value);
   auto pinResult = swift_tryPin(object);
   EXPECT_EQ(object, pinResult);
@@ -82,7 +91,7 @@ TEST(RefcountingTest, pin_unpin) {
 
 TEST(RefcountingTest, pin_pin_unpin_unpin) {
   size_t value = 0;
-  auto object = allocTestObject(&value, 1);
+  auto object = allocTestObject(&value, 1, /*nonatomic*/false);
   EXPECT_EQ(0u, value);
   auto pinResult = swift_tryPin(object);
   EXPECT_EQ(object, pinResult);
@@ -100,7 +109,7 @@ TEST(RefcountingTest, pin_pin_unpin_unpin) {
 
 TEST(RefcountingTest, retain_release_n) {
   size_t value = 0;
-  auto object = allocTestObject(&value, 1);
+  auto object = allocTestObject(&value, 1, /*nonatomic*/false);
   EXPECT_EQ(0u, value);
   swift_retain_n(object, 32);
   swift_retain(object);
@@ -119,7 +128,7 @@ TEST(RefcountingTest, retain_release_n) {
 
 TEST(RefcountingTest, unknown_retain_release_n) {
   size_t value = 0;
-  auto object = allocTestObject(&value, 1);
+  auto object = allocTestObject(&value, 1, /*nonatomic*/false);
   EXPECT_EQ(0u, value);
   swift_unknownRetain_n(object, 32);
   swift_unknownRetain(object);
@@ -138,7 +147,7 @@ TEST(RefcountingTest, unknown_retain_release_n) {
 
 TEST(RefcountingTest, unowned_retain_release_n) {
   size_t value = 0;
-  auto object = allocTestObject(&value, 1);
+  auto object = allocTestObject(&value, 1, /*nonatomic*/false);
   EXPECT_EQ(0u, value);
   swift_unownedRetain_n(object, 32);
   swift_unownedRetain(object);
@@ -159,7 +168,7 @@ TEST(RefcountingTest, unowned_retain_release_n) {
 
 TEST(RefcountingTest, nonatomic_release) {
   size_t value = 0;
-  auto object = allocTestObject(&value, 1);
+  auto object = allocTestObject(&value, 1, /*nonatomic*/true);
   EXPECT_EQ(0u, value);
   swift_nonatomic_release(object);
   EXPECT_EQ(1u, value);
@@ -167,7 +176,7 @@ TEST(RefcountingTest, nonatomic_release) {
 
 TEST(RefcountingTest, nonatomic_retain_release) {
   size_t value = 0;
-  auto object = allocTestObject(&value, 1);
+  auto object = allocTestObject(&value, 1, /*nonatomic*/true);
   EXPECT_EQ(0u, value);
   swift_nonatomic_retain(object);
   EXPECT_EQ(0u, value);
@@ -179,7 +188,7 @@ TEST(RefcountingTest, nonatomic_retain_release) {
 
 TEST(RefcountingTest, nonatomic_pin_unpin) {
   size_t value = 0;
-  auto object = allocTestObject(&value, 1);
+  auto object = allocTestObject(&value, 1, /*nonatomic*/true);
   EXPECT_EQ(0u, value);
   auto pinResult = swift_nonatomic_tryPin(object);
   EXPECT_EQ(object, pinResult);
@@ -192,7 +201,7 @@ TEST(RefcountingTest, nonatomic_pin_unpin) {
 
 TEST(RefcountingTest, nonatomic_pin_pin_unpin_unpin) {
   size_t value = 0;
-  auto object = allocTestObject(&value, 1);
+  auto object = allocTestObject(&value, 1, /*nonatomic*/true);
   EXPECT_EQ(0u, value);
   auto pinResult = swift_nonatomic_tryPin(object);
   EXPECT_EQ(object, pinResult);
@@ -210,7 +219,7 @@ TEST(RefcountingTest, nonatomic_pin_pin_unpin_unpin) {
 
 TEST(RefcountingTest, nonatomic_retain_release_n) {
   size_t value = 0;
-  auto object = allocTestObject(&value, 1);
+  auto object = allocTestObject(&value, 1, /*nonatomic*/true);
   EXPECT_EQ(0u, value);
   swift_nonatomic_retain_n(object, 32);
   swift_nonatomic_retain(object);
@@ -229,7 +238,7 @@ TEST(RefcountingTest, nonatomic_retain_release_n) {
 
 TEST(RefcountingTest, nonatomic_unknown_retain_release_n) {
   size_t value = 0;
-  auto object = allocTestObject(&value, 1);
+  auto object = allocTestObject(&value, 1, /*nonatomic*/true);
   EXPECT_EQ(0u, value);
   swift_nonatomic_unknownRetain_n(object, 32);
   swift_nonatomic_unknownRetain(object);
