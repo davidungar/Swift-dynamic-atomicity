@@ -103,7 +103,7 @@ TEST(LongRefcountingTest, retain_max) {
 
 TEST(LongRefcountingTest, nonatomic_retain_max) {
   size_t deallocated = 0;
-  auto object = allocTestObject(&deallocated, 1, /*nonatomic*/false);
+  auto object = allocTestObject(&deallocated, 1, /*nonatomic*/true);
 
   // RC is 1.
   // Retain to maxRC, release back to 1, then release and verify deallocation.
@@ -134,7 +134,7 @@ TEST(RefcountingTest, retain_overflow) {
 
 TEST(RefcountingTest, nonatomic_retain_overflow) {
   size_t deallocated = 0;
-  auto object = allocTestObject(&deallocated, 1, /*nonatomic*/false);
+  auto object = allocTestObject(&deallocated, 1, /*nonatomic*/true);
 
   // RC is 1. Retain to maxRC, then retain again and verify overflow.
   retainALot<false>(object, deallocated, maxRC - 1);
