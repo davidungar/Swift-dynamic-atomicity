@@ -1207,6 +1207,9 @@ bool SILParser::parseSILDeclRef(SILDeclRef &Result,
       } else if (!ParseState && Id.str() == "propertyinit") {
         Kind = SILDeclRef::Kind::StoredPropertyInitializer;
         ParseState = 1;
+      } else if (!ParseState && Id.str() == "visitorOfRefsInInstance_dmu_") {
+        Kind = SILDeclRef::Kind::VisitorOfRefsInInstance_dmu_;
+        ParseState = 1;
       } else if (Id.str() == "foreign") {
         IsObjC = true;
         break;
