@@ -373,7 +373,7 @@ private:
     // This also performs the before-deinit acquire barrier if we set the flag.
     static_assert(RC_FLAGS_COUNT == 3, // dmu
                   "fix decrementShouldDeallocate() if you add more flags");
-    uint32_t oldval = 0;
+    uint32_t oldval =  0 | expectedStateOfConcurrentlyAccessibleFlagWhenInAtomicVariant_dmu_();
     newval = RC_DEALLOCATING_FLAG;
     return __atomic_compare_exchange(&refCount, &oldval, &newval, 0,
                                      __ATOMIC_ACQUIRE, __ATOMIC_RELAXED);
