@@ -59,7 +59,8 @@ enum NonatomicBenchmarkOptions_dmu_ {
 
 
 
-template <NonatomicBenchmarkOptions_dmu_ nonatomicOption_dmu_> class StrongRefCount_t_dmu_ {
+template <NonatomicBenchmarkOptions_dmu_ nonatomicOption_dmu_>
+class StrongRefCount_t_dmu_ {
   uint32_t refCount;
 
   // The low bit is the pinned marker.
