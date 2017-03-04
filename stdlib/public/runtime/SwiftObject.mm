@@ -963,7 +963,7 @@ void swift::swift_unknownUnownedTakeAssign(UnownedReference *dest,
   dest->Value = src->Value;
 }
 
-void swift::swift_unknownUnownedVisitRefsInValue_dmu_(UnownedReference *ref) {
+void swift::swift_unknownUnownedBeSafeForConcurrentAccess_dmu_(UnownedReference *ref) {
   if (!ref->Value) {
     // Nothing to do.
     return;
@@ -972,6 +972,11 @@ void swift::swift_unknownUnownedVisitRefsInValue_dmu_(UnownedReference *ref) {
     swift_unownedBeSafeForConcurrentAccess_dmu_(ref);
   }
 }
+
+void swift::swift_unknownUnownedVisitRefsInValue_dmu_(UnownedReference *ref) {
+  swift_unknownUnownedBeSafeForConcurrentAccess_dmu_(ref);
+}
+
 
 /*****************************************************************************/
 /****************************** WEAK REFERENCES ******************************/
