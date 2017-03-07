@@ -4724,12 +4724,46 @@ void IRGenSILFunction::visitDestroyAddrInst(swift::DestroyAddrInst *i) {
 
 
 void IRGenSILFunction::visitVisitRefAtAddr_dmu_Inst(swift::VisitRefAtAddr_dmu_Inst *i) {
-  SILType addrTy = i->getOperand()->getType();
-  const TypeInfo &addrTI = getTypeInfo(addrTy);
+  SILType operandTy = i->getOperand()->getType();
+  const TypeInfo &operandTI = getTypeInfo(operandTy);
   
-  // Otherwise, do the normal thing.
-  Address base = getLoweredAddress(i->getOperand());
-  addrTI.visitRefsInValue_dmu_(*this, base, addrTy);
+  LoweredValue& lv = getLoweredValue(i->getOperand());
+  // TODO: (dmu) cleanup: move following into LoweredValue?
+  
+  switch (lv.kind) {
+    case LoweredValue::Kind::ContainedAddress: {
+      Address addr = lv.getAddressInContainer();
+      operandTI.visitRefsInValue_dmu_(*this, addr, operandTy);
+      return;
+}
+    case LoweredValue::Kind::Address: {
+      Address addr = lv.getAddress();
+      operandTI.visitRefsInValue_dmu_(*this, addr, operandTy);
+      return;
+    }
+    case LoweredValue::Kind::Explosion: {
+      if (!operandTI.isLoadable()) {
+        assert(false && "come back and fix this");
+        return; // TODO: (dmu) I think there's nothing to be done here, but come back and verify this
+      }
+      auto &loadableTI = cast<LoadableTypeInfo>(operandTI);
+      Explosion value = lv.getExplosion(*this);
+      loadableTI.visitRefsInValues_dmu_(*this, value);
+      return;
+    }
+
+    case LoweredValue::Kind::BoxWithAddress: {
+      // TODO: (dmu) check is this right?
+      Address addr = lv.getAddressOfBox();
+      operandTI.visitRefsInValue_dmu_(*this, addr, operandTy);
+      return;
+    }
+
+      
+    case LoweredValue::Kind::StaticFunction:
+    case LoweredValue::Kind::ObjCMethod:
+      return; // TODO: (dmu) I think there's nothing to be done here, but check
+  }
 }
 
 

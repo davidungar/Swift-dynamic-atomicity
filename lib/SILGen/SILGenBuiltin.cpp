@@ -627,6 +627,10 @@ static ManagedValue emitBuiltinReinterpretCast(SILGenFunction &gen,
   
   // If casting between address-only types, cast the address.
   if (!fromTL.isLoadable() || !toTL.isLoadable()) {
+    // Ensure that references use atomic reference-counting. -- (dmu)
+    // TODO: (dmu) too conservative?
+    gen.B.emitVisitRefAtAddr_dmu_(loc, args[0].getValue());
+
     SILValue fromAddr;
 
     // If the from value is loadable, move it to a buffer.
@@ -659,6 +663,9 @@ static ManagedValue emitBuiltinReinterpretCast(SILGenFunction &gen,
   auto &in = args[0];
   SILValue out = gen.B.createUncheckedBitCast(loc, in.getValue(),
                                               toTL.getLoweredType());
+
+  // Ensure that references use atomic reference-counting. -- (dmu)
+  gen.B.emitVisitRefAtAddr_dmu_(loc, in.getValue());
 
   // If the cast reduces to unchecked_ref_cast, then the source and dest
   // have identical cleanup, so just forward the cleanup as an optimization.
