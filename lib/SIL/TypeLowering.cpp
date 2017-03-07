@@ -541,6 +541,7 @@ namespace {
         B.createStore(loc, value, addr, StoreOwnershipQualifier::Trivial);
         return;
       }
+      B.createStoreBarrier_dmu_(loc, value, addr);
       B.createStore(loc, value, addr, StoreOwnershipQualifier::Unqualified);
     }
 
@@ -622,6 +623,8 @@ namespace {
       // 3. Release old value.
       SILValue old =
           B.createLoad(loc, addr, LoadOwnershipQualifier::Unqualified);
+      
+      B.createStoreBarrier_dmu_(loc, value, addr);
       B.createStore(loc, value, addr, StoreOwnershipQualifier::Unqualified);
       B.emitDestroyValueOperation(loc, old);
     }

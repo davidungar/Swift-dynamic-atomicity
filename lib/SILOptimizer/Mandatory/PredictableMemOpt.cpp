@@ -839,6 +839,7 @@ void AllocOptimize::explodeCopyAddr(CopyAddrInst *CAI) {
     case ValueKind::UnownedRetainInst:
     case ValueKind::UnownedReleaseInst:
     case ValueKind::VisitRefAtAddr_dmu_Inst: // TODO: (dmu) blind clone
+    case ValueKind::StoreBarrier_dmu_Inst: // TODO: (dmu) check blind clone
     case ValueKind::ReleaseValueInst:   // Destroy overwritten value
       // These are ignored.
       continue;
