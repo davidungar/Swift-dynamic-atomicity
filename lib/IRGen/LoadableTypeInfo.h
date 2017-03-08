@@ -104,7 +104,13 @@ public:
   /// TODO: (dmu cleanup) fix this comment:  Set bit in source (explosion)'s reference count if it now can be concurrently accessed after
   /// initializing or assigning it to dest (addr)
   /// TODO: (dmu cleanup) make node names differ from runtime emitter names? (ifDest... only so far)
+  
+  
+  // The original value must have been loadable, because it was loaded into the explosion.
+  // For each value, visit the refs in it.
   virtual void visitRefsInValues_dmu_(IRGenFunction &IGF, Explosion &explosion) const = 0; // dmu
+  
+  
   /// TODO: (dmu cleanup) fix this comment:  Set bit in source (explosion)'s reference count if it now can be concurrently accessed after
   /// initializing or assigning it to dest (addr)
   /// rename to storeBarrier?
