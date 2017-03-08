@@ -475,9 +475,8 @@ private:
   }
 
   template <void (LoadableTypeInfo::*Op)(IRGenFunction &IGF,
-                                         Explosion &in) const>
+                                         Explosion& in) const>
   void forAllFields_dmu_(IRGenFunction &IGF, Explosion &in) const {
-    auto offsets = asImpl().getNonFixedOffsets(IGF);
     for (auto &field : getFields()) {
       if (field.isEmpty()) continue;
       (cast<LoadableTypeInfo>(field.getTypeInfo()).*Op)(IGF, in);
@@ -509,24 +508,11 @@ public:
   }
 
       
-  void visitRefsInValues_dmu_(IRGenFunction &IGF, Explosion &e) const override { // dmu
-#if 1 // TODO: (dmu implement) structs in classes in structs
-    (void)e.claimAll();
-#else
-    // temporary stubbed out above to prevent too much claiming
-    // is dest the same for all, how does this work?
-    forAllFields_dmu_<&LoadableTypeInfo::makeSourceSafeForConcurrentAccess or visitRefsInValues_dmu_XXX>(IGF, e, dest, assumeDestIsConcurrentlyAccessed);
-#endif
-
+  void visitRefsInValues_dmu_(IRGenFunction &IGF, Explosion &myLoadedValues) const override {
+    forAllFields_dmu_<&LoadableTypeInfo::visitRefsInValues_dmu_>(IGF, myLoadedValues);
   }
   void checkHolderThenVisitHeldRefs_dmu_(IRGenFunction &IGF, Explosion &e, Address dest) const override {
-#if 1 // TODO: (dmu implement) structs in classes in structs
-    (void)e.claimAll();
-#else
-    /// temporary stubbed out above to prevent too much claiming
-    // is dest the same for all, how does this work?
-    forAllFields_dmu_<&LoadableTypeInfo::visitRefsInValues_dmu_>(IGF, e, dest, assumeDestIsConcurrentlyAccessed);
-#endif
+    forAllFields<&LoadableTypeInfo::checkHolderThenVisitHeldRefs_dmu_>(IGF, e, dest);
   }
 
 
