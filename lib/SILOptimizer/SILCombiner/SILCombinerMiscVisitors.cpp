@@ -380,6 +380,7 @@ SILInstruction *SILCombiner::visitAllocStackInst(AllocStackInst *AS) {
            isa<DestroyAddrInst>(Op->getUser()) ||
            isa<DeallocStackInst>(Op->getUser()) ||
            isa<DeinitExistentialAddrInst>(Op->getUser()) ||
+           isa<VisitRefAtAddr_dmu_Inst>(Op->getUser()) || // TODO: (dmu) check me; blind clone!
            isDebugInst(Op->getUser()) && "Unexpected instruction");
     ToDelete.insert(Op->getUser());
   }
