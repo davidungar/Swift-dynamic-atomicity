@@ -409,8 +409,8 @@ public:
   virtual void initialize(IRGenFunction &IGF, Explosion &e,
                           Address addr) const = 0;
   
-  virtual void visitRefsInValues_dmu_(IRGenFunction &IGF, Explosion &e) const = 0;
-  virtual void checkHolderThenVisitHeldRefs_dmu_(IRGenFunction &IGF, Explosion &e,
+  virtual void genIRToVisitRefsInInitialValues_dmu_(IRGenFunction &IGF, Explosion &e) const = 0;
+  virtual void genIRToVisitRefsInValuesAssignedTo_dmu_(IRGenFunction &IGF, Explosion &e,
                                                  Address dest) const = 0;
   
   virtual void reexplode(IRGenFunction &IGF, Explosion &src,

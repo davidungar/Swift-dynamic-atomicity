@@ -401,10 +401,10 @@ namespace {
     void initialize(IRGenFunction &IGF, Explosion &e,
                     Address addr) const override {}
 
-    void visitRefsInValues_dmu_(IRGenFunction &IGF, Explosion &e) const override {
+    void genIRToVisitRefsInInitialValues_dmu_(IRGenFunction &IGF, Explosion &e) const override {
       (void)e.claimAll(); // TODO: (dmu cleanup) should not be needed, should be empty
     }
-    void checkHolderThenVisitHeldRefs_dmu_(IRGenFunction &IGF, Explosion &e, Address dest) const override {
+    void genIRToVisitRefsInValuesAssignedTo_dmu_(IRGenFunction &IGF, Explosion &e, Address dest) const override {
       (void)e.claimAll(); // TODO: (dmu cleanup) should not be needed, should be empty
     }
 
@@ -531,10 +531,10 @@ namespace {
       IGF.Builder.CreateStore(explosion.claimNext(), addr);
     }
     
-    void visitRefsInValues_dmu_(IRGenFunction &IGF, Explosion &e) const override {
+    void genIRToVisitRefsInInitialValues_dmu_(IRGenFunction &IGF, Explosion &e) const override {
       (void)e.claimAll(); // TODO: (dmu implementOpaqueStorageTypeInfo)
     }
-    void checkHolderThenVisitHeldRefs_dmu_(IRGenFunction &IGF, Explosion &e, Address dest) const override {
+    void genIRToVisitRefsInValuesAssignedTo_dmu_(IRGenFunction &IGF, Explosion &e, Address dest) const override {
       (void)e.claimAll(); // TODO: (dmu implementOpaqueStorageTypeInfo)
     }
     

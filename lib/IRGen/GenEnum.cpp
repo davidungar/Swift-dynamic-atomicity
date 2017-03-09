@@ -475,13 +475,13 @@ namespace {
                                          getSingletonType(IGF.IGM, T));
     }
 
-    void visitRefsInValues_dmu_(IRGenFunction &IGF, Explosion &e) const override {
+    void genIRToVisitRefsInInitialValues_dmu_(IRGenFunction &IGF, Explosion &e) const override {
       if (!getSingleton()) return;
-      getLoadableSingleton()->visitRefsInValues_dmu_(IGF, e);
+      getLoadableSingleton()->genIRToVisitRefsInInitialValues_dmu_(IGF, e);
     }
-    void checkHolderThenVisitHeldRefs_dmu_(IRGenFunction &IGF, Explosion &e, Address dest) const override {
+    void genIRToVisitRefsInValuesAssignedTo_dmu_(IRGenFunction &IGF, Explosion &e, Address dest) const override {
       if (!getSingleton()) return;
-      getLoadableSingleton()->checkHolderThenVisitHeldRefs_dmu_(IGF, e, dest);
+      getLoadableSingleton()->genIRToVisitRefsInValuesAssignedTo_dmu_(IGF, e, dest);
     }
 
     void reexplode(IRGenFunction &IGF, Explosion &src, Explosion &dest)
@@ -1326,10 +1326,10 @@ namespace {
         IGF.Builder.CreateStore(e.claimNext(), projectExtraTagBits(IGF, addr));
     }
 
-    void visitRefsInValues_dmu_(IRGenFunction &IGF, Explosion &e) const override {
+    void genIRToVisitRefsInInitialValues_dmu_(IRGenFunction &IGF, Explosion &e) const override {
       (void)e.claimAll();  // TODO: (dmu implement enums)
     }
-    void checkHolderThenVisitHeldRefs_dmu_(IRGenFunction &IGF, Explosion &e, Address dest) const override {
+    void genIRToVisitRefsInValuesAssignedTo_dmu_(IRGenFunction &IGF, Explosion &e, Address dest) const override {
       (void)e.claimAll(); // TODO: (dmu implement enums)
     }
 
@@ -3048,7 +3048,7 @@ namespace {
         Explosion value;
         projectPayloadValue(IGF, parts.payload, tagIndex, lti, value);
         
-        lti.visitRefsInValues_dmu_(IGF, value);
+        lti.genIRToVisitRefsInInitialValues_dmu_(IGF, value);
       });
       
       IGF.Builder.CreateRetVoid();
@@ -5097,10 +5097,10 @@ namespace {
       llvm_unreachable("resilient enums are always indirect");
     }
 
-    void visitRefsInValues_dmu_(IRGenFunction &IGF, Explosion &e) const override {
+    void genIRToVisitRefsInInitialValues_dmu_(IRGenFunction &IGF, Explosion &e) const override {
       llvm_unreachable("resilient enums are always indirect");
     }
-    void checkHolderThenVisitHeldRefs_dmu_(IRGenFunction &IGF, Explosion &e, Address dest) const override {
+    void genIRToVisitRefsInValuesAssignedTo_dmu_(IRGenFunction &IGF, Explosion &e, Address dest) const override {
       llvm_unreachable("resilient enums are always indirect");
     }
 
@@ -5489,12 +5489,12 @@ namespace {
                     Address addr) const override {
       return Strategy.initialize(IGF, e, addr);
     }
-    void visitRefsInValues_dmu_(IRGenFunction &IGF, Explosion &e) const override {
-      return Strategy.visitRefsInValues_dmu_(IGF, e);
+    void genIRToVisitRefsInInitialValues_dmu_(IRGenFunction &IGF, Explosion &e) const override {
+      return Strategy.genIRToVisitRefsInInitialValues_dmu_(IGF, e);
     }
-    void checkHolderThenVisitHeldRefs_dmu_(IRGenFunction &IGF, Explosion &e,
+    void genIRToVisitRefsInValuesAssignedTo_dmu_(IRGenFunction &IGF, Explosion &e,
                                            Address dest) const override {
-      return Strategy.checkHolderThenVisitHeldRefs_dmu_(IGF, e, dest);
+      return Strategy.genIRToVisitRefsInValuesAssignedTo_dmu_(IGF, e, dest);
     }
     void reexplode(IRGenFunction &IGF, Explosion &src,
                    Explosion &dest) const override {

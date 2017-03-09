@@ -819,10 +819,10 @@ public:
   }
 
   // dmu
-  void visitRefsInValues_dmu_(IRGenFunction &IGF, Explosion &e) const override {
+  void genIRToVisitRefsInInitialValues_dmu_(IRGenFunction &IGF, Explosion &e) const override {
     (void)e.claimAll();  // TODO: (dmu implement existentials)
   }
-  void checkHolderThenVisitHeldRefs_dmu_(IRGenFunction &IGF, Explosion &e, Address dest) const override {
+  void genIRToVisitRefsInValuesAssignedTo_dmu_(IRGenFunction &IGF, Explosion &e, Address dest) const override {
     (void)e.claimAll(); // TODO: (dmu implement existentials)
   }
   

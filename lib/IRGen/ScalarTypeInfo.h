@@ -157,7 +157,7 @@ public:
     }
   }
 
-  void visitRefsInValues_dmu_(IRGenFunction &IGF, Explosion &src) const override { // dmu
+  void genIRToVisitRefsInInitialValues_dmu_(IRGenFunction &IGF, Explosion &src) const override { // dmu
     if (Derived::IsScalarPOD) {
       (void)src.claimAll();
       return;
@@ -165,7 +165,7 @@ public:
     asDerived().emitVisitRefInScalar_dmu_(IGF, src.claimNext());
   }
   
-  void checkHolderThenVisitHeldRefs_dmu_(IRGenFunction &IGF, Explosion &src, Address dest) const override {
+  void genIRToVisitRefsInValuesAssignedTo_dmu_(IRGenFunction &IGF, Explosion &src, Address dest) const override {
     if (Derived::IsScalarPOD) {
       (void)src.claimAll();
       return;
