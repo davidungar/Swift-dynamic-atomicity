@@ -476,10 +476,12 @@ namespace {
     }
 
     void visitRefsInValues_dmu_(IRGenFunction &IGF, Explosion &e) const override {
-      (void)e.claimAll(); // TODO: (dmu implement enums)
+      if (!getSingleton()) return;
+      getLoadableSingleton()->visitRefsInValues_dmu_(IGF, e);
     }
     void checkHolderThenVisitHeldRefs_dmu_(IRGenFunction &IGF, Explosion &e, Address dest) const override {
-      (void)e.claimAll(); // TODO: (dmu implement enums)
+      if (!getSingleton()) return;
+      getLoadableSingleton()->checkHolderThenVisitHeldRefs_dmu_(IGF, e, dest);
     }
 
     void reexplode(IRGenFunction &IGF, Explosion &src, Explosion &dest)
