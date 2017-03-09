@@ -74,8 +74,8 @@ static llvm::Type *createWitnessType(IRGenModule &IGM, ValueWitness index) {
       ->getPointerTo();
   }
       
-  // void (*visitRefsInValue_dmu_)(T *object, witness_t *self);
-  case ValueWitness::VisitRefsInValue_dmu_: {
+  // void (*visitRefs_dmu_)(T *object, witness_t *self);
+  case ValueWitness::VisitRefs_dmu_: {
     llvm::Type *args[] = { IGM.OpaquePtrTy, IGM.TypeMetadataPtrTy };
     return llvm::FunctionType::get(IGM.VoidTy, args, /*isVarArg*/ false)
     ->getPointerTo();
@@ -287,8 +287,8 @@ static StringRef getValueWitnessLabel(ValueWitness index) {
     return "destructiveProjectEnumData";
   case ValueWitness::DestructiveInjectEnumTag:
     return "destructiveInjectEnumTag";
-  case ValueWitness::VisitRefsInValue_dmu_:
-    return "visitRefsInValue_dmu_";
+  case ValueWitness::VisitRefs_dmu_:
+    return "visitRefs_dmu_";
   case ValueWitness::VisitRefsInBuffer_dmu_:
     return "visitRefsInBuffer_dmu_";
   case ValueWitness::VisitRefsInArray_dmu_:
@@ -700,13 +700,13 @@ void irgen::emitDestroyCall(IRGenFunction &IGF,
   setHelperAttributes(call);
 }
 
-/// Emit a call to do a 'visitRefsInValue_dmu_' operation.
-void irgen::emitVisitRefsInValueCall_dmu_(IRGenFunction &IGF,
+/// Emit a call to do a 'visitRefs_dmu_' operation.
+void irgen::emitVisitRefsCall_dmu_(IRGenFunction &IGF,
                             SILType T,
                             Address object) {
   auto metadata = IGF.emitTypeMetadataRefForLayout(T);
   llvm::Value *fn = IGF.emitValueWitnessForLayout(T,
-                                                  ValueWitness::VisitRefsInValue_dmu_);
+                                                  ValueWitness::VisitRefs_dmu_);
   llvm::CallInst *call =
   IGF.Builder.CreateCall(fn, {object.getAddress(), metadata});
   call->setCallingConv(IGF.IGM.DefaultCC);

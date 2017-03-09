@@ -560,7 +560,7 @@ namespace {
     }
 
     void visitRefsInValue_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
-      IGF.emitNativeWeakVisitRefInValue_dmu_(addr);
+      IGF.emitNativeWeakVisitRef_dmu_(addr);
     }
 
     llvm::Type *getOptionalIntType() const {
@@ -721,7 +721,7 @@ namespace {
     }
 
     void visitRefsInValue_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
-      IGF.emitUnknownUnownedVisitRefInValue_dmu_(addr);
+      IGF.emitUnknownUnownedVisitRef_dmu_(addr);
     }
 
     // Unowned types have the same extra inhabitants as normal pointers.
@@ -796,7 +796,7 @@ namespace {
     }
                                 
     void visitRefsInValue_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
-      IGF.emitUnknownWeakVisitRefInValue_dmu_(addr);
+      IGF.emitUnknownWeakVisitRef_dmu_(addr);
     }
                                 
     llvm::Type *getOptionalIntType() const {
@@ -1217,7 +1217,7 @@ DEFINE_BINARY_OPERATION(WeakAssign, void, llvm::Value *, Address)
 DEFINE_BINARY_OPERATION(WeakLoadStrong, llvm::Value *, Address, llvm::Type *)
 DEFINE_BINARY_OPERATION(WeakTakeStrong, llvm::Value *, Address, llvm::Type *)
 DEFINE_UNARY_OPERATION(WeakDestroy, void, Address)
-DEFINE_UNARY_OPERATION(WeakVisitRefInValue_dmu_, void, Address)
+DEFINE_UNARY_OPERATION(WeakVisitRef_dmu_, void, Address)
 
 DEFINE_BINARY_OPERATION(UnownedCopyInit, void, Address, Address)
 DEFINE_BINARY_OPERATION(UnownedTakeInit, void, Address, Address)
@@ -1228,7 +1228,7 @@ DEFINE_BINARY_OPERATION(UnownedAssign, void, llvm::Value *, Address)
 DEFINE_BINARY_OPERATION(UnownedLoadStrong, llvm::Value *, Address, llvm::Type *)
 DEFINE_BINARY_OPERATION(UnownedTakeStrong, llvm::Value *, Address, llvm::Type *)
 DEFINE_UNARY_OPERATION(UnownedDestroy, void, Address)
-DEFINE_UNARY_OPERATION(UnownedVisitRefInValue_dmu_, void, Address)
+DEFINE_UNARY_OPERATION(UnownedVisitRef_dmu_, void, Address)
 
 #undef DEFINE_UNARY_OPERATION
 #undef DEFINE_BINARY_OPERATION
@@ -1361,7 +1361,7 @@ void IRGenFunction::emitNativeUnownedDestroy(Address ref) {
 }
 
 
-void IRGenFunction::emitNativeUnownedVisitRefInValue_dmu_(Address ref) {
+void IRGenFunction::emitNativeUnownedVisitRef_dmu_(Address ref) {
   ref = Builder.CreateStructGEP(ref, 0, Size(0));
   llvm::Value *value = Builder.CreateLoad(ref);
   emitNativeVisitRefInScalar_dmu_(value);
@@ -1858,7 +1858,7 @@ DEFINE_STORE_WEAK_OP(NativeWeakInit)
 DEFINE_STORE_WEAK_OP(NativeWeakAssign)
 DEFINE_ADDR_OP(NativeWeakDestroy)
 
-void IRGenFunction::emitNativeWeakVisitRefInValue_dmu_(Address addr) {
+void IRGenFunction::emitNativeWeakVisitRef_dmu_(Address addr) {
   emitNativeWeakBeSafeForConcurrentAccess_dmu_(addr);// level shift
 }
 DEFINE_ADDR_OP(NativeWeakBeSafeForConcurrentAccess_dmu_)
@@ -1873,7 +1873,7 @@ DEFINE_LOAD_WEAK_OP(UnknownUnownedTakeStrong)
 DEFINE_STORE_WEAK_OP(UnknownUnownedInit)
 DEFINE_STORE_WEAK_OP(UnknownUnownedAssign)
 DEFINE_ADDR_OP(UnknownUnownedDestroy)
-void IRGenFunction::emitUnknownUnownedVisitRefInValue_dmu_(Address addr) {
+void IRGenFunction::emitUnknownUnownedVisitRef_dmu_(Address addr) {
   emitUnknownUnownedBeSafeForConcurrentAccess_dmu_(addr); // dmu level-shift
 }
 DEFINE_ADDR_OP(UnknownUnownedBeSafeForConcurrentAccess_dmu_)
@@ -1887,7 +1887,7 @@ DEFINE_LOAD_WEAK_OP(UnknownWeakTakeStrong)
 DEFINE_STORE_WEAK_OP(UnknownWeakInit)
 DEFINE_STORE_WEAK_OP(UnknownWeakAssign)
 DEFINE_ADDR_OP(UnknownWeakDestroy)
-void IRGenFunction::emitUnknownWeakVisitRefInValue_dmu_(Address addr) {
+void IRGenFunction::emitUnknownWeakVisitRef_dmu_(Address addr) {
   emitUnknownWeakBeSafeForConcurrentAccess_dmu_(addr);// level shift
 }
 DEFINE_ADDR_OP(UnknownWeakBeSafeForConcurrentAccess_dmu_)

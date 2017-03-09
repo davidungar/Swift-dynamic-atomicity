@@ -859,7 +859,7 @@ void swift::swift_weakTakeAssign(WeakReference *dest, WeakReference *src) {
   swift_weakTakeInit(dest, src);
 }
 
-void swift::swift_weakVisitRefsInValue_dmu_(WeakReference *ref) {
+void swift::swift_weakVisitRefs_dmu_(WeakReference *ref) {
   auto tmp = (HeapObject*) (ref->Value & ~WR_NATIVE);
   SWIFT_RT_ENTRY_CALL(swift_beSafeForConcurrentAccess_dmu_)(tmp); // TODO: (dmu) level shift
 }

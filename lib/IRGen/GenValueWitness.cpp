@@ -73,7 +73,7 @@ const char *irgen::getValueWitnessName(ValueWitness witness) {
   CASE(Flags)
   CASE(Stride)
   CASE(ExtraInhabitantFlags)
-  CASE(VisitRefsInValue_dmu_)
+  CASE(VisitRefs_dmu_)
   CASE(VisitRefsInBuffer_dmu_)
   CASE(VisitRefsInArray_dmu_)
 #undef CASE
@@ -649,7 +649,7 @@ static void buildValueWitnessFunction(IRGenModule &IGM,
     return;
   }
       
-  case ValueWitness::VisitRefsInValue_dmu_: {
+  case ValueWitness::VisitRefs_dmu_: {
     Address object = getArgAs(IGF, argv, type, "object");
     getArgAsLocalSelfTypeMetadata(IGF, argv, abstractType);
     type.visitRefsInValue_dmu_(IGF, object, concreteType);
@@ -1046,7 +1046,7 @@ static llvm::Constant *getDestroyStrongFunction(IRGenModule &IGM) {
 /// Return a function which takes two pointer arguments, loads a
 /// pointer from the first, and calls what!? general or specific?? on it immediately.
 /// TODO: (dmu) generializing, level shifts here
-static llvm::Constant *getVisitRefsInValue_dmu_Function(IRGenModule &IGM) {
+static llvm::Constant *getVisitRefs_dmu_Function(IRGenModule &IGM) {
   llvm::Type *argTys[] = { IGM.Int8PtrPtrTy, IGM.WitnessTablePtrTy };
   return IGM.getOrCreateHelperFunction("emitVisitNativeRefInScalar_dmu_",
                                        IGM.VoidTy, argTys,
@@ -1212,11 +1212,11 @@ static llvm::Constant *getValueWitness(IRGenModule &IGM,
     }
     goto standard;
 
-  case ValueWitness::VisitRefsInValue_dmu_:
+  case ValueWitness::VisitRefs_dmu_:
     if (concreteTI.isPOD(ResilienceExpansion::Maximal)) {
       return asOpaquePtr(IGM, getNoOpVoidFunction(IGM));
     } else if (concreteTI.isSingleSwiftRetainablePointer(ResilienceExpansion::Maximal)) {
-      return asOpaquePtr(IGM, getVisitRefsInValue_dmu_Function(IGM));
+      return asOpaquePtr(IGM, getVisitRefs_dmu_Function(IGM));
     }
     goto standard;
       
@@ -1226,7 +1226,7 @@ static llvm::Constant *getValueWitness(IRGenModule &IGM,
         return asOpaquePtr(IGM, getNoOpVoidFunction(IGM));
     } else if (concreteTI.isSingleSwiftRetainablePointer(ResilienceExpansion::Maximal)) {
       assert(isNeverAllocated(packing));
-      return asOpaquePtr(IGM, getVisitRefsInValue_dmu_Function(IGM)); // dmu blind clone
+      return asOpaquePtr(IGM, getVisitRefs_dmu_Function(IGM)); // dmu blind clone
     }
     goto standard;
     

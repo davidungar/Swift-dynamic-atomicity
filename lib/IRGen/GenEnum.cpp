@@ -5009,7 +5009,7 @@ namespace {
     }
 
     void visitRefsInValue_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
-      emitVisitRefsInValueCall_dmu_(IGF, T, addr);
+      emitVisitRefsCall_dmu_(IGF, T, addr);
     }
 
     void getSchema(ExplosionSchema &schema) const override {

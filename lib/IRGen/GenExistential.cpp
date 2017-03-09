@@ -445,7 +445,7 @@ public:
 
   void visitRefsInValue_dmu_(IRGenFunction &IGF, Address existential, SILType T) const override {
     Address valueAddr = projectValue(IGF, existential);
-    asDerived().emitValueVisitRefInValue_dmu_(IGF, valueAddr);
+    asDerived().emitValueVisitRef_dmu_(IGF, valueAddr);
   }
 
 
@@ -526,8 +526,8 @@ public:
     IGF.emitWeakDestroy(addr, Refcounting);
   }
 
-  void emitValueVisitRefInValue_dmu_(IRGenFunction &IGF, Address addr) const {
-    IGF.emitWeakVisitRefInValue_dmu_(addr, Refcounting);
+  void emitValueVisitRef_dmu_(IRGenFunction &IGF, Address addr) const {
+    IGF.emitWeakVisitRef_dmu_(addr, Refcounting);
   }
 
   // These explosions must follow the same schema as
@@ -620,8 +620,8 @@ public:
     IGF.emitUnownedDestroy(addr, Refcounting);
   }
 
-  void emitValueVisitRefInValue_dmu_(IRGenFunction &IGF, Address addr) const {
-    IGF.emitUnownedVisitRefInValue_dmu_(addr, Refcounting);
+  void emitValueVisitRef_dmu_(IRGenFunction &IGF, Address addr) const {
+    IGF.emitUnownedVisitRef_dmu_(addr, Refcounting);
   }
 
 

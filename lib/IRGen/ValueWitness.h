@@ -190,7 +190,7 @@ enum class ValueWitness : unsigned {
   InitializeArrayWithTakeBackToFront,
   
   ///  TODO: (dmu) comment me
-  VisitRefsInValue_dmu_,
+  VisitRefs_dmu_,
   
   ///  TODO: (dmu) comment me
   VisitRefsInBuffer_dmu_,

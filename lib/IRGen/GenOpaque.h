@@ -152,8 +152,8 @@ namespace irgen {
                        SILType T,
                        Address object);
   
-  /// Emit a call to do a 'visitRefsInValue_dmu_' operation.
-  void emitVisitRefsInValueCall_dmu_(IRGenFunction &IGF,
+  /// Emit a call to do a 'VisitRefs_dmu_' operation.
+  void emitVisitRefsCall_dmu_(IRGenFunction &IGF,
                                                    SILType T,
                                                    Address object);
 

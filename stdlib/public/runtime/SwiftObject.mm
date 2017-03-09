@@ -973,7 +973,7 @@ void swift::swift_unknownUnownedBeSafeForConcurrentAccess_dmu_(UnownedReference 
   }
 }
 
-void swift::swift_unknownUnownedVisitRefsInValue_dmu_(UnownedReference *ref) {
+void swift::swift_unknownUnownedVisitRefs_dmu_(UnownedReference *ref) {
   swift_unknownUnownedBeSafeForConcurrentAccess_dmu_(ref);
 }
 

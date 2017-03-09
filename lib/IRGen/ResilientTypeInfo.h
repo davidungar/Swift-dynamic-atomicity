@@ -142,7 +142,7 @@ public:
   }
 
   void visitRefsInValue_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
-    emitVisitRefsInValueCall_dmu_(IGF, T, addr);
+    emitVisitRefsCall_dmu_(IGF, T, addr);
   }
   
   void visitRefsInBuffer_dmu_(IRGenFunction &IGF, Address buffer, SILType T) const override {

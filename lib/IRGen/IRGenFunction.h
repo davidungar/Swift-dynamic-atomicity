@@ -273,7 +273,7 @@ public:
                                      ReferenceCounting style);
   void emitUnownedDestroy(Address addr, ReferenceCounting style);
   void emitUnownedVisitRefInScalar_dmu_(llvm::Value *value, ReferenceCounting style);
-  void emitUnownedVisitRefInValue_dmu_(Address addr, ReferenceCounting style);
+  void emitUnownedVisitRef_dmu_(Address addr, ReferenceCounting style);
   llvm::Value *getUnownedExtraInhabitantIndex(Address src,
                                               ReferenceCounting style);
   void storeUnownedExtraInhabitant(llvm::Value *index, Address dest,
@@ -296,7 +296,7 @@ public:
                                   ReferenceCounting style);
   void emitWeakDestroy(Address addr, ReferenceCounting style);
   
-  void emitWeakVisitRefInValue_dmu_(Address addr, ReferenceCounting style);
+  void emitWeakVisitRef_dmu_(Address addr, ReferenceCounting style);
 
   // Routines for the Swift native reference-counting style.
   //   - strong references
@@ -326,7 +326,7 @@ public:
   llvm::Value *emitNativeUnownedLoadStrong(Address src, llvm::Type *resultType);
   llvm::Value *emitNativeUnownedTakeStrong(Address src, llvm::Type *resultType);
   void emitNativeUnownedDestroy(Address addr);
-  void emitNativeUnownedVisitRefInValue_dmu_(Address addr);
+  void emitNativeUnownedVisitRef_dmu_(Address addr);
   void emitNativeUnownedVisitRefInScalar_dmu_(llvm::Value *value);
 
   //   - weak references
@@ -335,7 +335,7 @@ public:
   llvm::Value *emitNativeWeakLoadStrong(Address src, llvm::Type *type);
   llvm::Value *emitNativeWeakTakeStrong(Address src, llvm::Type *type);
   void emitNativeWeakDestroy(Address addr);
-  void emitNativeWeakVisitRefInValue_dmu_(Address addr);
+  void emitNativeWeakVisitRef_dmu_(Address addr);
   void emitNativeWeakBeSafeForConcurrentAccess_dmu_(Address addr);
   void emitBeSafeForConcurrentAccess_dmu_(Address addr);
   void emitNativeWeakCopyInit(Address destAddr, Address srcAddr);
@@ -372,12 +372,12 @@ public:
   llvm::Value *emitUnknownUnownedLoadStrong(Address src, llvm::Type *resultTy);
   llvm::Value *emitUnknownUnownedTakeStrong(Address src, llvm::Type *resultTy);
   void emitUnknownUnownedDestroy(Address addr);
-  void emitUnknownUnownedVisitRefInValue_dmu_(Address addr);
+  void emitUnknownUnownedVisitRef_dmu_(Address addr);
   void emitUnknownUnownedBeSafeForConcurrentAccess_dmu_(Address addr);
   
   //   - weak references
   void emitUnknownWeakDestroy(Address addr);
-  void emitUnknownWeakVisitRefInValue_dmu_(Address addr);
+  void emitUnknownWeakVisitRef_dmu_(Address addr);
   void emitUnknownWeakBeSafeForConcurrentAccess_dmu_(Address addr);
   void emitUnknownWeakCopyInit(Address destAddr, Address srcAddr);
   void emitUnknownWeakTakeInit(Address destAddr, Address srcAddr);
