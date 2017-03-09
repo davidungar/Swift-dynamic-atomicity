@@ -159,7 +159,7 @@ public:
 
   void genIRToVisitRefsInInitialValues_dmu_(IRGenFunction &IGF, Explosion &src) const override { // dmu
     if (Derived::IsScalarPOD) {
-      (void)src.claimAll();
+      (void)src.claimNext();
       return;
     }
     asDerived().emitVisitRefInScalar_dmu_(IGF, src.claimNext());
@@ -167,7 +167,7 @@ public:
   
   void genIRToVisitRefsInValuesAssignedTo_dmu_(IRGenFunction &IGF, Explosion &src, Address dest) const override {
     if (Derived::IsScalarPOD) {
-      (void)src.claimAll();
+      (void)src.claimNext();
       return;
     }
 // TODO: (dmu check) is the getAddress right???
