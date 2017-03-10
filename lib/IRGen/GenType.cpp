@@ -532,10 +532,10 @@ namespace {
     }
     
     void genIRToVisitRefsInInitialValues_dmu_(IRGenFunction &IGF, Explosion &e) const override {
-      (void)e.claimAll(); // TODO: (dmu implementOpaqueStorageTypeInfo)
+      (void)e.claimNext();
     }
     void genIRToVisitRefsInValuesAssignedTo_dmu_(IRGenFunction &IGF, Explosion &e, Address dest) const override {
-      (void)e.claimAll(); // TODO: (dmu implementOpaqueStorageTypeInfo)
+      (void)e.claimNext();
     }
     
     void reexplode(IRGenFunction &IGF, Explosion &sourceExplosion,
