@@ -636,7 +636,7 @@ public:
 
   static void destroy(char *addr) {}
   
-  static void VisitRefs_dmu_(char* addr) {}
+  static void VisitRefs_dmu_(char* addr) {}   // TODO: (dmu) implement
 };
 
 // Recursive case: add an element to the start.
@@ -782,7 +782,7 @@ struct AggregateBox {
     }
     return r;
   }
-  // TODO: (dmu) implement
+
   static void VisitRefs_dmu_(char* value) {
     if (isPOD)
       return;
