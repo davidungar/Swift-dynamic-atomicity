@@ -295,10 +295,13 @@ namespace {
     }
 
      void genIRToVisitRefsInInitialValues_dmu_(IRGenFunction &IGF, Explosion &e) const override {
-       (void)e.claimAll(); // TODO: (dmu implement funcs)
+       auto context = e.claimNext();
+       //Address dataAddr = projectData(IGF, address);
+       if (!isPOD(ResilienceExpansion::Maximal))
+         ; // TODO: (dmu implement funcs) IGF.xxx(context, dataAddr);
      }
      void genIRToVisitRefsInValuesAssignedTo_dmu_(IRGenFunction &IGF, Explosion &e, Address dest) const override {
-       (void)e.claimAll(); // TODO: (dmu implement funcs)
+       (void)e.claimNext(); // TODO: (dmu implement funcs)
      }
 
     void copy(IRGenFunction &IGF, Explosion &src,
