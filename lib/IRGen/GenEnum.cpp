@@ -1327,10 +1327,18 @@ namespace {
     }
 
     void genIRToVisitRefsInInitialValues_dmu_(IRGenFunction &IGF, Explosion &e) const override {
-      (void)e.claimAll();  // TODO: (dmu implement enums)
+      assert(TIK >= Loadable);
+      auto payload = EnumPayload::fromExplosion(IGF.IGM, e, PayloadSchema);
+#error dmu really need to implement these
+      if (ExtraTagBitCount > 0)
+        e.claimNext();
     }
     void genIRToVisitRefsInValuesAssignedTo_dmu_(IRGenFunction &IGF, Explosion &e, Address dest) const override {
-      (void)e.claimAll(); // TODO: (dmu implement enums)
+      assert(TIK >= Loadable);
+      auto payload = EnumPayload::fromExplosion(IGF.IGM, e, PayloadSchema);
+#error dmu really need to implement these
+      if (ExtraTagBitCount > 0)
+        e.claimNext();
     }
 
     void reexplode(IRGenFunction &IGF, Explosion &src, Explosion &dest)
