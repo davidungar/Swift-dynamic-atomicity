@@ -973,6 +973,17 @@ void swift::swift_unknownUnownedBeSafeForConcurrentAccess_dmu_(UnownedReference 
   }
 }
 
+void swift::swift_unknownUnownedIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(UnownedReference *dst, UnownedReference *src) {
+  if (!dst->Value || !src->Value)
+    return;
+  if (dyn_cast<ObjCUnownedReference>(src) == nullptr)
+    return; // Nothing to do
+  if (auto dstRef = dyn_cast<ObjCUnownedReference>(dst))
+    swift_beSafeForConcurrentAccess_dmu_(src->Value);
+  else
+    swift_ifDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(dst->Value, src->Value);
+}
+
 void swift::swift_unknownUnownedVisitRefs_dmu_(UnownedReference *ref) {
   swift_unknownUnownedBeSafeForConcurrentAccess_dmu_(ref);
 }

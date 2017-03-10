@@ -391,6 +391,13 @@ FUNCTION(NativeUnownedBeSafeForConcurrentAccess_dmu_, swift_unownedBeSafeForConc
          ARGS(RefCountedPtrTy),
          ATTRS(NoUnwind))
 
+
+// void swift_unownedBeSafeForConcurrentAccess_dmu_(void *ptr);
+FUNCTION(NativeUnownedIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_, swift_unownedIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_, RegisterPreservingCC,
+         RETURNS(VoidTy),
+         ARGS(RefCountedPtrTy, RefCountedPtrTy),
+         ATTRS(NoUnwind))
+
 // void swift_unownedRetain_n(void *ptr, int32_t n);
 FUNCTION(UnownedRetainN, swift_unownedRetain_n,
          RegisterPreservingCC,

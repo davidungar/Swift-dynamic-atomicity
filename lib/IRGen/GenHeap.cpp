@@ -1254,6 +1254,14 @@ void IRGenFunction::emitUnownedVisitRefInScalar_dmu_(llvm::Value *value,
   emitNativeUnownedVisitRefInScalar_dmu_(value);
 }
 
+void IRGenFunction::emitUnownedCheckHolderThenVisitHeldRefInScalar_dmu_(llvm::Value *dst,
+                                                                 llvm::Value* src,
+                                                                 ReferenceCounting style) {
+  assert(style == ReferenceCounting::Native &&
+         "only native references support scalar unowned reference-counting");
+  emitNativeUnownedCheckHolderThenVisitHeldRefInScalar_dmu_(dst, src);
+}
+
 void IRGenFunction::emitStrongRetainUnowned(llvm::Value *value,
                                             ReferenceCounting style) {
   assert(style == ReferenceCounting::Native &&
@@ -1300,6 +1308,10 @@ void IRGenFunction::emitNativeUnownedVisitRefInScalar_dmu_(llvm::Value *objToSet
   emitNativeUnownedBeSafeForConcurrentAccess_dmu_(objToSet); // dmu level-shift
 }
 
+
+void IRGenFunction::emitNativeUnownedCheckHolderThenVisitHeldRefInScalar_dmu_(llvm::Value *dst, llvm::Value *src) {
+  emitNativeUnownedIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(dst, src); // dmu level-shift
+}
 
 
 void IRGenFunction::emitNativeCheckHolderThenVisitHeldRefs_dmu_(llvm::Value *objToCheck, llvm::Value *objToSet) {
@@ -1852,6 +1864,9 @@ DEFINE_VALUE_OP(NativeStrongRetainAndUnownedRelease)
 DEFINE_VALUE_OP(NativeUnownedRelease)
 DEFINE_VALUE_OP(NativeUnownedRetain)
 DEFINE_VALUE_OP(NativeUnownedBeSafeForConcurrentAccess_dmu_)
+void IRGenFunction::emitNativeUnownedIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(llvm::Value *dst, llvm::Value *src) {
+  emitBinaryRefCountCall_dmu_(*this, IGM.getNativeUnownedIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_Fn(), dst, src);
+}
 DEFINE_LOAD_WEAK_OP(NativeWeakLoadStrong)
 DEFINE_LOAD_WEAK_OP(NativeWeakTakeStrong)
 DEFINE_STORE_WEAK_OP(NativeWeakInit)

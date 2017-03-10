@@ -396,6 +396,11 @@ SWIFT_CC(RegisterPreservingCC_IMPL) {
   SWIFT_RT_ENTRY_CALL(swift_beSafeForConcurrentAccess_dmu_(object));
 }
 
+void swift::swift_unownedIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(HeapObject *dst, HeapObject *src)
+SWIFT_CC(RegisterPreservingCC_IMPL) {
+  SWIFT_RT_ENTRY_CALL(swift_ifDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(dst, src));
+}
+
 void swift::swift_unownedRelease_n(HeapObject *object, int n)
     SWIFT_CC(RegisterPreservingCC_IMPL) {
   if (!object)

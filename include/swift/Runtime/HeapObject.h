@@ -547,7 +547,12 @@ SWIFT_RT_ENTRY_VISIBILITY
 void swift_unownedBeSafeForConcurrentAccess_dmu_(HeapObject *value)
   SWIFT_CC(RegisterPreservingCC);
   
-
+  
+/// TODO: (dmu) comment
+SWIFT_RT_ENTRY_VISIBILITY
+void swift_unownedIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(HeapObject *dst, HeapObject *src)(HeapObject *value)
+SWIFT_CC(RegisterPreservingCC);
+  
 
 /// Increment the weak/unowned retain count by n.
 SWIFT_RT_ENTRY_VISIBILITY
@@ -638,9 +643,14 @@ static inline void swift_unownedTakeAssign(UnownedReference *dest,
   swift_unownedRelease(oldValue);
 }
   
-  static inline void swift_unownedBeSafeForConcurrentAccess_dmu_(UnownedReference *ref) {
+static inline void swift_unownedBeSafeForConcurrentAccess_dmu_(UnownedReference *ref) {
   swift_beSafeForConcurrentAccess_dmu_(ref->Value);
 }
+  
+static inline void swift_unownedIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(UnownedReference *dst, UnownedReference *src) {
+  swift_ifDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(dst->Value, src->Value);
+}
+
 
 /*****************************************************************************/
 /****************************** WEAK REFERENCES ******************************/
@@ -1153,6 +1163,21 @@ static inline void swift_unknownUnownedBeSafeForConcurrentAccess_dmu_(UnownedRef
 }
 
 #endif /* SWIFT_OBJC_INTEROP */
+  
+#if SWIFT_OBJC_INTEROP
+  
+  /// TODO: (dmu) comment
+  SWIFT_RUNTIME_EXPORT
+  void swift_unknownUnownedIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(UnownedReference *dst, UnownedReference *src);
+  
+#else
+  
+  static inline void swift_unknownUnownedIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(UnownedReference *dst, UnownedReference *src) {
+    swift_unownedIfDestIsSafeForConcurrentAccessMakeSrcSafe(dst, src);
+  }
+  
+#endif /* SWIFT_OBJC_INTEROP */
+
 
   
 #if SWIFT_OBJC_INTEROP
@@ -1237,6 +1262,23 @@ static inline void swift_unknownUnownedTakeAssign(UnownedReference *dest,
   }
   
 #endif /* SWIFT_OBJC_INTEROP */
+  
+  
+  
+#if SWIFT_OBJC_INTEROP
+  
+  /// TODO: (dmu) explain
+  SWIFT_RUNTIME_EXPORT
+  void swift_unknownUnownedCheckHolderThenVisitHeldRefs_dmu_(UnownedReference *ref);
+  
+#else
+  
+  static inline void swift_unknownUnownedCheckHolderThenVisitHeldRefs_dmu_(UnownedReference *dst, UnownedReference *src) {
+    swift_unownedIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(HeapObject *dst, HeapObject *src);
+  }
+  
+#endif /* SWIFT_OBJC_INTEROP */
+
 
 /// Return the name of a Swift type represented by a metadata object.
 SWIFT_CC(swift) SWIFT_RUNTIME_EXPORT

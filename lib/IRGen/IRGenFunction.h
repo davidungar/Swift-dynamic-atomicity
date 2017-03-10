@@ -273,6 +273,9 @@ public:
                                      ReferenceCounting style);
   void emitUnownedDestroy(Address addr, ReferenceCounting style);
   void emitUnownedVisitRefInScalar_dmu_(llvm::Value *value, ReferenceCounting style);
+  void emitUnownedCheckHolderThenVisitHeldRefInScalar_dmu_(llvm::Value *dst,
+                                                           llvm::Value* src,
+                                                           ReferenceCounting style);
   void emitUnownedVisitRef_dmu_(Address addr, ReferenceCounting style);
   llvm::Value *getUnownedExtraInhabitantIndex(Address src,
                                               ReferenceCounting style);
@@ -315,6 +318,7 @@ public:
   void emitNativeUnownedRetain(llvm::Value *value);
   void emitNativeUnownedRelease(llvm::Value *value);
   void emitNativeUnownedBeSafeForConcurrentAccess_dmu_(llvm::Value *value);
+  void emitNativeUnownedIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(llvm::Value *dst, llvm::Value *src);
   void emitNativeStrongRetainUnowned(llvm::Value *value);
   void emitNativeStrongRetainAndUnownedRelease(llvm::Value *value);
   void emitNativeUnownedInit(llvm::Value *val, Address dest);
@@ -328,6 +332,7 @@ public:
   void emitNativeUnownedDestroy(Address addr);
   void emitNativeUnownedVisitRef_dmu_(Address addr);
   void emitNativeUnownedVisitRefInScalar_dmu_(llvm::Value *value);
+  void emitNativeUnownedCheckHolderThenVisitHeldRefInScalar_dmu_(llvm::Value *dst, llvm::Value *src);
 
   //   - weak references
   void emitNativeWeakInit(llvm::Value *value, Address dest);
