@@ -268,8 +268,8 @@ static llvm::Constant *createVisitorOfRefsInHeapObj_dmu_Fn(IRGenModule &IGM,
     auto fieldTy = layout.getElementTypes()[i];
     if (field.isPOD())
       continue;
-    // dmu entry into visitRefsInValue_dmu_ urgent rename
-    field.getType().visitRefsInValue_dmu_(IGF,
+    // dmu entry into visitRefs_dmu_ urgent rename
+    field.getType().visitRefs_dmu_(IGF,
                                                                     field.project(IGF, structAddr, offsets),
                                                                     fieldTy);
     }
@@ -559,7 +559,7 @@ namespace {
       IGF.emitNativeWeakDestroy(addr);
     }
 
-    void visitRefsInValue_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
+    void visitRefs_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
       IGF.emitNativeWeakVisitRef_dmu_(addr);
     }
 
@@ -720,7 +720,7 @@ namespace {
       IGF.emitUnknownUnownedDestroy(addr);
     }
 
-    void visitRefsInValue_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
+    void visitRefs_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
       IGF.emitUnknownUnownedVisitRef_dmu_(addr);
     }
 
@@ -795,7 +795,7 @@ namespace {
       IGF.emitUnknownWeakDestroy(addr);
     }
                                 
-    void visitRefsInValue_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
+    void visitRefs_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
       IGF.emitUnknownWeakVisitRef_dmu_(addr);
     }
                                 

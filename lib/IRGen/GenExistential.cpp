@@ -361,7 +361,7 @@ public:
     emitDestroyExistential(IGF, addr, getLayout());
   }
                
-  void visitRefsInValue_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
+  void visitRefs_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
     emitVisitRefsInExistentialValue_dmu_(IGF, addr, getLayout());
   }
 
@@ -443,7 +443,7 @@ public:
     asDerived().emitValueDestroy(IGF, valueAddr);
   }
 
-  void visitRefsInValue_dmu_(IRGenFunction &IGF, Address existential, SILType T) const override {
+  void visitRefs_dmu_(IRGenFunction &IGF, Address existential, SILType T) const override {
     Address valueAddr = projectValue(IGF, existential);
     asDerived().emitValueVisitRef_dmu_(IGF, valueAddr);
   }
@@ -864,7 +864,7 @@ public:
     asDerived().emitValueRelease(IGF, value, Atomicity::Atomic);
   }
 // TODO: dmu (cleanup) identical to genIRToVisitRefsInInitialValues_dmu_ -- merge?
-  void visitRefsInValue_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
+  void visitRefs_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
     llvm::Value *value = asDerived().loadValue(IGF, addr);
     asDerived().emitValueVisitRefInScalar_dmu_(IGF, value);
   }

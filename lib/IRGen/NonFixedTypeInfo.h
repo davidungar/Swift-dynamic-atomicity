@@ -84,7 +84,7 @@ public:
     deallocateStack(IGF, stackAddress, T);
   }
 
-  // TODO: (dmu) urgent Do I need a visitRefsInValue_dmu_CallStack routine?
+  // TODO: (dmu) urgent Do I need a visitRefs_dmu_CallStack routine?
 
   llvm::Value *getValueWitnessTable(IRGenFunction &IGF, SILType T) const {
     return IGF.emitValueWitnessTableRefForLayout(T);

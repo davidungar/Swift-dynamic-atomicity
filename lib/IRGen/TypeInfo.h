@@ -401,7 +401,7 @@ public:
   /// Output code to visit each reference in this element and make its reference count atomic
   
   // Visit all the references in the value at this address
-  virtual void visitRefsInValue_dmu_(IRGenFunction &IGF, Address address, SILType T) const = 0;
+  virtual void visitRefs_dmu_(IRGenFunction &IGF, Address address, SILType T) const = 0;
   
   // Defined via macros in GenValueWitness.cpp
   virtual void visitRefsInBuffer_dmu_(IRGenFunction &IGF, Address buffer, SILType T) const;

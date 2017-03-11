@@ -141,7 +141,7 @@ public:
     emitDestroyCall(IGF, T, addr);
   }
 
-  void visitRefsInValue_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
+  void visitRefs_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
     emitVisitRefsCall_dmu_(IGF, T, addr);
   }
   

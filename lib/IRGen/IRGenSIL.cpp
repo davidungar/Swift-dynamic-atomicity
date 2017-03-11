@@ -4733,12 +4733,12 @@ void IRGenSILFunction::visitVisitRefAtAddr_dmu_Inst(swift::VisitRefAtAddr_dmu_In
   switch (lv.kind) {
     case LoweredValue::Kind::ContainedAddress: {
       Address addr = lv.getAddressInContainer();
-      operandTI.visitRefsInValue_dmu_(*this, addr, operandTy);
+      operandTI.visitRefs_dmu_(*this, addr, operandTy);
       return;
 }
     case LoweredValue::Kind::Address: {
       Address addr = lv.getAddress();
-      operandTI.visitRefsInValue_dmu_(*this, addr, operandTy);
+      operandTI.visitRefs_dmu_(*this, addr, operandTy);
       return;
     }
     case LoweredValue::Kind::Explosion: {
@@ -4755,7 +4755,7 @@ void IRGenSILFunction::visitVisitRefAtAddr_dmu_Inst(swift::VisitRefAtAddr_dmu_In
     case LoweredValue::Kind::BoxWithAddress: {
       // TODO: (dmu) check is this right?
       Address addr = lv.getAddressOfBox();
-      operandTI.visitRefsInValue_dmu_(*this, addr, operandTy);
+      operandTI.visitRefs_dmu_(*this, addr, operandTy);
       return;
     }
 

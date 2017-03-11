@@ -385,7 +385,7 @@ namespace {
         IGF.emitNativeStrongRelease(data);
     }
 
-    void visitRefsInValue_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
+    void visitRefs_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
       auto data = IGF.Builder.CreateLoad(projectData(IGF, addr));
       if (!isPOD(ResilienceExpansion::Maximal)) // dmu blind clone
         IGF.emitNativeVisitRefInScalar_dmu_(data);
@@ -507,8 +507,8 @@ namespace {
     void destroy(IRGenFunction &IGF, Address addr, SILType T) const override {
       IGF.unimplemented(SourceLoc(), "destroying @block_storage");
     }
-    void visitRefsInValue_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
-      IGF.unimplemented(SourceLoc(), "visitRefsInValue_dmu_ @block_storage");
+    void visitRefs_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
+      IGF.unimplemented(SourceLoc(), "visitRefs_dmu_ @block_storage");
     }
   };
 } // end anonymous namespace

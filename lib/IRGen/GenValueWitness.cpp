@@ -349,7 +349,7 @@ static void emitDefaultVisitRefsInBuffer_dmu_(IRGenFunction &IGF,
                                  T, type, buffer);
   
   Address object = emitDefaultProjectBuffer(IGF, buffer, T, type, packing);
-  type.visitRefsInValue_dmu_(IGF, object, T);
+  type.visitRefs_dmu_(IGF, object, T);
 }
 
 /// Emit an 'initializeBufferWithCopyOfBuffer' operation.
@@ -652,7 +652,7 @@ static void buildValueWitnessFunction(IRGenModule &IGM,
   case ValueWitness::VisitRefs_dmu_: {
     Address object = getArgAs(IGF, argv, type, "object");
     getArgAsLocalSelfTypeMetadata(IGF, argv, abstractType);
-    type.visitRefsInValue_dmu_(IGF, object, concreteType);
+    type.visitRefs_dmu_(IGF, object, concreteType);
     IGF.Builder.CreateRetVoid();
     return;
   }
@@ -689,7 +689,7 @@ static void buildValueWitnessFunction(IRGenModule &IGM,
     
     IGF.Builder.emitBlock(loop);
     ConditionalDominanceScope condition(IGF);
-    type.visitRefsInValue_dmu_(IGF, element, concreteType);
+    type.visitRefs_dmu_(IGF, element, concreteType);
     auto nextCounter = IGF.Builder.CreateSub(counter,
                                              llvm::ConstantInt::get(IGM.SizeTy, 1));
     auto nextElement = type.indexArray(IGF, element,
@@ -1747,7 +1747,7 @@ void TypeInfo::visitRefsInArray_dmu_(IRGenFunction &IGF,
   IGF.Builder.emitBlock(loop);
   ConditionalDominanceScope condition(IGF);
   
-  visitRefsInValue_dmu_(IGF, element, T);
+  visitRefs_dmu_(IGF, element, T);
   
   auto nextCounter = IGF.Builder.CreateSub(counter,
                                            llvm::ConstantInt::get(IGF.IGM.SizeTy, 1));
