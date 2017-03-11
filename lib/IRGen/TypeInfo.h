@@ -403,7 +403,7 @@ public:
   // Visit all the references in the value at this address
   virtual void visitRefsInValue_dmu_(IRGenFunction &IGF, Address address, SILType T) const = 0;
   
-  // TODO: (dmu) Urgent: Are next two used???
+  // Defined via macros in GenValueWitness.cpp
   virtual void visitRefsInBuffer_dmu_(IRGenFunction &IGF, Address buffer, SILType T) const;
   virtual void visitRefsInArray_dmu_(IRGenFunction &IGF, Address base, llvm::Value *count, SILType T) const;
 
