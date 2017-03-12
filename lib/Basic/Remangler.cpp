@@ -1637,10 +1637,6 @@ void Remangler::mangleOutlinedConsume(Node *node) {
   Buffer << "We";
 }
 
-void Remangler::mangleOutlinedVisitRefsInEnum_dmu_(Node *node) {
-  mangleSingleChildNode(node);
-  Buffer << "Dm";
-}
 void Remangler::mangleOutlinedVisitRefsInInitialValuesOfPayload_dmu_(Node *node) {
   mangleSingleChildNode(node);
   Buffer << "Du";

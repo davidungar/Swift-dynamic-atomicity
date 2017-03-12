@@ -180,7 +180,6 @@ NODE(FirstElementMarker)
 NODE(VariadicMarker)
 NODE(OutlinedCopy)
 NODE(OutlinedConsume)
-NODE(OutlinedVisitRefsInEnum_dmu_)
 NODE(OutlinedVisitRefsInInitialValuesOfPayload_dmu_)
 NODE(OutlinedVisitRefsInValuesOfPayloadAssignedTo_dmu_)
 

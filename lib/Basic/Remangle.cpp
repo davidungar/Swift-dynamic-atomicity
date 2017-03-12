@@ -1718,11 +1718,6 @@ void Remangler::mangleOutlinedConsume(Node *node) {
   Out << "We";
   mangleChildNodes(node);
 }
-
-void Remangler::mangleOutlinedVisitRefsInEnum_dmu_(Node *node) {
-  Out << "Dm";
-  mangleChildNodes(node);
-}
 void Remangler::mangleOutlinedVisitRefsInInitialValuesOfPayload_dmu_(Node *node) {
   Out << "Du";
   mangleChildNodes(node);
