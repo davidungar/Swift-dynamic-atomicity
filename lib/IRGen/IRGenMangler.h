@@ -162,7 +162,19 @@ public:
   std::string mangleOutlinedVisitRefsInEnumFunction_dmu_(const NominalTypeDecl *Decl) { // dmu
     beginMangling();
     appendNominalType(Decl);
-    appendOperator("Wa");
+    appendOperator("Dm");
+    return finalize();
+  }
+  std::string mangleOutlinedVisitRefsInInitialValuesOfPayload_dmu_EnumFunction(const NominalTypeDecl *Decl) {
+    beginMangling();
+    appendNominalType(Decl);
+    appendOperator("Du");
+    return finalize();
+  }
+  std::string mangleOutlinedVisitRefsInValuesOfPayloadAssignedTo_dmu_EnumFunction(const NominalTypeDecl *Decl) {
+    beginMangling();
+    appendNominalType(Decl);
+    appendOperator("Dd");
     return finalize();
   }
 

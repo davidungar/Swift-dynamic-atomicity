@@ -1719,6 +1719,19 @@ void Remangler::mangleOutlinedConsume(Node *node) {
   mangleChildNodes(node);
 }
 
+void Remangler::mangleOutlinedVisitRefsInEnum_dmu_(Node *node) {
+  Out << "Dm";
+  mangleChildNodes(node);
+}
+void Remangler::mangleOutlinedVisitRefsInInitialValuesOfPayload_dmu_(Node *node) {
+  Out << "Du";
+  mangleChildNodes(node);
+}
+void Remangler::mangleOutlinedVisitRefsInValuesOfPayloadAssignedTo_dmu_(Node *node) {
+  Out << "Dd";
+  mangleChildNodes(node);
+}
+
 void Remangler::mangleSILBoxTypeWithLayout(Node *node) {
   assert(node->getKind() == Node::Kind::SILBoxTypeWithLayout);
   assert(node->getNumChildren() == 1 || node->getNumChildren() == 3);
