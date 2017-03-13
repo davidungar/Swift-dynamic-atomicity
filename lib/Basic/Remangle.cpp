@@ -1722,10 +1722,7 @@ void Remangler::mangleOutlinedVisitRefsInInitialValuesOfPayload_dmu_(Node *node)
   Out << "Du";
   mangleChildNodes(node);
 }
-void Remangler::mangleOutlinedVisitRefsInValuesOfPayloadAssignedTo_dmu_(Node *node) {
-  Out << "Dd";
-  mangleChildNodes(node);
-}
+
 
 void Remangler::mangleSILBoxTypeWithLayout(Node *node) {
   assert(node->getKind() == Node::Kind::SILBoxTypeWithLayout);

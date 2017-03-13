@@ -181,7 +181,6 @@ NODE(VariadicMarker)
 NODE(OutlinedCopy)
 NODE(OutlinedConsume)
 NODE(OutlinedVisitRefsInInitialValuesOfPayload_dmu_)
-NODE(OutlinedVisitRefsInValuesOfPayloadAssignedTo_dmu_)
 
 #undef CONTEXT_NODE
 #undef NODE

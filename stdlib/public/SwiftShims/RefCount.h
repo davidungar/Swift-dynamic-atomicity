@@ -78,8 +78,10 @@ class StrongRefCount_t_dmu_ {
 
     RC_ONE = RC_FLAGS_MASK + 1
   };
-
-
+public:
+  static constexpr uint64_t might_be_concurrently_accessed_mask__dmu_ = RC_MIGHT_BE_CONCURRENTLY_ACCESSED_FLAG_dmu_;
+  
+private:
   static_assert(RC_ONE == RC_MIGHT_BE_CONCURRENTLY_ACCESSED_FLAG_dmu_ << 1, // dmu
                 "deallocating bit must be adjacent to refcount bits");
   static_assert(RC_ONE == 1 << RC_FLAGS_COUNT,

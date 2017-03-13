@@ -165,12 +165,6 @@ public:
     appendOperator("Du");
     return finalize();
   }
-  std::string mangleOutlinedVisitRefsInValuesOfPayloadAssignedTo_dmu_EnumFunction(const NominalTypeDecl *Decl) {
-    beginMangling();
-    appendNominalType(Decl);
-    appendOperator("Dd");
-    return finalize();
-  }
 
 
   std::string manglePartialApplyForwarder(StringRef FuncName);

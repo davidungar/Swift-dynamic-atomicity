@@ -487,11 +487,6 @@ namespace {
                                        llvm::Value *objToSet) const {
       IGF.emitVisitRefInScalar_dmu_(objToSet, ReferenceCounting::Native);
     }
-    void emitCheckHolderThenVisitHeldRefs_dmu_(IRGenFunction &IGF,
-                                       llvm::Value *objToCheck, llvm::Value *objToSet) const {
-      IGF.emitCheckHolderThenVisitHeldRefs_dmu_(objToCheck, objToSet, ReferenceCounting::Native);
-    }
-    
     unsigned getFixedExtraInhabitantCount(IRGenModule &IGM) const override {
       return IGM.getUnownedExtraInhabitantCount(ReferenceCounting::Native);
     }
@@ -1140,20 +1135,6 @@ void IRGenFunction::emitVisitRefInScalar_dmu_(llvm::Value *objToSet,
       break;
   }
 }
-void IRGenFunction::emitCheckHolderThenVisitHeldRefs_dmu_(llvm::Value *objToCheck,
-                                                                   llvm::Value *objToSet,
-                                                                   ReferenceCounting refcounting) {
-  switch (refcounting) {
-    case ReferenceCounting::Native:
-      return emitNativeCheckHolderThenVisitHeldRefs_dmu_(objToCheck, objToSet);
-    case ReferenceCounting::ObjC:
-    case ReferenceCounting::Block:
-    case ReferenceCounting::Unknown:
-    case ReferenceCounting::Bridge:
-    case ReferenceCounting::Error:
-      break;
-  }
-}
 
 
 llvm::Type *IRGenModule::getReferenceType(ReferenceCounting refcounting) {
@@ -1377,6 +1358,29 @@ void IRGenFunction::emitNativeUnownedVisitRef_dmu_(Address ref) {
   ref = Builder.CreateStructGEP(ref, 0, Size(0));
   llvm::Value *value = Builder.CreateLoad(ref);
   emitNativeVisitRefInScalar_dmu_(value);
+}
+
+#include <swift/Runtime/HeapObject.h> // blecch! TODO: (dmu) clean this up!
+#include <../stdlib/public/SwiftShims/RefCount.h> // blecch! TODO: (dmu) clean this up!
+// Return non-zero if the reference count has the atomic bit set
+void LoadableTypeInfo::genIRToVisitRefsInValuesAssignedTo_dmu_(IRGenFunction &IGF, Explosion& src, Address dest) const {
+  // TODO: (dmu) fix this hack, knowing where the ref count is!
+#error dmu must be native
+  unsigned int shamelessHack_dmu_ = (char*)&((HeapObject*)nullptr)->refCount - (char*)nullptr;
+  Address refCountAddr = IGF.Builder.CreateStructGEP(dest, shamelessHack_dmu_, Size(0), Twine("refCount"));
+  llvm::LoadInst *refCount = IGF.Builder.CreateLoad(refCountAddr);
+  llvm::Value *safeBit = IGF.Builder.CreateAnd(refCount, StrongRefCount::might_be_concurrently_accessed_mask__dmu_);
+  
+  llvm::BasicBlock *isSafe = IGF.createBasicBlock("isSafe");
+  llvm::BasicBlock *safeOrNot = IGF.createBasicBlock("safeOrNot");
+  
+  llvm::Value *cond = IGF.Builder.CreateICmpNE(safeBit, llvm::ConstantInt::get(IGF.IGM.Int32Ty, 0));
+  IGF.Builder.CreateCondBr(cond, isSafe, safeOrNot);
+  IGF.Builder.emitBlock(isSafe);
+  genIRToVisitRefsInInitialValues_dmu_( IGF, src);
+    
+  IGF.Builder.CreateBr(safeOrNot);
+  IGF.Builder.emitBlock(safeOrNot);
 }
 
 

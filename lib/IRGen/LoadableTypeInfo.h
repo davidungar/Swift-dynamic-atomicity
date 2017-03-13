@@ -111,11 +111,14 @@ public:
   virtual void genIRToVisitRefsInInitialValues_dmu_(IRGenFunction &IGF, Explosion &explosion) const = 0; // dmu
   
   
+
+  
+  
   /// TODO: (dmu cleanup) fix this comment:  Set bit in source (explosion)'s reference count if it now can be concurrently accessed after
   /// initializing or assigning it to dest (addr)
   /// rename to storeBarrier?
-  virtual void genIRToVisitRefsInValuesAssignedTo_dmu_(IRGenFunction &IGF, Explosion &explosion,
-                                                 Address dest) const = 0;
+  void genIRToVisitRefsInValuesAssignedTo_dmu_(IRGenFunction &IGF, Explosion &explosion,
+                                                 Address dest) const;
 
   // We can give this a reasonable default implementation.
   void initializeWithCopy(IRGenFunction &IGF, Address destAddr,

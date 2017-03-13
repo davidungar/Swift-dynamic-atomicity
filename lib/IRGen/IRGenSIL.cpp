@@ -3232,9 +3232,9 @@ void IRGenSILFunction::visitStoreInst(swift::StoreInst *i) {
 // dmu
 void IRGenSILFunction::visitStoreBarrier_dmu_Inst(StoreBarrier_dmu_Inst *i) { //dmu
   Address dest = getLoweredAddress(i->getDest()); // TODO: (dmu optimization) in DefiniteInitialization.cpp, where createStoreBarrier_dmu_ is called, could pass in loaded value
-  SILType objType = i->getSrc()->getType().getObjectType();
+  SILType srcType = i->getSrc()->getType().getObjectType();
   
-  const auto &typeInfo = cast<LoadableTypeInfo>(getTypeInfo(objType));
+  const auto &srcTI = cast<LoadableTypeInfo>(getTypeInfo(srcType));
   
   // TODO: (dmu check) how much of this now redundant with visitStoreInst
   // TODO: (dmu check) what about other store instructions & assign? Does this code need to be there?
@@ -3248,11 +3248,11 @@ void IRGenSILFunction::visitStoreBarrier_dmu_Inst(StoreBarrier_dmu_Inst *i) { //
   
   if (isDestGlobal) { // TODO: (dmu urgent) maybe also if dest has unimplemented beSafe in metadata? what if dest resilient or unknown?
     Explosion concurrentAccessSource = getLoweredExplosion(i->getSrc());
-    typeInfo.genIRToVisitRefsInInitialValues_dmu_( *this, concurrentAccessSource);
+    srcTI.genIRToVisitRefsInInitialValues_dmu_( *this, concurrentAccessSource);
   }
   else {
     Explosion concurrentAccessSource = getLoweredExplosion(i->getSrc());
-    typeInfo.genIRToVisitRefsInValuesAssignedTo_dmu_( *this, concurrentAccessSource, dest);
+    srcTI.genIRToVisitRefsInValuesAssignedTo_dmu_( *this, concurrentAccessSource, dest);
   }
 }
 

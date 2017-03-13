@@ -300,9 +300,6 @@ namespace {
        if (!isPOD(ResilienceExpansion::Maximal))
          ; // TODO: (dmu implement funcs) IGF.xxx(context, dataAddr);
      }
-     void genIRToVisitRefsInValuesAssignedTo_dmu_(IRGenFunction &IGF, Explosion &e, Address dest) const override {
-       (void)e.claimNext(); // TODO: (dmu implement funcs)
-     }
 
     void copy(IRGenFunction &IGF, Explosion &src,
               Explosion &dest, Atomicity atomicity) const override {

@@ -165,15 +165,6 @@ public:
     asDerived().emitVisitRefInScalar_dmu_(IGF, src.claimNext());
   }
   
-  void genIRToVisitRefsInValuesAssignedTo_dmu_(IRGenFunction &IGF, Explosion &src, Address dest) const override {
-    if (Derived::IsScalarPOD) {
-      (void)src.claimNext();
-      return;
-    }
-// TODO: (dmu check) is the getAddress right???
-    asDerived().emitCheckHolderThenVisitHeldRefs_dmu_(IGF, dest.getAddress(), src.claimNext());
-  }
-
 
   void copy(IRGenFunction &IGF, Explosion &in, Explosion &out,
             Atomicity atomicity) const override {
@@ -261,8 +252,6 @@ private:
   
   void emitVisitRefInScalar_dmu_(IRGenFunction &IGF,
                                   llvm::Value *objToSet) const {}
-  void emitCheckHolderThenVisitHeldRefs_dmu_(IRGenFunction &IGF, // dmu
-                                             llvm::Value *objToCheck, llvm::Value *objToSet) const {}
 };
 
 }
