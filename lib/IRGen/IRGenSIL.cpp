@@ -3229,10 +3229,20 @@ void IRGenSILFunction::visitStoreInst(swift::StoreInst *i) {
 }
 }
 
+//void foo(SILValue* v) {
+//  switch (v->Kind)
+//}
+
 // dmu
 void IRGenSILFunction::visitStoreBarrier_dmu_Inst(StoreBarrier_dmu_Inst *i) { //dmu
   Address dest = getLoweredAddress(i->getDest()); // TODO: (dmu optimization) in DefiniteInitialization.cpp, where createStoreBarrier_dmu_ is called, could pass in loaded value
   SILType srcType = i->getSrc()->getType().getObjectType();
+//#error dmu must trace through getDests's to see if topmost is a ref_foo_addr RefElementAddrInst RefTailAddrInst see Aggregate types in SILNodes.def
+  SILType destType = i->getDest()->getType();
+  if (!destType.isReferenceCounted(IGM.getSILModule())) {
+    assert(!destType.isExistentialType() && "must handle existentials");
+    return;
+  }
   
   const auto &srcTI = cast<LoadableTypeInfo>(getTypeInfo(srcType));
   
