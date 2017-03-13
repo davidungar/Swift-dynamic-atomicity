@@ -2660,6 +2660,7 @@ private:
     case Node::Kind::VariadicMarker:
     case Node::Kind::OutlinedCopy:
     case Node::Kind::OutlinedConsume:
+    case Node::Kind::OutlinedVisitRefsInInitialValuesOfPayload_dmu_:
       return false;
     }
     unreachable("bad node kind");
@@ -3718,6 +3719,9 @@ void NodePrinter::print(NodePointer pointer, bool asContext, bool suppressType) 
     return;
   case Node::Kind::VisitorOfRefsInInstance_dmu_:
     printEntity(false, false, "visitOfRefsInInstance_dmu_");
+    return;
+    case Node::Kind::OutlinedVisitRefsInInitialValuesOfPayload_dmu_:
+    printEntity(false, false, "outlinedVisedRefsInInitialValuesOfPayload_dmu_");
     return;
   case Node::Kind::Deallocator:
     printEntity(false, false,

@@ -1360,13 +1360,14 @@ void IRGenFunction::emitNativeUnownedVisitRef_dmu_(Address ref) {
   emitNativeVisitRefInScalar_dmu_(value);
 }
 
-#include <swift/Runtime/HeapObject.h> // blecch! TODO: (dmu) clean this up!
+//#include <swift/Runtime/HeapObject.h> // blecch! TODO: (dmu) clean this up!
 #include <../stdlib/public/SwiftShims/RefCount.h> // blecch! TODO: (dmu) clean this up!
 // Return non-zero if the reference count has the atomic bit set
 void LoadableTypeInfo::genIRToVisitRefsInValuesAssignedTo_dmu_(IRGenFunction &IGF, Explosion& src, Address dest) const {
   // TODO: (dmu) fix this hack, knowing where the ref count is!
-#error dmu must be native
-  unsigned int shamelessHack_dmu_ = (char*)&((HeapObject*)nullptr)->refCount - (char*)nullptr;
+  // TODO: (dmu) dest must be native and the outermost heap object to hold the value
+
+  unsigned int shamelessHack_dmu_ = 8 ;// ugh, above include screws up (char*)&((HeapObject*)nullptr)->refCount - (char*)nullptr;
   Address refCountAddr = IGF.Builder.CreateStructGEP(dest, shamelessHack_dmu_, Size(0), Twine("refCount"));
   llvm::LoadInst *refCount = IGF.Builder.CreateLoad(refCountAddr);
   llvm::Value *safeBit = IGF.Builder.CreateAnd(refCount, StrongRefCount::might_be_concurrently_accessed_mask__dmu_);

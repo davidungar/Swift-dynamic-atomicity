@@ -1440,16 +1440,6 @@ namespace {
     }
   }
 
-  static void computeRefTypePayloadTypesAndTagType_dmu_(
-      IRGenModule &IGM, const TypeInfo &TI,
-      SmallVector<llvm::Type *, 2> &PayloadTypesAndTagType) {
-    PayloadTypesAndTagType.push_back(IGM.RefCountedPtrTy); // TODO: (dmu) check: is this type too specific?
-    for (auto &element : TI.getSchema()) {
-      auto type = element.getScalarType();
-      PayloadTypesAndTagType.push_back(type);
-    }
-  }
-
   static llvm::Function *createOutlineLLVMFunction(
       IRGenModule &IGM, std::string &name,
       SmallVector<llvm::Type *, 2> &PayloadTypesAndTagType) {
