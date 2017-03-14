@@ -1740,7 +1740,6 @@ public:
 /// Does not really need atomicity in constructor because is never atomic;
 /// bit in ref count must be set BEFORE shared access is possible.
 //  TODO: (dmu factor) Implementation stolen from StoreInst
-//  TODO: (dmu implement enums) is all the machinery with the enums needed?
 class StoreBarrier_dmu_Inst
 : public SILInstruction {
   friend SILBuilder;
