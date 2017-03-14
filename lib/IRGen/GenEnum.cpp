@@ -1508,8 +1508,7 @@ namespace {
     llvm::Function *visitRefsInInitialValuesOfPayload_dmu_EnumFunction = nullptr;
     
     SmallVector<llvm::Type *, 2> PayloadTypesAndTagType;
-    SmallVector<llvm::Type *, 2> RefTypePayloadTypesAndTagType_dmu_;
-    
+
     llvm::Function *emitCopyEnumFunction(IRGenModule &IGM, EnumDecl *theEnum) {
       IRGenMangler Mangler;
       std::string name = Mangler.mangleOutlinedCopyFunction(theEnum);
@@ -1577,7 +1576,7 @@ namespace {
     llvm::Function *emitVisitRefsInInitialValuesOfPayload_dmu_EnumFunction(IRGenModule &IGM, EnumDecl *theEnum) {
       IRGenMangler Mangler;
       std::string name = Mangler.mangleOutlinedVisitRefsInInitialValuesOfPayload_dmu_EnumFunction(theEnum);
-      auto func = createOutlineLLVMFunction(IGM, name, RefTypePayloadTypesAndTagType_dmu_);
+      auto func = createOutlineLLVMFunction(IGM, name, PayloadTypesAndTagType);
       
       IRGenFunction IGF(IGM, func);
       Explosion src = IGF.collectParameters();
@@ -1592,11 +1591,9 @@ namespace {
       if (PayloadBitCount > 0) {
         ConditionalDominanceScope condition(IGF);
         Explosion payloadValue;
-        Explosion payloadCopy;
         auto &loadableTI = getLoadablePayloadTypeInfo();
         loadableTI.unpackFromEnumPayload(IGF, payload, payloadValue, 0);
         loadableTI.genIRToVisitRefsInInitialValues_dmu_(IGF, payloadValue);
-        (void)payloadCopy.claimAll(); // FIXME: repack if not bit-identical
       }
       
       IGF.Builder.CreateBr(endBB);
