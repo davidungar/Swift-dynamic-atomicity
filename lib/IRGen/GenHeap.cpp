@@ -1391,13 +1391,18 @@ void LoadableTypeInfo::genIRToVisitRefsInValuesAssignedTo_dmu_(IRGenFunction &IG
   // TODO: (dmu) fix this hack, knowing where the ref count is!
   // TODO: (dmu) dest must be native and the outermost heap object to hold the value
 
-  unsigned int shamelessHack_dmu_ = 8 ;// ugh, above include screws up (char*)&((HeapObject*)nullptr)->refCount - (char*)nullptr;
-  Address destBase = getBaseAddress_dmu_(dest);
+   Address destBase = getBaseAddress_dmu_(dest);
+  
+  Address destCastBase = IGF.Builder.CreateBitCast(destBase, IGF.IGM.RefCountedPtrTy);
+  // TODO: (dmu) 4 or 8 or whast below?
+  Address destCaseBaseWithAlignment = Address(destCastBase.getAddress(), Alignment(4));
+  
   Address refCountAddr = IGF.Builder.CreateStructGEP(
-                                                     destBase,
-                                                     shamelessHack_dmu_,
-                                                     Size(0),
+                                                     destCaseBaseWithAlignment,
+                                                     1,
+                                                     IGF.IGM.DataLayout.getStructLayout(IGF.IGM.RefCountedStructTy),
                                                      Twine("refCount"));
+  
   llvm::LoadInst *refCount = IGF.Builder.CreateLoad(refCountAddr);
   llvm::Value *safeBit = IGF.Builder.CreateAnd(refCount, StrongRefCount::might_be_concurrently_accessed_mask__dmu_);
   
