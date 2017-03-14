@@ -550,8 +550,7 @@ void swift_unownedBeSafeForConcurrentAccess_dmu_(HeapObject *value)
   
 /// TODO: (dmu) comment
 SWIFT_RT_ENTRY_VISIBILITY
-void swift_unownedIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(HeapObject *dst, HeapObject *src)(HeapObject *value)
-SWIFT_CC(RegisterPreservingCC);
+void swift_unownedIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(HeapObject *dst, HeapObject *src)SWIFT_CC(RegisterPreservingCC);
   
 
 /// Increment the weak/unowned retain count by n.
