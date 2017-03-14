@@ -1392,6 +1392,7 @@ void LoadableTypeInfo::genIRToVisitRefsInValuesAssignedTo_dmu_(IRGenFunction &IG
   // TODO: (dmu) dest must be native and the outermost heap object to hold the value
 
    Address destBase = getBaseAddress_dmu_(dest);
+  destBase->dump();
   
   Address destCastBase = IGF.Builder.CreateBitCast(destBase, IGF.IGM.RefCountedPtrTy);
   // TODO: (dmu) 4 or 8 or whast below?

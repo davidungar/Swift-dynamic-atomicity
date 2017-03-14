@@ -3215,6 +3215,7 @@ void IRGenSILFunction::visitStoreInst(swift::StoreInst *i) {
   bool isDestGlobal = i->getDest()->getKind() == ValueKind::GlobalAddrInst;
   
   bool isDestBeingAssigned = i->getOwnershipQualifier() == StoreOwnershipQualifier::Assign;
+  i->dump();
 
   if (isDestGlobal) { // TODO: (dmu urgent) maybe also if dest has unimplemented beSafe in metadata? what if dest resilient or unknown?
     Explosion concurrentAccessSource = getLoweredExplosion(i->getSrc());
@@ -3260,6 +3261,7 @@ void IRGenSILFunction::visitStoreBarrier_dmu_Inst(StoreBarrier_dmu_Inst *i) { //
   
   // must always allow for concurrent access to globals
   bool isDestGlobal = i->getDest()->getKind() == ValueKind::GlobalAddrInst;
+  i->dump();
   
   if (isDestGlobal) { // TODO: (dmu urgent) maybe also if dest has unimplemented beSafe in metadata? what if dest resilient or unknown?
     Explosion concurrentAccessSource = getLoweredExplosion(i->getSrc());
