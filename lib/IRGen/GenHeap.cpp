@@ -1360,6 +1360,30 @@ void IRGenFunction::emitNativeUnownedVisitRef_dmu_(Address ref) {
   emitNativeVisitRefInScalar_dmu_(value);
 }
 
+
+
+/// Gets the underlying address
+// stolen from LLVMARCOpts.cpp::getBaseAddress
+static llvm::Value *getBaseAddress_dmu_(llvm::Value *val) {
+  for (;;) {
+    if (auto *GEP = dyn_cast<llvm::GetElementPtrInst>(val)) {
+      val = GEP->getPointerOperand();
+      continue;
+    }
+    if (auto *BC = dyn_cast<llvm::BitCastInst>(val)) {
+      val = BC->getOperand(0);
+      continue;
+    }
+    return val;
+  }
+}
+static Address getBaseAddress_dmu_(Address addr) {
+  return Address(getBaseAddress_dmu_(addr.getAddress()), Alignment()); // TODO: (dmu) check is Size(0) right?
+}
+
+
+
+
 //#include <swift/Runtime/HeapObject.h> // blecch! TODO: (dmu) clean this up!
 #include <../stdlib/public/SwiftShims/RefCount.h> // blecch! TODO: (dmu) clean this up!
 // Return non-zero if the reference count has the atomic bit set
@@ -1368,7 +1392,12 @@ void LoadableTypeInfo::genIRToVisitRefsInValuesAssignedTo_dmu_(IRGenFunction &IG
   // TODO: (dmu) dest must be native and the outermost heap object to hold the value
 
   unsigned int shamelessHack_dmu_ = 8 ;// ugh, above include screws up (char*)&((HeapObject*)nullptr)->refCount - (char*)nullptr;
-  Address refCountAddr = IGF.Builder.CreateStructGEP(dest, shamelessHack_dmu_, Size(0), Twine("refCount"));
+  Address destBase = getBaseAddress_dmu_(dest);
+  Address refCountAddr = IGF.Builder.CreateStructGEP(
+                                                     destBase,
+                                                     shamelessHack_dmu_,
+                                                     Size(0),
+                                                     Twine("refCount"));
   llvm::LoadInst *refCount = IGF.Builder.CreateLoad(refCountAddr);
   llvm::Value *safeBit = IGF.Builder.CreateAnd(refCount, StrongRefCount::might_be_concurrently_accessed_mask__dmu_);
   

@@ -3195,25 +3195,6 @@ void IRGenSILFunction::visitLoadInst(swift::LoadInst *i) {
 
 
 
-/// Gets the underlying address
-// stolen from LLVMARCOpts.cpp::getBaseAddress
-static llvm::Value *getBaseAddress_dmu_(llvm::Value *val) {
-  for (;;) {
-    if (auto *GEP = dyn_cast<llvm::GetElementPtrInst>(val)) {
-      val = GEP->getPointerOperand();
-      continue;
-    }
-    if (auto *BC = dyn_cast<llvm::BitCastInst>(val)) {
-      val = BC->getOperand(0);
-      continue;
-    }
-    return val;
-  }
-}
-static Address getBaseAddress_dmu_(Address addr) {
-  return Address(getBaseAddress_dmu_(addr.getAddress()), Alignment()); // TODO: (dmu) check is Size(0) right?
-}
-
 
 
 void IRGenSILFunction::visitStoreInst(swift::StoreInst *i) {
@@ -3242,8 +3223,7 @@ void IRGenSILFunction::visitStoreInst(swift::StoreInst *i) {
   // This is only here if you run the compiler without the pass that transforms stores -- dmu
   else if (isDestBeingAssigned) {
     Explosion concurrentAccessSource = getLoweredExplosion(i->getSrc());
-    Address destBase = getBaseAddress_dmu_(dest);
-    typeInfo.genIRToVisitRefsInValuesAssignedTo_dmu_( *this, concurrentAccessSource, destBase);
+    typeInfo.genIRToVisitRefsInValuesAssignedTo_dmu_( *this, concurrentAccessSource, dest);
   }
   
   if (isDestBeingAssigned) {
@@ -3261,7 +3241,6 @@ void IRGenSILFunction::visitStoreBarrier_dmu_Inst(StoreBarrier_dmu_Inst *i) { //
   SILValue dest = i->getDest();
   LoweredValue &destV = getLoweredValue(dest);
   Address destAddress = getLoweredAddress(dest); // TODO: (dmu optimization) in DefiniteInitialization.cpp, where createStoreBarrier_dmu_ is called, could pass in loaded value
-  Address destBaseAddress = getBaseAddress_dmu_(destAddress);
   SILType srcType = i->getSrc()->getType().getObjectType();
 //#error dmu must trace through getDests's to see if topmost is a ref_foo_addr RefElementAddrInst RefTailAddrInst see Aggregate types in SILNodes.def
   SILType destSILType = dest->getType();
@@ -3288,7 +3267,7 @@ void IRGenSILFunction::visitStoreBarrier_dmu_Inst(StoreBarrier_dmu_Inst *i) { //
   }
   else {
     Explosion concurrentAccessSource = getLoweredExplosion(i->getSrc());
-    srcTI.genIRToVisitRefsInValuesAssignedTo_dmu_( *this, concurrentAccessSource, destBaseAddress);
+    srcTI.genIRToVisitRefsInValuesAssignedTo_dmu_( *this, concurrentAccessSource, destAddress);
   }
 }
 
