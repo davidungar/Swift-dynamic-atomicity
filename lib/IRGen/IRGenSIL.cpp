@@ -772,6 +772,10 @@ public:
     }
   }
   
+  
+  void emitVisitRefsInValuesAssignedTo_dmu_( SILValue src, SILValue dest);
+  SILValue getOutermostAggregate_dmu_(SILValue v);
+  
   //===--------------------------------------------------------------------===//
   // SIL instruction lowering
   //===--------------------------------------------------------------------===//
@@ -3192,46 +3196,37 @@ void IRGenSILFunction::visitLoadInst(swift::LoadInst *i) {
   setLoweredExplosion(i, lowered);
 }
 
-
-
-
-
+// TODO: (dmu) optimization
+// The store instruction gets lowered to Unqualified before we get to see it.
+// That's why I added the StoreBarrier instruction, so that I could tell the ownership qualifier.
+// I wanted to tell because when initializing, no need to check the dest ref count; it can
+// never be safeForConcurrentAccess.
+//
+// At this point, I'm foregoing that optimization, and just not going to use the StoreBarrier.
+//
+// Also, what about other store instructions, such as weak, etc.?
+// And maybe the real fix is to generate the store barrer from the AssignInst.
+//
+// Another optimization could be to reuse the ref count load for a direct store of a ref.
 
 void IRGenSILFunction::visitStoreInst(swift::StoreInst *i) {
+  
+  emitVisitRefsInValuesAssignedTo_dmu_(i->getSrc(), i->getDest());
+  
   Explosion source = getLoweredExplosion(i->getSrc());
   Address dest = getLoweredAddress(i->getDest());
   SILType objType = i->getSrc()->getType().getObjectType();
 
   const auto &typeInfo = cast<LoadableTypeInfo>(getTypeInfo(objType));
-
-  // TODO: (dmu check) how much of this now redundant with visitStoreBarrier_dmu_Inst
-  // TODO: (dmu check) what about other store instructions & assign? Does this code need to be there?
-  // TODO: (dmu cleanup) factor this code and what is in visitStoreBarrier_dmu_Inst
-  // move into typeinfo???, yes, ClassTypeInfo???
-  // cannot be here; could be a record type
-  // seems OK to use only source typeInfo
-  
-  // must always allow for concurrent access to globals
-  bool isDestGlobal = i->getDest()->getKind() == ValueKind::GlobalAddrInst;
-  
-  bool isDestBeingAssigned = i->getOwnershipQualifier() == StoreOwnershipQualifier::Assign;
-  i->dump();
-
-  if (isDestGlobal) { // TODO: (dmu urgent) maybe also if dest has unimplemented beSafe in metadata? what if dest resilient or unknown?
-    Explosion concurrentAccessSource = getLoweredExplosion(i->getSrc());
-    typeInfo.genIRToVisitRefsInInitialValues_dmu_( *this, concurrentAccessSource);
-  }
-  // This is only here if you run the compiler without the pass that transforms stores -- dmu
-  else if (isDestBeingAssigned) {
-    Explosion concurrentAccessSource = getLoweredExplosion(i->getSrc());
-    typeInfo.genIRToVisitRefsInValuesAssignedTo_dmu_( *this, concurrentAccessSource, dest);
-  }
-  
-  if (isDestBeingAssigned) {
-    typeInfo.assign(*this, source, dest);
-  }
-  else {
-    typeInfo.initialize(*this, source, dest);
+  switch (i->getOwnershipQualifier()) {
+    case StoreOwnershipQualifier::Unqualified:
+    case StoreOwnershipQualifier::Init:
+    case StoreOwnershipQualifier::Trivial:
+      typeInfo.initialize(*this, source, dest);
+      break;
+    case StoreOwnershipQualifier::Assign:
+      typeInfo.assign(*this, source, dest);
+      break;
   }
 }
 
@@ -3239,38 +3234,33 @@ void IRGenSILFunction::visitStoreInst(swift::StoreInst *i) {
 
 // dmu
 void IRGenSILFunction::visitStoreBarrier_dmu_Inst(StoreBarrier_dmu_Inst *i) { //dmu
-  SILValue dest = i->getDest();
-  LoweredValue &destV = getLoweredValue(dest);
-  Address destAddress = getLoweredAddress(dest); // TODO: (dmu optimization) in DefiniteInitialization.cpp, where createStoreBarrier_dmu_ is called, could pass in loaded value
-  SILType srcType = i->getSrc()->getType().getObjectType();
-//#error dmu must trace through getDests's to see if topmost is a ref_foo_addr RefElementAddrInst RefTailAddrInst see Aggregate types in SILNodes.def
+}
+
+
+void IRGenSILFunction::emitVisitRefsInValuesAssignedTo_dmu_( SILValue src,
+                                                             SILValue dest) {
+  SILType srcType = src->getType().getObjectType();
+  const LoadableTypeInfo &srcTI = cast<LoadableTypeInfo>(getTypeInfo(srcType));
+  Explosion concurrentAccessSource = getLoweredExplosion(src);
+
+  Address destAddress = getLoweredAddress(dest);
   SILType destSILType = dest->getType();
-//  if (!destSILType.isReferenceCounted(IGM.getSILModule())) {
-//    assert(!destSILType.isExistentialType() && "must handle existentials");
-//    return;
-//  }
+  CanType destSwiftType = destSILType.getSwiftType();
   
-  const auto &srcTI = cast<LoadableTypeInfo>(getTypeInfo(srcType));
+  SILValue rootDestValue = getOutermostAggregate_dmu_(dest); // XXXXXXXXXXXXXX, tricky, what if weak/unowned/etc???
+  SILType rootDestSILType = rootDestValue->getType(); // .getObjectType() ???
+
+  const LoadableTypeInfo &rootDestTI = cast<LoadableTypeInfo>(getTypeInfo(rootDestSILType));
   
-  // TODO: (dmu check) how much of this now redundant with visitStoreInst
-  // TODO: (dmu check) what about other store instructions & assign? Does this code need to be there?
-  // TODO: (dmu cleanup) factor this code and what is in visitStoreBarrier_dmu_Inst
-  // move into typeinfo???, yes, ClassTypeInfo???
-  // cannot be here; could be a record type
-  // seems OK to use only source typeInfo
-  
-  // must always allow for concurrent access to globals
-  bool isDestGlobal = i->getDest()->getKind() == ValueKind::GlobalAddrInst;
-  i->dump();
-  
-  if (isDestGlobal) { // TODO: (dmu urgent) maybe also if dest has unimplemented beSafe in metadata? what if dest resilient or unknown?
-    Explosion concurrentAccessSource = getLoweredExplosion(i->getSrc());
+  // HACK to enable DG to generate libraries. UNTESTED!
+  if (true || rootDestValue->getKind() == ValueKind::GlobalAddrInst) {
     srcTI.genIRToVisitRefsInInitialValues_dmu_( *this, concurrentAccessSource);
   }
-  else {
-    Explosion concurrentAccessSource = getLoweredExplosion(i->getSrc());
+  else if (rootDestSILType.isReferenceCounted(IGM.getSILModule())) {
     srcTI.genIRToVisitRefsInValuesAssignedTo_dmu_( *this, concurrentAccessSource, destAddress);
   }
+  else
+    (void)concurrentAccessSource.claimAll();
 }
 
 /// Emit the artificial error result argument.
@@ -4752,7 +4742,7 @@ void IRGenSILFunction::visitVisitRefAtAddr_dmu_Inst(swift::VisitRefAtAddr_dmu_In
       Address addr = lv.getAddressInContainer();
       operandTI.visitRefs_dmu_(*this, addr, operandTy);
       return;
-}
+    }
     case LoweredValue::Kind::Address: {
       Address addr = lv.getAddress();
       operandTI.visitRefs_dmu_(*this, addr, operandTy);
@@ -4783,6 +4773,30 @@ void IRGenSILFunction::visitVisitRefAtAddr_dmu_Inst(swift::VisitRefAtAddr_dmu_In
   }
 }
 
+
+SILValue IRGenSILFunction::getOutermostAggregate_dmu_(SILValue vArg) {
+  return vArg; // stub out for now; I don't think this will work, need to just operate on types or Decls
+  SILValue v = vArg;
+  LoweredValue& lv = getLoweredValue(v);
+  v->dump();
+  for (;;) {
+    switch (v->getKind()) {
+      case ValueKind::RefElementAddrInst:
+        return cast<RefElementAddrInst>(v)->getOperand();
+      case ValueKind::RefTailAddrInst:
+        return cast<RefTailAddrInst>(v)->getOperand();
+        
+      case ValueKind::StructElementAddrInst:
+        v = cast<StructElementAddrInst>(v)->getOperand();
+        break;
+        
+      case ValueKind::MarkDependenceInst:
+        v = cast<MarkDependenceInst>(v)->getValue();
+      default:
+        return v;
+    }
+  }
+}
 
 void IRGenSILFunction::visitCondFailInst(swift::CondFailInst *i) {
   Explosion e = getLoweredExplosion(i->getOperand());
