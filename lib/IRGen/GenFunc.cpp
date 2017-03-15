@@ -294,12 +294,16 @@ namespace {
         IGF.emitNativeStrongInit(context, dataAddr);
     }
 
-     void genIRToVisitRefsInInitialValues_dmu_(IRGenFunction &IGF, Explosion &e) const override {
-       auto context = e.claimNext();
-       //Address dataAddr = projectData(IGF, address);
-       if (!isPOD(ResilienceExpansion::Maximal))
-         ; // TODO: (dmu implement funcs) IGF.xxx(context, dataAddr);
+   void genIRToVisitRefsInInitialValues_dmu_(IRGenFunction &IGF, Explosion &e) const override {
+     // Store the function pointer.
+     //  Address fnAddr = projectFunction(IGF, address);
+     llvm::Value *fnPointer = e.claimNext();
+     (void)fnPointer;  // not ref-counted
+     llvm::Value *context = e.claimNext(); // is context ref-counted?///
+     if (!isPOD(ResilienceExpansion::Maximal)) {
+       IGF.emitNativeVisitRefInScalar_dmu_(context);
      }
+   }
 
     void copy(IRGenFunction &IGF, Explosion &src,
               Explosion &dest, Atomicity atomicity) const override {
