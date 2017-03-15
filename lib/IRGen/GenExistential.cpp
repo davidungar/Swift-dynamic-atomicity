@@ -265,6 +265,10 @@ public:
       IGF.Builder.CreateStore(in.claimNext(), tableAddr);
     }
   }
+      
+  void claimTables(IRGenFunction &IGF, Explosion &in) const {
+    in.markClaimed(NumStoredProtocols);
+  }
 };
 
 /// A TypeInfo implementation for existential types, i.e., types like:
@@ -822,6 +826,7 @@ public:
   void genIRToVisitRefsInInitialValues_dmu_(IRGenFunction &IGF, Explosion &e) const override {
     llvm::Value *instance = e.claimNext();
     asDerived().emitValueVisitRefInScalar_dmu_(IGF, instance);
+    asDerived().claimTables(IGF, e);
   }
   
   void copy(IRGenFunction &IGF, Explosion &src, Explosion &dest,

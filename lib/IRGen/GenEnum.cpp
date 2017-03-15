@@ -1593,6 +1593,9 @@ namespace {
       if (PayloadBitCount > 0) {
         static int xxxx_dmu_ = 0;
         fprintf(stderr, "emitVisitRefsInInitialValueOfPayload %d\n", xxxx_dmu_++);
+        if (xxxx_dmu_ == 8) {
+          fprintf(stderr, "lucky 7");
+        }
         ConditionalDominanceScope condition(IGF);
         Explosion payloadValue;
         auto &loadableTI = getLoadablePayloadTypeInfo();
