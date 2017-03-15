@@ -1391,9 +1391,7 @@ void LoadableTypeInfo::genIRToVisitRefsInValuesAssignedTo_dmu_(IRGenFunction &IG
   // TODO: (dmu) fix this hack, knowing where the ref count is!
   // TODO: (dmu) dest must be native and the outermost heap object to hold the value
 
-   Address destBase = getBaseAddress_dmu_(dest);
-  fprintf(stderr, "in genIRToVisitRefsInValuesAssignedTo_dmu_: ");
-  destBase->dump();// TODO: (dmu) code added for debugging
+  Address destBase = getBaseAddress_dmu_(dest);
   
   Address destCastBase = IGF.Builder.CreateBitCast(destBase, IGF.IGM.RefCountedPtrTy);
   // TODO: (dmu) 4 or 8 or whast below?

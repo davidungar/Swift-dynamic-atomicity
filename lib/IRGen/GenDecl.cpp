@@ -1534,23 +1534,6 @@ llvm::GlobalVariable *LinkInfo::createVariable(IRGenModule &IGM,
 
 /// Emit a global declaration.
 void IRGenModule::emitGlobalDecl(Decl *D) {
-  
-#ifndef NDEBUG 
-  if (false) // turn this off for now
-  {
-    const char* target = "ContiguousArray";
-    if (auto vd = dyn_cast<ValueDecl>(D)) { // TODO: (dmu) code added for debugging
-      if (vd->hasName()) {
-        const char* name = vd->getName().get();
-        fprintf(stderr, "IRGenModule::emitGlobalDecl: %s\n", name);
-        if (strcmp(vd->getName().get(), target) == 0 ) {
-          fprintf(stderr, "IRGenModule::emitGlobalDecl found: %s\n", name);
-        }
-      }
-    }
-  }
-#endif
-  
   switch (D->getKind()) {
   case DeclKind::Extension:
     return emitExtension(cast<ExtensionDecl>(D));
