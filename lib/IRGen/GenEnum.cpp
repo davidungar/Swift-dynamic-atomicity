@@ -1579,8 +1579,6 @@ namespace {
       auto func = createOutlineLLVMFunction(IGM, name, PayloadTypesAndTagType);
       
       IRGenFunction IGF(IGM, func);
-      static int xxx_dmu_ = 0;
-      fprintf(stderr, "emitVisitRefsInInitialValueOfPayload %d\n", xxx_dmu_++);
       Explosion src = IGF.collectParameters();
       
       EnumPayload payload;
@@ -1591,19 +1589,12 @@ namespace {
       testFixedEnumContainsPayload(IGF, payload, extraTag);
       
       if (PayloadBitCount > 0) {
-        static int xxxx_dmu_ = 0;
-        fprintf(stderr, "emitVisitRefsInInitialValueOfPayload %d\n", xxxx_dmu_++);
-        if (xxxx_dmu_ == 8) {
-          fprintf(stderr, "lucky 7");
-        }
         ConditionalDominanceScope condition(IGF);
         Explosion payloadValue;
         auto &loadableTI = getLoadablePayloadTypeInfo();
         loadableTI.unpackFromEnumPayload(IGF, payload, payloadValue, 0);
         loadableTI.genIRToVisitRefsInInitialValues_dmu_(IGF, payloadValue);
       }
-      fprintf(stderr, "emitVisitRefsInInitialValueOfPayload ^\n");
-      
       
       IGF.Builder.CreateBr(endBB);
       IGF.Builder.emitBlock(endBB);
