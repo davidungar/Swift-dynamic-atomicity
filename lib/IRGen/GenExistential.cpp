@@ -822,7 +822,6 @@ public:
     asDerived().emitStoreOfTables(IGF, e, address);
   }
 
-  // dmu
   void genIRToVisitRefsInInitialValues_dmu_(IRGenFunction &IGF, Explosion &e) const override {
     llvm::Value *instance = e.claimNext();
     asDerived().emitValueVisitRefInScalar_dmu_(IGF, instance);
