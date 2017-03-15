@@ -68,7 +68,7 @@ static void LowerAssignInstruction(SILBuilder &B, AssignInst *Inst,
     // If this is an initialization, or the storage type is trivial, we
     // can just replace the assignment with a store.
     assert(isInitialization != PartialInitializationKind::IsReinitialization);
-    B.createStoreBarrier_dmu_(Loc, Src, Inst->getDest()); // TODO: (dmu) optimize compilation time; may not need this for a trivial dest
+    // B.createStoreBarrier_dmu_(Loc, Src, Inst->getDest()); // TODO: (dmu) optimize compilation time; may not need this for a trivial dest
     B.createStore(Loc, Src, Inst->getDest(),
                   StoreOwnershipQualifier::Unqualified);
   } else if (isInitialization == PartialInitializationKind::IsReinitialization) {
@@ -103,7 +103,7 @@ static void LowerAssignInstruction(SILBuilder &B, AssignInst *Inst,
     SILValue IncomingVal =
         B.createLoad(Loc, Inst->getDest(), LoadOwnershipQualifier::Unqualified);
     // TODO: (dmu optimization) use IncomingVal instead of Inst->getDest() below to avoid reloading the destination
-    B.createStoreBarrier_dmu_(Inst->getLoc(), Src, Inst->getDest());
+    // B.createStoreBarrier_dmu_(Inst->getLoc(), Src, Inst->getDest());
     B.createStore(Inst->getLoc(), Src, Inst->getDest(),
                   StoreOwnershipQualifier::Unqualified);
 
