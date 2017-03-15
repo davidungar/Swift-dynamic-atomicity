@@ -1535,7 +1535,8 @@ llvm::GlobalVariable *LinkInfo::createVariable(IRGenModule &IGM,
 /// Emit a global declaration.
 void IRGenModule::emitGlobalDecl(Decl *D) {
   
-#ifndef NDEBUG
+#ifndef NDEBUG 
+  if (false) // turn this off for now
   {
     const char* target = "ContiguousArray";
     if (auto vd = dyn_cast<ValueDecl>(D)) { // TODO: (dmu) code added for debugging
