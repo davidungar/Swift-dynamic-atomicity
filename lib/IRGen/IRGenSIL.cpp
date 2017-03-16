@@ -4815,6 +4815,10 @@ llvm::Optional<SILValue> IRGenSILFunction::getOutermostAggregate_dmu_(SILValue v
         v = cast<MarkDependenceInst>(v)->getValue();
         break;
         
+      case ValueKind::InitEnumDataAddrInst:
+        v = cast<InitEnumDataAddrInst>(v)->getOperand();
+        break;
+        
       default:
         assert(false && "unimp");
     }
