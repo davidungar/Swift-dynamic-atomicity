@@ -774,7 +774,8 @@ public:
   
   
   void emitVisitRefsInValuesAssignedTo_dmu_( SILValue src, SILValue dest);
-  SILValue getOutermostAggregate_dmu_(SILValue v);
+  
+  llvm::Optional<SILValue> getOutermostAggregate_dmu_(SILValue v);
   
   //===--------------------------------------------------------------------===//
   // SIL instruction lowering
@@ -3210,6 +3211,7 @@ void IRGenSILFunction::visitLoadInst(swift::LoadInst *i) {
 // Another optimization could be to reuse the ref count load for a direct store of a ref.
 
 void IRGenSILFunction::visitStoreInst(swift::StoreInst *i) {
+  fprintf(stderr, "\nvisitStoreInst "); i->dump();
   
   emitVisitRefsInValuesAssignedTo_dmu_(i->getSrc(), i->getDest());
   
@@ -3241,19 +3243,23 @@ void IRGenSILFunction::emitVisitRefsInValuesAssignedTo_dmu_( SILValue src,
                                                              SILValue dest) {
   SILType srcType = src->getType().getObjectType();
   const LoadableTypeInfo &srcTI = cast<LoadableTypeInfo>(getTypeInfo(srcType));
-  Explosion concurrentAccessSource = getLoweredExplosion(src);
 
   Address destAddress = getLoweredAddress(dest);
   SILType destSILType = dest->getType();
   CanType destSwiftType = destSILType.getSwiftType();
   
-  SILValue rootDestValue = getOutermostAggregate_dmu_(dest); // XXXXXXXXXXXXXX, tricky, what if weak/unowned/etc???
+  llvm::Optional<SILValue> outermostAggregate = getOutermostAggregate_dmu_(dest);
+  if (!outermostAggregate.hasValue())
+    return;
+  // Do I need the value, or just a bool?
+  SILValue rootDestValue = outermostAggregate.getValue();
+  // tricky, what if weak/unowned/etc???
   SILType rootDestSILType = rootDestValue->getType(); // .getObjectType() ???
 
   const LoadableTypeInfo &rootDestTI = cast<LoadableTypeInfo>(getTypeInfo(rootDestSILType));
-  
-  // HACK to enable DG to generate libraries. UNTESTED!
-  if (true || rootDestValue->getKind() == ValueKind::GlobalAddrInst) {
+
+  Explosion concurrentAccessSource = getLoweredExplosion(src);
+  if (rootDestValue->getKind() == ValueKind::GlobalAddrInst) {
     srcTI.genIRToVisitRefsInInitialValues_dmu_( *this, concurrentAccessSource);
   }
   else if (rootDestSILType.isReferenceCounted(IGM.getSILModule())) {
@@ -4774,17 +4780,28 @@ void IRGenSILFunction::visitVisitRefAtAddr_dmu_Inst(swift::VisitRefAtAddr_dmu_In
 }
 
 
-SILValue IRGenSILFunction::getOutermostAggregate_dmu_(SILValue vArg) {
-  return vArg; // stub out for now; I don't think this will work, need to just operate on types or Decls
+llvm::Optional<SILValue> IRGenSILFunction::getOutermostAggregate_dmu_(SILValue vArg) {
   SILValue v = vArg;
-  LoweredValue& lv = getLoweredValue(v);
-  v->dump();
   for (;;) {
+    LoweredValue& lv = getLoweredValue(v);
+    fprintf(stderr, "getOutermostAggregate_dmu_ "); v->dump();
     switch (v->getKind()) {
-      case ValueKind::RefElementAddrInst:
-        return cast<RefElementAddrInst>(v)->getOperand();
-      case ValueKind::RefTailAddrInst:
-        return cast<RefTailAddrInst>(v)->getOperand();
+      case ValueKind::RefElementAddrInst: {
+        SILValue r = cast<RefElementAddrInst>(v)->getOperand();
+        fprintf(stderr, "getOutermostAggregate_dmu_ some "); r->dump(); fprintf(stderr, "\n");
+        return r;
+      }
+        
+      case ValueKind::RefTailAddrInst: {
+        SILValue r = cast<RefTailAddrInst>(v)->getOperand();
+        fprintf(stderr, "getOutermostAggregate_dmu_ some "); r->dump(); fprintf(stderr, "\n");
+        return r;
+      }
+        
+      case ValueKind::AllocStackInst:
+      case ValueKind::SILFunctionArgument:
+        fprintf(stderr, "getOutermostAggregate_dmu_ none\n\n");
+        return llvm::Optional<SILValue>();
         
       case ValueKind::StructElementAddrInst:
         v = cast<StructElementAddrInst>(v)->getOperand();
@@ -4792,8 +4809,10 @@ SILValue IRGenSILFunction::getOutermostAggregate_dmu_(SILValue vArg) {
         
       case ValueKind::MarkDependenceInst:
         v = cast<MarkDependenceInst>(v)->getValue();
+        break;
+        
       default:
-        return v;
+        assert(false && "unimp");
     }
   }
 }
