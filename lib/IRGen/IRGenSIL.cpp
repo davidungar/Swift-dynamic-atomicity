@@ -4802,6 +4802,8 @@ llvm::Optional<SILValue> IRGenSILFunction::getOutermostAggregate_dmu_(SILValue v
       case ValueKind::SILFunctionArgument:
       case ValueKind::PointerToAddressInst: // is this right?
       case ValueKind::IndexAddrInst: // is this right?
+      case ValueKind::ProjectBoxInst: // is this right?
+      case ValueKind::AllocValueBufferInst: // is this right?
         fprintf(stderr, "getOutermostAggregate_dmu_ none\n\n");
         return llvm::Optional<SILValue>();
         
