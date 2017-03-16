@@ -779,7 +779,7 @@ public:
   /// TODO: (dmu cleanup) fix this comment:  Set bit in source (explosion)'s reference count if it now can be concurrently accessed after
   /// initializing or assigning it to dest (addr)
   /// rename to storeBarrier?
-  void emitVisitRefsInValuesAssignedTo_dmu_(SILValue const &src, Address const dest);
+  void emitVisitRefsInValuesAssignedTo_dmu_(SILValue const &src, Address const outermostDestAggregate);
 
   llvm::Optional<SILValue> getOutermostAggregate_dmu_(SILValue v);
   
@@ -3238,25 +3238,6 @@ void IRGenSILFunction::visitStoreInst(swift::StoreInst *i) {
   }
 }
 
-/// Gets the underlying address
-// stolen from LLVMARCOpts.cpp::getBaseAddress
-static llvm::Value *getBaseAddress_dmu_(llvm::Value *val) {
-  for (;;) {
-    if (auto *GEP = dyn_cast<llvm::GetElementPtrInst>(val)) {
-      val = GEP->getPointerOperand();
-      continue;
-    }
-    if (auto *BC = dyn_cast<llvm::BitCastInst>(val)) {
-      val = BC->getOperand(0);
-      continue;
-    }
-    return val;
-  }
-}
-static Address getBaseAddress_dmu_(Address const addr) {
-  return Address(getBaseAddress_dmu_(addr.getAddress()), Alignment()); // TODO: (dmu) check is Size(0) right?
-}
-
 
 void IRGenSILFunction::emitVisitRefsInInitialValues_dmu_(SILValue const &srcSILValue) {
   SILType srcType = srcSILValue->getType().getObjectType();
@@ -3268,18 +3249,12 @@ void IRGenSILFunction::emitVisitRefsInInitialValues_dmu_(SILValue const &srcSILV
 //#include <swift/Runtime/HeapObject.h> // blecch! TODO: (dmu) clean this up!
 #include <../stdlib/public/SwiftShims/RefCount.h> // blecch! TODO: (dmu) clean this up!
 // Return non-zero if the reference count has the atomic bit set
-void IRGenSILFunction::emitVisitRefsInValuesAssignedTo_dmu_(SILValue const &srcSILValue, Address const dest)  {
+void IRGenSILFunction::emitVisitRefsInValuesAssignedTo_dmu_(SILValue const &srcSILValue, Address const outermostDestAggregate)  {
   // TODO: (dmu) fix this hack, knowing where the ref count is!
   // TODO: (dmu) dest must be native and the outermost heap object to hold the value
   
-  Address destBase = getBaseAddress_dmu_(dest);
-  
-  Address destCastBase = Builder.CreateBitCast(destBase, IGM.RefCountedPtrTy);
-  // TODO: (dmu) 4 or 8 or whast below?
-  Address destCaseBaseWithAlignment = Address(destCastBase.getAddress(), Alignment(4));
-  
   Address refCountAddr = Builder.CreateStructGEP(
-                                                 destCaseBaseWithAlignment,
+                                                 outermostDestAggregate,
                                                  1,
                                                  IGM.DataLayout.getStructLayout(IGM.RefCountedStructTy),
                                                  Twine("refCount"));
@@ -3307,30 +3282,6 @@ void IRGenSILFunction::emitVisitRefsInValuesAssignedTo_dmu_(SILValue const &srcS
 void IRGenSILFunction::visitStoreBarrier_dmu_Inst(StoreBarrier_dmu_Inst *i) { //dmu
 }
 
-
-void IRGenSILFunction::emitStoreBarrier_dmu_( SILValue srcSILValue, SILValue dest) {
-
-  Address destAddress = getLoweredAddress(dest);
-  SILType destSILType = dest->getType();
-  CanType destSwiftType = destSILType.getSwiftType();
-  
-  llvm::Optional<SILValue> outermostAggregate = getOutermostAggregate_dmu_(dest);
-  if (!outermostAggregate.hasValue())
-    return;
-  // Do I need the value, or just a bool?
-  SILValue rootDestValue = outermostAggregate.getValue();
-  // tricky, what if weak/unowned/etc???
-  SILType rootDestSILType = rootDestValue->getType(); // .getObjectType() ???
-
-  const LoadableTypeInfo &rootDestTI = cast<LoadableTypeInfo>(getTypeInfo(rootDestSILType));
-
-  if (rootDestValue->getKind() == ValueKind::GlobalAddrInst) {
-    emitVisitRefsInInitialValues_dmu_(srcSILValue);
-  }
-  else if (rootDestSILType.isReferenceCounted(IGM.getSILModule())) {
-    emitVisitRefsInValuesAssignedTo_dmu_( srcSILValue, destAddress);
-  }
-}
 
 /// Emit the artificial error result argument.
 void IRGenSILFunction::emitErrorResultVar(SILResultInfo ErrorInfo,
@@ -4840,24 +4791,21 @@ void IRGenSILFunction::visitVisitRefAtAddr_dmu_Inst(swift::VisitRefAtAddr_dmu_In
   }
 }
 
-
+// TODO: (dmu) NEEDS FIXING
 llvm::Optional<SILValue> IRGenSILFunction::getOutermostAggregate_dmu_(SILValue vArg) {
-  SILValue v = vArg;
-  for (;;) {
+  for (SILValue v = vArg; ; ) {
     LoweredValue& lv = getLoweredValue(v);
     fprintf(stderr, "getOutermostAggregate_dmu_ "); v->dump();
     switch (v->getKind()) {
-      case ValueKind::RefElementAddrInst: {
-        SILValue r = cast<RefElementAddrInst>(v)->getOperand();
-        fprintf(stderr, "getOutermostAggregate_dmu_ some "); r->dump(); fprintf(stderr, "\n");
-        return r;
-      }
-        
-      case ValueKind::RefTailAddrInst: {
-        SILValue r = cast<RefTailAddrInst>(v)->getOperand();
-        fprintf(stderr, "getOutermostAggregate_dmu_ some "); r->dump(); fprintf(stderr, "\n");
-        return r;
-      }
+
+# define RETURN_OPERAND(INST)  \
+      case ValueKind::RefElementAddrInst: { \
+        SILValue r = cast<INST>(v)->getOperand(); \
+        fprintf(stderr, "getOutermostAggregate_dmu_ some "); r->dump(); fprintf(stderr, "\n"); \
+        return r; \
+    }
+        RETURN_OPERAND(RefTailAddrInst)
+# undef RETURN_OPERAND
         
       case ValueKind::AllocStackInst:
       case ValueKind::SILFunctionArgument:
@@ -4868,28 +4816,71 @@ llvm::Optional<SILValue> IRGenSILFunction::getOutermostAggregate_dmu_(SILValue v
         fprintf(stderr, "getOutermostAggregate_dmu_ none\n\n");
         return llvm::Optional<SILValue>();
         
-      case ValueKind::StructElementAddrInst:
-        v = cast<StructElementAddrInst>(v)->getOperand();
-        break;
-        
-      case ValueKind::TupleElementAddrInst:
-        v = cast<TupleElementAddrInst>(v)->getOperand();
-        break;
+# define GET_OPERAND(INST)  case ValueKind::INST:  v = cast<INST>(v)->getOperand(); break;
+        GET_OPERAND(StructElementAddrInst)
+        GET_OPERAND(TupleElementAddrInst)
+        GET_OPERAND(InitEnumDataAddrInst)
+# undef GET_OPERAND
         
       case ValueKind::MarkDependenceInst:
         v = cast<MarkDependenceInst>(v)->getValue();
         break;
-        
-      case ValueKind::InitEnumDataAddrInst:
-        v = cast<InitEnumDataAddrInst>(v)->getOperand();
-        break;
-        
         
       default:
         assert(false && "unimp");
     }
   }
 }
+
+/// Gets the underlying address
+// stolen from LLVMARCOpts.cpp::getBaseAddress
+static llvm::Value *getBaseAddress_dmu_(llvm::Value *val) {
+  for (;;) {
+    if (auto *GEP = dyn_cast<llvm::GetElementPtrInst>(val)) {
+      val = GEP->getPointerOperand();
+      continue;
+    }
+    if (auto *BC = dyn_cast<llvm::BitCastInst>(val)) {
+      val = BC->getOperand(0);
+      continue;
+    }
+    return val;
+  }
+}
+static Address getBaseAddress_dmu_(Address const addr) {
+  return Address(getBaseAddress_dmu_(addr.getAddress()), Alignment(4)); // TODO: (dmu) check is Size(0) right?
+}
+
+
+
+void IRGenSILFunction::emitStoreBarrier_dmu_( SILValue srcSILValue, SILValue dest) {
+  // Can these be useful?
+  SILType destSILType = dest->getType();
+  CanType destSwiftType = destSILType.getSwiftType();
+  
+  Address const destAddress = getLoweredAddress(dest);
+  Address outermostDestAggregateAddress = getBaseAddress_dmu_(destAddress);
+  
+  llvm::Optional<SILValue> outermostAggregate = getOutermostAggregate_dmu_(dest);
+  
+  if (!outermostAggregate.hasValue())
+    return;
+  
+  // Do I need the value, or just a bool?
+  SILValue outermostDestSILValue = outermostAggregate.getValue();
+  // tricky, what if weak/unowned/etc???
+  SILType outermostDestSILType = outermostDestSILValue->getType(); // .getObjectType() ???
+  
+  const LoadableTypeInfo &outermostDestTI = cast<LoadableTypeInfo>(getTypeInfo(outermostDestSILType));
+  
+  if (outermostDestSILValue->getKind() == ValueKind::GlobalAddrInst) {
+    emitVisitRefsInInitialValues_dmu_(srcSILValue);
+  }
+  else if (outermostDestSILType.isReferenceCounted(IGM.getSILModule())) {
+    emitVisitRefsInValuesAssignedTo_dmu_( srcSILValue, outermostDestAggregateAddress);
+  }
+}
+
 
 void IRGenSILFunction::visitCondFailInst(swift::CondFailInst *i) {
   Explosion e = getLoweredExplosion(i->getOperand());
