@@ -773,8 +773,14 @@ public:
   }
   
   
-  void emitVisitRefsInValuesAssignedTo_dmu_( SILValue src, SILValue dest);
+  void emitStoreBarrier_dmu_( SILValue src, SILValue dest);
   
+  void emitVisitRefsInInitialValues_dmu_(SILValue const &src);
+  /// TODO: (dmu cleanup) fix this comment:  Set bit in source (explosion)'s reference count if it now can be concurrently accessed after
+  /// initializing or assigning it to dest (addr)
+  /// rename to storeBarrier?
+  void emitVisitRefsInValuesAssignedTo_dmu_(SILValue const &src, Address const dest);
+
   llvm::Optional<SILValue> getOutermostAggregate_dmu_(SILValue v);
   
   //===--------------------------------------------------------------------===//
@@ -3213,7 +3219,7 @@ void IRGenSILFunction::visitLoadInst(swift::LoadInst *i) {
 void IRGenSILFunction::visitStoreInst(swift::StoreInst *i) {
   fprintf(stderr, "\nvisitStoreInst "); i->dump();
   
-  emitVisitRefsInValuesAssignedTo_dmu_(i->getSrc(), i->getDest());
+  emitStoreBarrier_dmu_(i->getSrc(), i->getDest());
   
   Explosion source = getLoweredExplosion(i->getSrc());
   Address dest = getLoweredAddress(i->getDest());
@@ -3232,17 +3238,77 @@ void IRGenSILFunction::visitStoreInst(swift::StoreInst *i) {
   }
 }
 
+/// Gets the underlying address
+// stolen from LLVMARCOpts.cpp::getBaseAddress
+static llvm::Value *getBaseAddress_dmu_(llvm::Value *val) {
+  for (;;) {
+    if (auto *GEP = dyn_cast<llvm::GetElementPtrInst>(val)) {
+      val = GEP->getPointerOperand();
+      continue;
+    }
+    if (auto *BC = dyn_cast<llvm::BitCastInst>(val)) {
+      val = BC->getOperand(0);
+      continue;
+    }
+    return val;
+  }
+}
+static Address getBaseAddress_dmu_(Address const addr) {
+  return Address(getBaseAddress_dmu_(addr.getAddress()), Alignment()); // TODO: (dmu) check is Size(0) right?
+}
 
 
-// dmu
+void IRGenSILFunction::emitVisitRefsInInitialValues_dmu_(SILValue const &srcSILValue) {
+  SILType srcType = srcSILValue->getType().getObjectType();
+  const LoadableTypeInfo &srcTI = cast<LoadableTypeInfo>(getTypeInfo(srcType));
+  Explosion srcValues = getLoweredExplosion(srcSILValue);
+  srcTI.genIRToVisitRefsInInitialValues_dmu_( *this, srcValues);
+}
+
+//#include <swift/Runtime/HeapObject.h> // blecch! TODO: (dmu) clean this up!
+#include <../stdlib/public/SwiftShims/RefCount.h> // blecch! TODO: (dmu) clean this up!
+// Return non-zero if the reference count has the atomic bit set
+void IRGenSILFunction::emitVisitRefsInValuesAssignedTo_dmu_(SILValue const &srcSILValue, Address const dest)  {
+  // TODO: (dmu) fix this hack, knowing where the ref count is!
+  // TODO: (dmu) dest must be native and the outermost heap object to hold the value
+  
+  Address destBase = getBaseAddress_dmu_(dest);
+  
+  Address destCastBase = Builder.CreateBitCast(destBase, IGM.RefCountedPtrTy);
+  // TODO: (dmu) 4 or 8 or whast below?
+  Address destCaseBaseWithAlignment = Address(destCastBase.getAddress(), Alignment(4));
+  
+  Address refCountAddr = Builder.CreateStructGEP(
+                                                 destCaseBaseWithAlignment,
+                                                 1,
+                                                 IGM.DataLayout.getStructLayout(IGM.RefCountedStructTy),
+                                                 Twine("refCount"));
+  
+  llvm::LoadInst *refCount = Builder.CreateLoad(refCountAddr);
+  llvm::Value *safeBit = Builder.CreateAnd(refCount, StrongRefCount::might_be_concurrently_accessed_mask__dmu_);
+  
+  llvm::BasicBlock *isSafe = createBasicBlock("isSafe");
+  llvm::BasicBlock *safeOrNot = createBasicBlock("safeOrNot");
+  
+  llvm::Value *cond = Builder.CreateICmpNE(safeBit, llvm::ConstantInt::get(IGM.Int32Ty, 0));
+  Builder.CreateCondBr(cond, isSafe, safeOrNot);
+  Builder.emitBlock(isSafe);
+  
+  emitVisitRefsInInitialValues_dmu_(srcSILValue);
+  
+  Builder.CreateBr(safeOrNot);
+  Builder.emitBlock(safeOrNot);
+}
+
+
+
+
+
 void IRGenSILFunction::visitStoreBarrier_dmu_Inst(StoreBarrier_dmu_Inst *i) { //dmu
 }
 
 
-void IRGenSILFunction::emitVisitRefsInValuesAssignedTo_dmu_( SILValue src,
-                                                             SILValue dest) {
-  SILType srcType = src->getType().getObjectType();
-  const LoadableTypeInfo &srcTI = cast<LoadableTypeInfo>(getTypeInfo(srcType));
+void IRGenSILFunction::emitStoreBarrier_dmu_( SILValue srcSILValue, SILValue dest) {
 
   Address destAddress = getLoweredAddress(dest);
   SILType destSILType = dest->getType();
@@ -3258,15 +3324,12 @@ void IRGenSILFunction::emitVisitRefsInValuesAssignedTo_dmu_( SILValue src,
 
   const LoadableTypeInfo &rootDestTI = cast<LoadableTypeInfo>(getTypeInfo(rootDestSILType));
 
-  Explosion concurrentAccessSource = getLoweredExplosion(src);
   if (rootDestValue->getKind() == ValueKind::GlobalAddrInst) {
-    srcTI.genIRToVisitRefsInInitialValues_dmu_( *this, concurrentAccessSource);
+    emitVisitRefsInInitialValues_dmu_(srcSILValue);
   }
   else if (rootDestSILType.isReferenceCounted(IGM.getSILModule())) {
-    srcTI.genIRToVisitRefsInValuesAssignedTo_dmu_( *this, concurrentAccessSource, destAddress);
+    emitVisitRefsInValuesAssignedTo_dmu_( srcSILValue, destAddress);
   }
-  else
-    (void)concurrentAccessSource.claimAll();
 }
 
 /// Emit the artificial error result argument.
@@ -3380,7 +3443,7 @@ void IRGenSILFunction::visitLoadWeakInst(swift::LoadWeakInst *i) {
 }
 
 void IRGenSILFunction::visitStoreWeakInst(swift::StoreWeakInst *i) {
-  // TODO: (dmu check) add call to genIRToVisitRefsInInitialValues_dmu_ or genIRToVisitRefsInValuesAssignedTo_dmu_ ala visitStore or be sure DestSafe node is created for these nodes
+  // TODO: (dmu check) add call to genIRToVisitRefsInInitialValues_dmu_ or emitVisitRefsInValuesAssignedTo_dmu_ ala visitStore or be sure DestSafe node is created for these nodes
   Explosion source = getLoweredExplosion(i->getSrc());
   Address dest = getLoweredAddress(i->getDest());
 
@@ -3502,7 +3565,7 @@ void IRGenSILFunction::visitLoadUnownedInst(swift::LoadUnownedInst *i) {
 }
 
 void IRGenSILFunction::visitStoreUnownedInst(swift::StoreUnownedInst *i) {
-  // TODO: (dmu check) add call to genIRToVisitRefsInInitialValues_dmu_ or genIRToVisitRefsInValuesAssignedTo_dmu_ ala visitStore or be sure DestSafe node is created for these nodes
+  // TODO: (dmu check) add call to genIRToVisitRefsInInitialValues_dmu_ or emitVisitRefsInValuesAssignedTo_dmu_ ala visitStore or be sure DestSafe node is created for these nodes
   Explosion source = getLoweredExplosion(i->getSrc());
   Address dest = getLoweredAddress(i->getDest());
 
@@ -4759,9 +4822,7 @@ void IRGenSILFunction::visitVisitRefAtAddr_dmu_Inst(swift::VisitRefAtAddr_dmu_In
         assert(false && "come back and fix this");
         return; // TODO: (dmu) I think there's nothing to be done here, but come back and verify this
       }
-      auto &loadableTI = cast<LoadableTypeInfo>(operandTI);
-      Explosion value = lv.getExplosion(*this);
-      loadableTI.genIRToVisitRefsInInitialValues_dmu_(*this, value);
+      emitVisitRefsInInitialValues_dmu_(i->getOperand());
       return;
     }
 

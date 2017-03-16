@@ -112,14 +112,6 @@ public:
   
   
 
-  
-  
-  /// TODO: (dmu cleanup) fix this comment:  Set bit in source (explosion)'s reference count if it now can be concurrently accessed after
-  /// initializing or assigning it to dest (addr)
-  /// rename to storeBarrier?
-  void genIRToVisitRefsInValuesAssignedTo_dmu_(IRGenFunction &IGF, Explosion &explosion,
-                                                 Address dest) const;
-
   // We can give this a reasonable default implementation.
   void initializeWithCopy(IRGenFunction &IGF, Address destAddr,
                           Address srcAddr, SILType T) const override;

@@ -1360,65 +1360,6 @@ void IRGenFunction::emitNativeUnownedVisitRef_dmu_(Address ref) {
   emitNativeVisitRefInScalar_dmu_(value);
 }
 
-
-
-/// Gets the underlying address
-// stolen from LLVMARCOpts.cpp::getBaseAddress
-static llvm::Value *getBaseAddress_dmu_(llvm::Value *val) {
-  for (;;) {
-    if (auto *GEP = dyn_cast<llvm::GetElementPtrInst>(val)) {
-      val = GEP->getPointerOperand();
-      continue;
-    }
-    if (auto *BC = dyn_cast<llvm::BitCastInst>(val)) {
-      val = BC->getOperand(0);
-      continue;
-    }
-    return val;
-  }
-}
-static Address getBaseAddress_dmu_(Address addr) {
-  return Address(getBaseAddress_dmu_(addr.getAddress()), Alignment()); // TODO: (dmu) check is Size(0) right?
-}
-
-
-
-
-//#include <swift/Runtime/HeapObject.h> // blecch! TODO: (dmu) clean this up!
-#include <../stdlib/public/SwiftShims/RefCount.h> // blecch! TODO: (dmu) clean this up!
-// Return non-zero if the reference count has the atomic bit set
-void LoadableTypeInfo::genIRToVisitRefsInValuesAssignedTo_dmu_(IRGenFunction &IGF, Explosion& src, Address dest) const {
-  // TODO: (dmu) fix this hack, knowing where the ref count is!
-  // TODO: (dmu) dest must be native and the outermost heap object to hold the value
-
-  Address destBase = getBaseAddress_dmu_(dest);
-  
-  Address destCastBase = IGF.Builder.CreateBitCast(destBase, IGF.IGM.RefCountedPtrTy);
-  // TODO: (dmu) 4 or 8 or whast below?
-  Address destCaseBaseWithAlignment = Address(destCastBase.getAddress(), Alignment(4));
-  
-  Address refCountAddr = IGF.Builder.CreateStructGEP(
-                                                     destCaseBaseWithAlignment,
-                                                     1,
-                                                     IGF.IGM.DataLayout.getStructLayout(IGF.IGM.RefCountedStructTy),
-                                                     Twine("refCount"));
-  
-  llvm::LoadInst *refCount = IGF.Builder.CreateLoad(refCountAddr);
-  llvm::Value *safeBit = IGF.Builder.CreateAnd(refCount, StrongRefCount::might_be_concurrently_accessed_mask__dmu_);
-  
-  llvm::BasicBlock *isSafe = IGF.createBasicBlock("isSafe");
-  llvm::BasicBlock *safeOrNot = IGF.createBasicBlock("safeOrNot");
-  
-  llvm::Value *cond = IGF.Builder.CreateICmpNE(safeBit, llvm::ConstantInt::get(IGF.IGM.Int32Ty, 0));
-  IGF.Builder.CreateCondBr(cond, isSafe, safeOrNot);
-  IGF.Builder.emitBlock(isSafe);
-  genIRToVisitRefsInInitialValues_dmu_( IGF, src);
-    
-  IGF.Builder.CreateBr(safeOrNot);
-  IGF.Builder.emitBlock(safeOrNot);
-}
-
-
 void IRGenFunction::emitNativeUnownedCopyInit(Address dest, Address src) {
   src = Builder.CreateStructGEP(src, 0, Size(0));
   dest = Builder.CreateStructGEP(dest, 0, Size(0));
