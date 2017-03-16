@@ -4807,6 +4807,10 @@ llvm::Optional<SILValue> IRGenSILFunction::getOutermostAggregate_dmu_(SILValue v
         v = cast<StructElementAddrInst>(v)->getOperand();
         break;
         
+      case ValueKind::TupleElementAddrInst:
+        v = cast<TupleElementAddrInst>(v)->getOperand();
+        break;
+        
       case ValueKind::MarkDependenceInst:
         v = cast<MarkDependenceInst>(v)->getValue();
         break;
