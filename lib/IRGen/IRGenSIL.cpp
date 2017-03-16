@@ -4800,6 +4800,8 @@ llvm::Optional<SILValue> IRGenSILFunction::getOutermostAggregate_dmu_(SILValue v
         
       case ValueKind::AllocStackInst:
       case ValueKind::SILFunctionArgument:
+      case ValueKind::PointerToAddressInst: // is this right?
+      case ValueKind::IndexAddrInst: // is this right?
         fprintf(stderr, "getOutermostAggregate_dmu_ none\n\n");
         return llvm::Optional<SILValue>();
         
@@ -4818,6 +4820,7 @@ llvm::Optional<SILValue> IRGenSILFunction::getOutermostAggregate_dmu_(SILValue v
       case ValueKind::InitEnumDataAddrInst:
         v = cast<InitEnumDataAddrInst>(v)->getOperand();
         break;
+        
         
       default:
         assert(false && "unimp");
