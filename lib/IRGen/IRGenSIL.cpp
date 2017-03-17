@@ -4857,9 +4857,18 @@ void IRGenSILFunction::emitStoreBarrier_dmu_( SILValue srcSILValue, SILValue des
     emitVisitRefsInInitialValues_dmu_(srcSILValue);
   }
   else if (outermostDestSILType.isReferenceCounted(IGM.getSILModule())) {
-    Address const destAddress = getLoweredAddress(outermostAggregateSV);
+    LoweredValue &destLV = getLoweredValue(outermostAggregateSV);
+    Address destAddress;
+    if (destLV.kind != LoweredValue::Kind::Explosion) {
+      destAddress = getLoweredAddress(outermostAggregateSV);
+    }
+    else {
+      destAddress = Address(getLoweredSingletonExplosion(outermostAggregateSV), Alignment(4));
+    }
     emitVisitRefsInValuesAssignedTo_dmu_( srcSILValue, destAddress);
   }
+  else
+    assert(false && "unimp situation");
 }
 
 
