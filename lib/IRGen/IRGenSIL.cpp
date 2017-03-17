@@ -3253,12 +3253,14 @@ void IRGenSILFunction::emitVisitRefsInValuesAssignedTo_dmu_(SILValue const &srcS
   // TODO: (dmu) fix this hack, knowing where the ref count is!
   // TODO: (dmu) dest must be native and the outermost heap object to hold the value
   
+  llvm::Value *destRefCountPtr = Builder.CreateBitCast(outermostDestAggregate.getAddress(), IGM.RefCountedPtrTy);
   Address refCountAddr = Builder.CreateStructGEP(
-                                                 outermostDestAggregate,
+                                                 Address(destRefCountPtr, Alignment(4)), // TODO: (dmu) 4?!
                                                  1,
                                                  IGM.DataLayout.getStructLayout(IGM.RefCountedStructTy),
                                                  Twine("refCount"));
   
+
   llvm::LoadInst *refCount = Builder.CreateLoad(refCountAddr);
   llvm::Value *safeBit = Builder.CreateAnd(refCount, StrongRefCount::might_be_concurrently_accessed_mask__dmu_);
   
