@@ -4794,21 +4794,27 @@ void IRGenSILFunction::visitVisitRefAtAddr_dmu_Inst(swift::VisitRefAtAddr_dmu_In
 // TODO: (dmu) NEEDS FIXING
 llvm::Optional<SILValue> IRGenSILFunction::getOutermostAggregate_dmu_(SILValue vArg) {
   for (SILValue v = vArg; ; ) {
+    
+    // Can these be useful?
     LoweredValue& lv = getLoweredValue(v);
+    SILType destSILType = v->getType();
+    CanType destSwiftType = destSILType.getSwiftType();
+    
     fprintf(stderr, "getOutermostAggregate_dmu_ "); v->dump();
     switch (v->getKind()) {
 
 # define RETURN_OPERAND(INST)  \
-      case ValueKind::RefElementAddrInst: { \
+      case ValueKind::INST: { \
         SILValue r = cast<INST>(v)->getOperand(); \
         fprintf(stderr, "getOutermostAggregate_dmu_ some "); r->dump(); fprintf(stderr, "\n"); \
         return r; \
     }
         RETURN_OPERAND(RefTailAddrInst)
+        RETURN_OPERAND(RefElementAddrInst)
 # undef RETURN_OPERAND
         
-      case ValueKind::AllocStackInst:
-      case ValueKind::SILFunctionArgument:
+      case ValueKind::AllocStackInst: // verified
+      case ValueKind::SILFunctionArgument: // verified
       case ValueKind::PointerToAddressInst: // is this right?
       case ValueKind::IndexAddrInst: // is this right?
       case ValueKind::ProjectBoxInst: // is this right?
@@ -4820,6 +4826,7 @@ llvm::Optional<SILValue> IRGenSILFunction::getOutermostAggregate_dmu_(SILValue v
         GET_OPERAND(StructElementAddrInst)
         GET_OPERAND(TupleElementAddrInst)
         GET_OPERAND(InitEnumDataAddrInst)
+        GET_OPERAND(InitExistentialAddrInst)
 # undef GET_OPERAND
         
       case ValueKind::MarkDependenceInst:
@@ -4827,57 +4834,31 @@ llvm::Optional<SILValue> IRGenSILFunction::getOutermostAggregate_dmu_(SILValue v
         break;
         
       default:
-        assert(false && "unimp");
+        fprintf(stderr, "UNKNOWN " ); v->dump();
+        //Builder.BB;
+        return llvm::Optional<SILValue>();
     }
   }
 }
-
-/// Gets the underlying address
-// stolen from LLVMARCOpts.cpp::getBaseAddress
-static llvm::Value *getBaseAddress_dmu_(llvm::Value *val) {
-  for (;;) {
-    if (auto *GEP = dyn_cast<llvm::GetElementPtrInst>(val)) {
-      val = GEP->getPointerOperand();
-      continue;
-    }
-    if (auto *BC = dyn_cast<llvm::BitCastInst>(val)) {
-      val = BC->getOperand(0);
-      continue;
-    }
-    return val;
-  }
-}
-static Address getBaseAddress_dmu_(Address const addr) {
-  return Address(getBaseAddress_dmu_(addr.getAddress()), Alignment(4)); // TODO: (dmu) check is Size(0) right?
-}
-
 
 
 void IRGenSILFunction::emitStoreBarrier_dmu_( SILValue srcSILValue, SILValue dest) {
-  // Can these be useful?
-  SILType destSILType = dest->getType();
-  CanType destSwiftType = destSILType.getSwiftType();
   
-  Address const destAddress = getLoweredAddress(dest);
-  Address outermostDestAggregateAddress = getBaseAddress_dmu_(destAddress);
-  
-  llvm::Optional<SILValue> outermostAggregate = getOutermostAggregate_dmu_(dest);
-  
-  if (!outermostAggregate.hasValue())
+  llvm::Optional<SILValue> outermostAggregateIfAny = getOutermostAggregate_dmu_(dest);
+  if (!outermostAggregateIfAny.hasValue())
     return;
+  SILValue outermostAggregateSV = outermostAggregateIfAny.getValue();
   
-  // Do I need the value, or just a bool?
-  SILValue outermostDestSILValue = outermostAggregate.getValue();
   // tricky, what if weak/unowned/etc???
-  SILType outermostDestSILType = outermostDestSILValue->getType(); // .getObjectType() ???
-  
+  SILType outermostDestSILType = outermostAggregateSV->getType(); // .getObjectType() ???
   const LoadableTypeInfo &outermostDestTI = cast<LoadableTypeInfo>(getTypeInfo(outermostDestSILType));
   
-  if (outermostDestSILValue->getKind() == ValueKind::GlobalAddrInst) {
+  if (outermostAggregateSV->getKind() == ValueKind::GlobalAddrInst) { // this test looks wrong
     emitVisitRefsInInitialValues_dmu_(srcSILValue);
   }
   else if (outermostDestSILType.isReferenceCounted(IGM.getSILModule())) {
-    emitVisitRefsInValuesAssignedTo_dmu_( srcSILValue, outermostDestAggregateAddress);
+    Address const destAddress = getLoweredAddress(outermostAggregateSV);
+    emitVisitRefsInValuesAssignedTo_dmu_( srcSILValue, destAddress);
   }
 }
 
