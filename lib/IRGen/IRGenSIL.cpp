@@ -781,7 +781,6 @@ public:
   /// rename to storeBarrier?
   void emitVisitRefsInValuesAssignedTo_dmu_(SILValue const &src, Address const outermostDestAggregate);
 
-  llvm::Optional<SILValue> getOutermostAggregate_dmu_(SILValue v);
   
   //===--------------------------------------------------------------------===//
   // SIL instruction lowering
@@ -4793,84 +4792,118 @@ void IRGenSILFunction::visitVisitRefAtAddr_dmu_Inst(swift::VisitRefAtAddr_dmu_In
   }
 }
 
-// TODO: (dmu) NEEDS FIXING
-llvm::Optional<SILValue> IRGenSILFunction::getOutermostAggregate_dmu_(SILValue vArg) {
-  for (SILValue v = vArg; ; ) {
-    
-    // Can these be useful?
-    LoweredValue& lv = getLoweredValue(v);
-    SILType destSILType = v->getType();
-    CanType destSwiftType = destSILType.getSwiftType();
-    
-    fprintf(stderr, "getOutermostAggregate_dmu_ "); v->dump();
-    switch (v->getKind()) {
-
-# define RETURN_OPERAND(INST)  \
-      case ValueKind::INST: { \
-        SILValue r = cast<INST>(v)->getOperand(); \
-        fprintf(stderr, "getOutermostAggregate_dmu_ some "); r->dump(); fprintf(stderr, "\n"); \
-        return r; \
-    }
-        RETURN_OPERAND(RefTailAddrInst)
-        RETURN_OPERAND(RefElementAddrInst)
-# undef RETURN_OPERAND
-        
-      case ValueKind::AllocStackInst: // verified
-      case ValueKind::SILFunctionArgument: // verified
-      case ValueKind::PointerToAddressInst: // is this right?
-      case ValueKind::IndexAddrInst: // is this right?
-      case ValueKind::ProjectBoxInst: // is this right?
-      case ValueKind::AllocValueBufferInst: // is this right?
-        fprintf(stderr, "getOutermostAggregate_dmu_ none\n\n");
-        return llvm::Optional<SILValue>();
-        
-# define GET_OPERAND(INST)  case ValueKind::INST:  v = cast<INST>(v)->getOperand(); break;
-        GET_OPERAND(StructElementAddrInst)
-        GET_OPERAND(TupleElementAddrInst)
-        GET_OPERAND(InitEnumDataAddrInst)
-        GET_OPERAND(InitExistentialAddrInst)
+struct OutermostAggregateResult_dmu_ {
+  enum Kind {
+    cannotFindOutermostAggregate,
+    foundOutermostAggregate,
+    noOutermostAggregateExists,
+    probablyNoOutermostAggregateExists
+  };
+  const Kind kind;
+  const SILValue value; // last one examined
+  const SILValue startingValue;
+  
+private:
+  OutermostAggregateResult_dmu_(SILValue start, Kind k, SILValue v) : startingValue(start), kind(k), value(v) {}
+  
+public:
+  static OutermostAggregateResult_dmu_ _get(IRGenSILFunction& IGF, SILValue vArg) {
+    for (SILValue v = vArg; ; ) {
+      
+      // Can these be useful?
+      LoweredValue& lv = IGF.getLoweredValue(v);
+      SILType destSILType = v->getType();
+      CanType destSwiftType = destSILType.getSwiftType();
+      
+      fprintf(stderr, "getOutermostAggregate_dmu_ "); v->dump();
+      switch (v->getKind()) {
+          
+        # define GET_OPERAND(inst)  case ValueKind::inst:   v = cast<inst>(v)->getOperand();
+        # define GET_VALUE(inst)    case ValueKind::inst:   v = cast<inst>(v)->getValue();
+          
+        GET_OPERAND( RefElementAddrInst )
+          return OutermostAggregateResult_dmu_(vArg, Kind::foundOutermostAggregate, v);
+          
+        GET_VALUE( MarkDependenceInst )
+          break;
+          
+        // I'm sure of these:
+        case ValueKind::AllocStackInst:
+        case ValueKind::SILFunctionArgument:
+          return OutermostAggregateResult_dmu_(vArg, Kind::noOutermostAggregateExists, v);
+          
+        // I suspect these prove no outer object aggregate
+        case ValueKind::PointerToAddressInst:
+        case ValueKind::IndexAddrInst:
+        case ValueKind::ProjectBoxInst:
+        case ValueKind::AllocValueBufferInst:
+          return OutermostAggregateResult_dmu_(vArg, Kind::probablyNoOutermostAggregateExists, v);
+         
+        // Don't know what to do here yet
+        GET_OPERAND( RefTailAddrInst )
+          return OutermostAggregateResult_dmu_(vArg, Kind::probablyNoOutermostAggregateExists, v);
+        GET_OPERAND( InitEnumDataAddrInst )
+          return OutermostAggregateResult_dmu_(vArg, Kind::probablyNoOutermostAggregateExists, v);
+        GET_OPERAND( InitExistentialAddrInst )
+          return OutermostAggregateResult_dmu_(vArg, Kind::probablyNoOutermostAggregateExists, v);
+          
+        default:
+          return OutermostAggregateResult_dmu_(vArg, Kind::cannotFindOutermostAggregate, v);
+          
 # undef GET_OPERAND
-        
-      case ValueKind::MarkDependenceInst:
-        v = cast<MarkDependenceInst>(v)->getValue();
+# undef GET_VALUE
+      }
+    }
+  }
+public:
+  static OutermostAggregateResult_dmu_ get(IRGenSILFunction& IGF, SILValue vArg) {
+    OutermostAggregateResult_dmu_ oar = _get(IGF, vArg);
+    //TRACING
+    switch (oar.kind) {
+      case Kind::foundOutermostAggregate:
+      case Kind::noOutermostAggregateExists:
         break;
         
       default:
-        fprintf(stderr, "UNKNOWN " ); v->dump();
-        //Builder.BB;
-        return llvm::Optional<SILValue>();
+        oar.dump(IGF);
+        break;
     }
+    return oar;
   }
-}
+  
+  void dump(IRGenSILFunction &IGF) const {
+    //IGF.IGM;
+    SILPrintContent_dmu_ pc(OS::err, value);
+    
+    IGF.CurSILFn->print(pc);
+    dumpTrace();
+  }
+};
 
 
 void IRGenSILFunction::emitStoreBarrier_dmu_( SILValue srcSILValue, SILValue dest) {
   
-  llvm::Optional<SILValue> outermostAggregateIfAny = getOutermostAggregate_dmu_(dest);
-  if (!outermostAggregateIfAny.hasValue())
-    return;
-  SILValue outermostAggregateSV = outermostAggregateIfAny.getValue();
-  
-  // tricky, what if weak/unowned/etc???
-  SILType outermostDestSILType = outermostAggregateSV->getType(); // .getObjectType() ???
-  const LoadableTypeInfo &outermostDestTI = cast<LoadableTypeInfo>(getTypeInfo(outermostDestSILType));
-  
-  if (outermostAggregateSV->getKind() == ValueKind::GlobalAddrInst) { // this test looks wrong
-    emitVisitRefsInInitialValues_dmu_(srcSILValue);
-  }
-  else if (outermostDestSILType.isReferenceCounted(IGM.getSILModule())) {
-    LoweredValue &destLV = getLoweredValue(outermostAggregateSV);
-    Address destAddress;
-    if (destLV.kind != LoweredValue::Kind::Explosion) {
-      destAddress = getLoweredAddress(outermostAggregateSV);
+  OutermostAggregateResult_dmu_ oar = OutermostAggregateResult_dmu_::get(*this, dest);
+  switch (oar.kind) {
+    case OutermostAggregateResult_dmu_::Kind::probablyNoOutermostAggregateExists:
+    case OutermostAggregateResult_dmu_::Kind::noOutermostAggregateExists:
+      return;
+      
+    case OutermostAggregateResult_dmu_::Kind::foundOutermostAggregate:
+      if (oar.value->getKind() == ValueKind::GlobalAddrInst)  // TODO: (dmu) is this test accurate?
+        break;
+    {
+      Address destAddress =   getLoweredValue(oar.value).kind != LoweredValue::Kind::Explosion
+      ?  getLoweredAddress(oar.value)
+      :  Address(getLoweredSingletonExplosion(oar.value), Alignment(4));
+      emitVisitRefsInValuesAssignedTo_dmu_( srcSILValue, destAddress);
+      return;
     }
-    else {
-      destAddress = Address(getLoweredSingletonExplosion(outermostAggregateSV), Alignment(4));
-    }
-    emitVisitRefsInValuesAssignedTo_dmu_( srcSILValue, destAddress);
+      
+    case OutermostAggregateResult_dmu_::Kind::cannotFindOutermostAggregate:
+      break;
   }
-  else
-    assert(false && "unimp situation");
+  emitVisitRefsInInitialValues_dmu_(srcSILValue);
 }
 
 
