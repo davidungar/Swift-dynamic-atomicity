@@ -300,6 +300,24 @@ public:
     return objcMethod;
   }
   
+  const Address getAddressOfOutermostAggregate_dmu_(IRGenFunction &IGF) const {
+    switch (kind) {
+      case LoweredValue::Kind::Explosion:
+        return Address(getSingletonExplosion(IGF), Alignment(4));
+      case LoweredValue::Kind::Address:
+        return getAddress();
+      case LoweredValue::Kind::ContainedAddress:
+        return getAddressInContainer();
+      case LoweredValue::Kind::BoxWithAddress:
+        return getAddressOfBox();
+
+      case LoweredValue::Kind::ObjCMethod:
+        assert(false && "ObjCMethod is not suitable for getAddressOfOutermostAggregate_dmu_");
+      case LoweredValue::Kind::StaticFunction:
+        assert(false && "StaticFunction is not suitable for getAddressOfOutermostAggregate_dmu_");
+    }
+  }
+  
   ~LoweredValue() {
     switch (kind) {
     case Kind::Address:
@@ -4959,14 +4977,13 @@ void IRGenSILFunction::emitStoreBarrier_dmu_( SILValue srcSILValue, SILValue des
 
     case OutermostAggregateResult_dmu_::Kind::foundOutermostAggregate:
       if (oar.value->getKind() == ValueKind::GlobalAddrInst) { // TODO: (dmu) is this test accurate?
-        emitVisitRefsInInitialValues_dmu_(srcSILValue);
+         emitVisitRefsInInitialValues_dmu_(srcSILValue);
         return;
       }
+      Address destAddress = getLoweredValue(oar.value).getAddressOfOutermostAggregate_dmu_(*this);
+      emitVisitRefsInValuesAssignedTo_dmu_( srcSILValue, destAddress);
+      return;
   }
-  Address destAddress =   getLoweredValue(oar.value).kind != LoweredValue::Kind::Explosion
-  ?  getLoweredAddress(oar.value)
-  :  Address(getLoweredSingletonExplosion(oar.value), Alignment(4));
-  emitVisitRefsInValuesAssignedTo_dmu_( srcSILValue, destAddress);
 }
 
 
