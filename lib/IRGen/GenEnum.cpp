@@ -512,8 +512,8 @@ namespace {
       if (getSingleton() &&
           !getSingleton()->isPOD(ResilienceExpansion::Maximal)) {
         getSingleton()->visitRefs_dmu_(
-                                              IGF, getSingletonAddress(IGF, addr),
-                                              getSingletonType(IGF.IGM, T));
+                                       IGF, getSingletonAddress(IGF, addr),
+                                       getSingletonType(IGF.IGM, T));
       }
     }
 
@@ -881,7 +881,7 @@ namespace {
     void emitScalarFixLifetime(IRGenFunction &IGF, llvm::Value *value) const {}
 
     void emitVisitRefInScalar_dmu_(IRGenFunction &IGF,
-                                    llvm::Value *objToSet) const {}
+                                   llvm::Value *objToSet) const {}
 
     void initializeWithTake(IRGenFunction &IGF, Address dest, Address src,
                             SILType T)

@@ -3720,7 +3720,7 @@ void NodePrinter::print(NodePointer pointer, bool asContext, bool suppressType) 
   case Node::Kind::VisitorOfRefsInInstance_dmu_:
     printEntity(false, false, "visitOfRefsInInstance_dmu_");
     return;
-    case Node::Kind::OutlinedVisitRefsInInitialValuesOfPayload_dmu_:
+  case Node::Kind::OutlinedVisitRefsInInitialValuesOfPayload_dmu_:
     printEntity(false, false, "outlinedVisedRefsInInitialValuesOfPayload_dmu_");
     return;
   case Node::Kind::Deallocator:
