@@ -286,7 +286,6 @@ public:
 
     OnConstructor      = 1 << 24,
     OnDestructor       = 1 << 25,
-    OnVisitorOfRefsInInstance_dmu_ = OnDestructor, // TODO: (dmu) likely wrong urgent
     OnFunc             = 1 << 26,
     OnEnumElement      = 1 << 27,
 
@@ -294,6 +293,9 @@ public:
     OnAssociatedType   = 1 << 29,
     OnParam            = 1 << 30,
     OnModule           = 1 << 31,
+    
+    OnVisitorOfRefsInInstance_dmu_ = 1 << 32, // TODO: (dmu) does this fit?
+
 
     // More coarse-grained aggregations for use in Attr.def.
     OnOperator = OnInfixOperator|OnPrefixOperator|OnPostfixOperator,
