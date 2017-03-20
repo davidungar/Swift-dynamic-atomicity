@@ -3331,7 +3331,7 @@ namespace {
       addWord(wtable);
     }
 
-    void addDestructorFunction() { // yyyyyy dmu
+    void addDestructorFunction() {
       auto expansion = ResilienceExpansion::Minimal;
       auto dtorRef = SILDeclRef(Target->getDestructor(),
                                 SILDeclRef::Kind::Deallocator,

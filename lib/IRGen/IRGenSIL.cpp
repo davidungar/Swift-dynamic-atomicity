@@ -3177,7 +3177,7 @@ void IRGenSILFunction::visitStructElementAddrInst(
   setLoweredAddress(i, field);
 }
 
-void IRGenSILFunction::visitRefElementAddrInst(swift::RefElementAddrInst *i) { ///// yyyyyy dmu
+void IRGenSILFunction::visitRefElementAddrInst(swift::RefElementAddrInst *i) {
   Explosion base = getLoweredExplosion(i->getOperand());
   llvm::Value *value = base.claimNext();
 

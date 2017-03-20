@@ -455,7 +455,7 @@ public:
 
   /// \brief Return the declaration of a function, or create it if it doesn't
   /// exist.
-  SILFunction *getOrCreateFunction(SILLocation loc, // yyyyy
+  SILFunction *getOrCreateFunction(SILLocation loc,
                                    StringRef name,
                                    SILLinkage linkage,
                                    CanSILFunctionType type,
@@ -468,7 +468,7 @@ public:
 
   /// \brief Return the declaration of a function, or create it if it doesn't
   /// exist.
-  SILFunction *getOrCreateFunction(SILLocation loc, // yyyyy
+  SILFunction *getOrCreateFunction(SILLocation loc,
                                    SILDeclRef constant,
                                    ForDefinition_t forDefinition);
 
@@ -477,7 +477,7 @@ public:
   /// This signature is a direct copy of the signature of SILFunction::create()
   /// in order to simplify refactoring all SILFunction creation use-sites to use
   /// SILModule. Eventually the uses should probably be refactored.
-  SILFunction *createFunction( // yyyyy
+  SILFunction *createFunction(
       SILLinkage linkage, StringRef name, CanSILFunctionType loweredType,
       GenericEnvironment *genericEnv, Optional<SILLocation> loc,
       IsBare_t isBareSILFunction, IsTransparent_t isTrans,

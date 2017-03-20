@@ -18,7 +18,7 @@
 using namespace swift;
 using namespace Lowering;
 
-void SILGenFunction::emitDestroyingDestructor(DestructorDecl *dd) { // yyyyyy dmu
+void SILGenFunction::emitDestroyingDestructor(DestructorDecl *dd) {
   MagicFunctionName = DeclName(SGM.M.getASTContext().getIdentifier("deinit"));
 
   RegularLocation Loc(dd);
@@ -124,7 +124,7 @@ void SILGenFunction::emitIVarDestroyer(SILDeclRef ivarDestroyer) {
 
 void SILGenFunction::emitClassMemberDestruction(SILValue selfValue,
                                                 ClassDecl *cd,
-                                                CleanupLocation cleanupLoc) { // yyyyyy dmu
+                                                CleanupLocation cleanupLoc) {
   for (VarDecl *vd : cd->getStoredProperties()) {
     const TypeLowering &ti = getTypeLowering(vd->getType());
     if (!ti.isTrivial()) {
@@ -152,9 +152,10 @@ void SILGenFunction::emitVisitorOfRefsInInstance_dmu_(VisitorOfRefsInInstance_dm
   emitEpilog(loc);
 }
 
+// TODO: (dmu) check if we handle barrier in VisitStore, many calls to this may be redundant
 void SILGenFunction::emitVisitorOfRefsInInstance_dmu_(SILValue selfValue,
                                                 ClassDecl *cd,
-                                                CleanupLocation cleanupLoc) { // yyyyyy dmu
+                                                CleanupLocation cleanupLoc) {
   for (VarDecl *vd : cd->getStoredProperties()) {
      const TypeLowering &ti = getTypeLowering(vd->getType());
     if (!ti.isTrivial()) {

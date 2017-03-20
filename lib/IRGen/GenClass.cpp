@@ -435,7 +435,8 @@ static OwnedAddress emitAddressAtOffset(IRGenFunction &IGF,
   return OwnedAddress(addr, base);
 }
 
-OwnedAddress irgen::projectPhysicalClassMemberAddress(IRGenFunction &IGF, // yyyyyy dmu
+// TODO: (dmu) store barrer - maybe only need it when this is used?
+OwnedAddress irgen::projectPhysicalClassMemberAddress(IRGenFunction &IGF,
                                                       llvm::Value *base,
                                                       SILType baseType,
                                                       SILType fieldType,
