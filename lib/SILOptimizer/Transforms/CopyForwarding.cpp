@@ -234,7 +234,10 @@ public:
   }
   bool visitVisitRefAtAddr_dmu_Inst(VisitRefAtAddr_dmu_Inst *UserInst) {
     Oper = &UserInst->getOperandRef();
-    return true;
+    // Must be false so copy-propagate knows this inst
+    // does not destroy the operand.
+    // That way, it will keep looking.
+    return false;
   }
   bool visitUncheckedTakeEnumDataAddrInst(
     UncheckedTakeEnumDataAddrInst *UserInst) {
@@ -492,6 +495,7 @@ bool CopyForwarding::collectUsers() {
       continue;
     }
     switch (UserInst->getKind()) {
+    case ValueKind::VisitRefAtAddr_dmu_Inst:
     case ValueKind::LoadInst:
       IsLoadedFrom = true;
       SrcUserInsts.insert(UserInst);

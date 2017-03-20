@@ -127,7 +127,9 @@ ABSTRACT_VALUE(SILInstruction, ValueBase)
   INST(StoreUnownedInst, SILInstruction, store_unowned, MayWrite, DoesNotRelease)
   INST(StoreWeakInst, SILInstruction, store_weak, MayWrite, DoesNotRelease)
   INST(CopyAddrInst, SILInstruction, copy_addr, MayHaveSideEffects, MayRelease)
-  INST(VisitRefAtAddr_dmu_Inst, SILInstruction, visit_ref_at_addr_dmu, MayHaveSideEffects, MayRelease)
+  // DoesNotRelease below used to be MayRelease, but this caused copy propagation to not look past this instruction
+  // which caused problems.
+  INST(VisitRefAtAddr_dmu_Inst, SILInstruction, visit_ref_at_addr_dmu, MayHaveSideEffects, DoesNotRelease)
   // TODO: (dmu) urgent: how do I not need a VisitRefAtValue_dmu_ when there is a DestroyValue SIL node???
   INST(DestroyAddrInst, SILInstruction, destroy_addr, MayHaveSideEffects, MayRelease)
   INST(ProjectValueBufferInst, SILInstruction, project_value_buffer, MayRead, DoesNotRelease)
