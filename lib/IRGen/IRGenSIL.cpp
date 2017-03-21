@@ -4882,29 +4882,26 @@ public:
           v = firstOperand;
           break;
           
-        case ValueKind::AllocValueBufferInst: {
-          auto k = cast<AllocValueBufferInst>(v)->getValueType().isReferenceCounted(M)
-          ? foundOutermostAggregate : dontKnowBecauseNotDefinitelyReferenceCounted;
-          return OutermostAggregateResult_dmu_( vArg, k, v);
-        }
           
-        case ValueKind::ApplyInst:  {
-          auto k = cast<AllocValueBufferInst>(v)->getValueType().isReferenceCounted(M)
-          ? foundOutermostAggregate : noOutermostAggregateExists; // hope this is right
-          return OutermostAggregateResult_dmu_( vArg, k, v);
-        }
-
-          
+        case ValueKind::AllocValueBufferInst:
         case ValueKind::PointerToAddressInst:
-          return OutermostAggregateResult_dmu_( vArg, Kind::dontKnowBecauseNotDefinitelyReferenceCounted, firstOperand);
+        case ValueKind::UncheckedTakeEnumDataAddrInst:
+        case ValueKind::ProjectExistentialBoxInst: {
+          auto k = v->getType().isReferenceCounted(M)
+          ? foundOutermostAggregate : noOutermostAggregateExists;
+          return OutermostAggregateResult_dmu_( vArg, k, v);
+        }
 
-        case ValueKind::SILFunctionArgument:
-          return OutermostAggregateResult_dmu_(vArg, Kind::noOutermostAggregateExists, v);
-          
-        // I suspect these prove no outer object aggregate
+        case ValueKind::ApplyInst:  {
+          auto k = cast<AllocValueBufferInst>(v)->getValueType().isReferenceCounted(M) // getObjectType after getValueType???
+          ? foundOutermostAggregate : noOutermostAggregateExists;
+          return OutermostAggregateResult_dmu_( vArg, k, v);
+        }
+
         case ValueKind::InitExistentialAddrInst:
-          return OutermostAggregateResult_dmu_(vArg, Kind::dontKnowWhatThisInstDoes, v);
-          
+        case ValueKind::SILFunctionArgument:
+        case ValueKind::ProjectBlockStorageInst:
+          return OutermostAggregateResult_dmu_(vArg, Kind::noOutermostAggregateExists, v);
           
         default:
           return OutermostAggregateResult_dmu_(vArg, Kind::dontKnowWhatThisInstDoes, v);
