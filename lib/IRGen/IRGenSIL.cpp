@@ -4835,6 +4835,10 @@ public:
       CanType destSwiftType = destSILType.getSwiftType();
       
       if (auto sa = dyn_cast<SILArgument>(v)) {
+        // TODO: (dmu) urgent fix uses of isReferenceCounted below
+        // As I read instantiates using IsReferenceCounted in TypeLowering.cpp,
+        // it looks like I can get a 'yes' for unowneds and others, not just simple native
+        // refs.
         Kind k = sa->getType().isReferenceCounted(M)
         ? Kind::foundOutermostAggregate : Kind::noOutermostAggregateExists;
         return OutermostAggregateResult_dmu_(vArg, k, v);
