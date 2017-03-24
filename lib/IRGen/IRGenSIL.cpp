@@ -4812,7 +4812,7 @@ struct OutermostAggregateResult_dmu_ {
   enum Kind {
     foundOutermostAggregate,
     noOutermostAggregateExists,
-    outermostAggregateIsGlobal,
+    outermostAggregateIsAccessedConcurrently,
     dontKnowBecauseNotAnInstruction,
     dontKnowBecauseNoOperands,
     dontKnowBecauseNotDefinitelyReferenceCounted,
@@ -4901,10 +4901,13 @@ public:
           ? foundOutermostAggregate : noOutermostAggregateExists;
           return OutermostAggregateResult_dmu_( vArg, k, v);
         }
+          
+        case ValueKind::ProjectBlockStorageInst: // going into an ObjC block--just visit the source
+          return OutermostAggregateResult_dmu_(vArg, Kind::outermostAggregateIsAccessedConcurrently, v);
+
 
         case ValueKind::InitExistentialAddrInst:
         case ValueKind::SILFunctionArgument:
-        case ValueKind::ProjectBlockStorageInst:
           return OutermostAggregateResult_dmu_(vArg, Kind::noOutermostAggregateExists, v);
           
         default:
@@ -4917,7 +4920,7 @@ public:
     switch (kind) {
       case foundOutermostAggregate: return "foundOutermostAggregate";
       case noOutermostAggregateExists: return "noOutermostAggregateExists";
-      case outermostAggregateIsGlobal: return "outermostAggregateIsGlobal";
+      case outermostAggregateIsAccessedConcurrently: return "outermostAggregateIsAccessedConcurrently";
       case dontKnowWhatThisInstDoes: return "dontKnowWhatThisInstDoes";
       case dontKnowBecauseNoOperands: return "dontKnowBecauseNoOperands";
       case dontKnowBecauseNotAnInstruction: return "dontKnowBecauseNotAnInstruction";
@@ -4931,7 +4934,7 @@ public:
     switch (oar.kind) {
       case Kind::foundOutermostAggregate:
       case Kind::noOutermostAggregateExists:
-      case Kind::outermostAggregateIsGlobal:
+      case Kind::outermostAggregateIsAccessedConcurrently:
         break;
         
       default:
@@ -4972,7 +4975,7 @@ void IRGenSILFunction::emitStoreBarrier_dmu_( SILValue srcSILValue, SILValue des
     case OutermostAggregateResult_dmu_::Kind::dontKnowBecauseNoOperands:
     case OutermostAggregateResult_dmu_::Kind::dontKnowBecauseNotDefinitelyReferenceCounted:
     case OutermostAggregateResult_dmu_::Kind::dontKnowWhatThisInstDoes:
-    case OutermostAggregateResult_dmu_::Kind::outermostAggregateIsGlobal:
+    case OutermostAggregateResult_dmu_::Kind::outermostAggregateIsAccessedConcurrently:
       emitVisitRefsInInitialValues_dmu_(srcSILValue);
       return;
 
