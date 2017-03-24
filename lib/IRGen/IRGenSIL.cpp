@@ -4854,6 +4854,8 @@ public:
         // As I read instantiates using IsReferenceCounted in TypeLowering.cpp,
         // it looks like I can get a 'yes' for unowneds and others, not just simple native
         // refs.
+        
+        // TODO: (dmu) urgent: What if arg is a struct containing a ref???
         Kind k = sa->getType().isReferenceCounted(M)
         ? Kind::foundOutermostAggregate : Kind::noOutermostAggregateExists;
         return OutermostAggregateResult_dmu_(vArg, k, v);
@@ -4867,6 +4869,7 @@ public:
           case ValueKind::AllocStackInst: {
             auto k = cast<AllocStackInst>(v)->getElementType().isReferenceCounted(M)
             ? foundOutermostAggregate : noOutermostAggregateExists;
+            // TODO: (dmu) is this too conservative? No if there is another use of this allocation in might not be
             return OutermostAggregateResult_dmu_( vArg, k, v);
           }
           case ValueKind::AllocBoxInst:
@@ -4874,9 +4877,11 @@ public:
             return OutermostAggregateResult_dmu_(vArg, Kind::foundOutermostAggregate, v);
             
           case ValueKind::GlobalAddrInst: {
-              auto k = cast<GlobalAddrInst>(v)->getType().isReferenceCounted(M)
-            ? Kind::foundOutermostAggregate : Kind::noOutermostAggregateExists;
-            return OutermostAggregateResult_dmu_(vArg, k, v);
+            // Checking isReferenceCounted is wrong because
+            // outermost aggregate may be a structure.
+            //              auto k = cast<GlobalAddrInst>(v)->getType().isReferenceCounted(M)
+            //            ? Kind::outermostAggregateIsAccessedConcurrently : Kind::noOutermostAggregateExists;
+            return OutermostAggregateResult_dmu_(vArg, outermostAggregateIsAccessedConcurrently, v);
           }
             
           default: break;
