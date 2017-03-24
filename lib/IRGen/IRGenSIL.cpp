@@ -2070,7 +2070,7 @@ void IRGenSILFunction::visitFullApplySite(FullApplySite site) {
   
   auto origCalleeType = site.getOrigCalleeType();
   auto substCalleeType = site.getSubstCalleeType();
-  bool nonSwiftCallee = site.isNonSwift_dmu();
+  bool nonSwiftCallee = site.isNonSwift_dmu_();
   
   auto args = site.getArguments();
   SILFunctionConventions origConv(origCalleeType, getSILModule());
@@ -2096,7 +2096,11 @@ void IRGenSILFunction::visitFullApplySite(FullApplySite site) {
 
   if (nonSwiftCallee) {
     for (auto index : indices(args)) {
-      emitVisitRefsInInitialValues_dmu_(args[index]);
+      if (origConv.getSILArgumentType(index).isAddress()) {
+        printf("WARNING: not handling Address passed to non-Swift calle"); // dmu TODO: dpg.  Actually hande this correctly.
+      } else {
+        emitVisitRefsInInitialValues_dmu_(args[index]);
+      }
     }
   }
 

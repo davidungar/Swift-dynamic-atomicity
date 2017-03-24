@@ -5494,7 +5494,7 @@ public:
   }
 
   // true if the target function is non-Swift
-  bool isNonSwift_dmu() const {
+  bool isNonSwift_dmu_() const {
     switch (getSubstCalleeType()->getRepresentation()) {
       case SILFunctionTypeRepresentation::CFunctionPointer:
       case SILFunctionTypeRepresentation::Block:
