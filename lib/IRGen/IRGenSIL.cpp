@@ -2070,6 +2070,7 @@ void IRGenSILFunction::visitFullApplySite(FullApplySite site) {
   
   auto origCalleeType = site.getOrigCalleeType();
   auto substCalleeType = site.getSubstCalleeType();
+  bool nonSwiftCallee = site.isNonSwift_dmu();
   
   auto args = site.getArguments();
   SILFunctionConventions origConv(origCalleeType, getSILModule());
@@ -2082,10 +2083,20 @@ void IRGenSILFunction::visitFullApplySite(FullApplySite site) {
     SILValue selfArg = args.back();
     args = args.drop_back();
 
+    if (nonSwiftCallee) {
+      emitVisitRefsInInitialValues_dmu_(selfArg);
+    }
+
     if (selfArg->getType().isObject()) {
       selfValue = getLoweredSingletonExplosion(selfArg);
     } else {
       selfValue = getLoweredAddress(selfArg).getAddress();
+    }
+  }
+
+  if (nonSwiftCallee) {
+    for (auto index : indices(args)) {
+      emitVisitRefsInInitialValues_dmu_(args[index]);
     }
   }
 
