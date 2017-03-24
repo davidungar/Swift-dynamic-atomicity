@@ -2096,8 +2096,8 @@ void IRGenSILFunction::visitFullApplySite(FullApplySite site) {
 
   if (nonSwiftCallee) {
     for (auto index : indices(args)) {
-      if (origConv.getSILArgumentType(index).isAddress()) {
-        printf("WARNING: not handling Address passed to non-Swift calle"); // dmu TODO: dpg.  Actually hande this correctly.
+      if (site.getArgumentConvention(index).isIndirectConvention()) {
+        printf("\nWARNING: not handling inout parameter passed to non-Swift callee\n"); // dmu TODO: dpg.  Actually hande this correctly.
       } else {
         emitVisitRefsInInitialValues_dmu_(args[index]);
       }
