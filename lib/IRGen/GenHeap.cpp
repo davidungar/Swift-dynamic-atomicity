@@ -1128,7 +1128,9 @@ void IRGenFunction::emitVisitRefInScalar_dmu_(llvm::Value *objToSet,
     case ReferenceCounting::Native:
       return emitNativeVisitRefInScalar_dmu_(objToSet);
     case ReferenceCounting::ObjC:
+      return emitObjCVisitRefInScalar_dmu_(objToSet);
     case ReferenceCounting::Block:
+      return emitBlockVisitRefInScalar_dmu_(objToSet);
     case ReferenceCounting::Unknown:
     case ReferenceCounting::Bridge:
     case ReferenceCounting::Error:

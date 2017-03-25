@@ -110,6 +110,14 @@ llvm::Value *IRGenFunction::emitObjCRetainCall(llvm::Value *value) {
   return call;
 }
 
+void IRGenFunction::emitObjCVisitRefInScalar_dmu_(llvm::Value *value) {
+  emitObjCBeSafeForConcurrentAccess_dmu_(value); // level-shift
+}
+
+void IRGenFunction::emitObjCBeSafeForConcurrentAccess_dmu_(llvm::Value *value) {
+  // nothing to do, assume ObjC always atomically ref-counted
+}
+
 llvm::Value *IRGenFunction::emitObjCAutoreleaseCall(llvm::Value *val) {
   if (val->getType()->isPointerTy())
     val = Builder.CreateBitCast(val, IGM.ObjCPtrTy);
@@ -1517,4 +1525,12 @@ void IRGenFunction::emitBlockRelease(llvm::Value *value) {
   }
   auto call = Builder.CreateCall(fn, value);
   call->setDoesNotThrow();
+}
+
+void IRGenFunction::emitBlockVisitRefInScalar_dmu_(llvm::Value *value) {
+  emitBlockBeSafeForConcurrentAccess_dmu_(value); // level-shift
+}
+
+void IRGenFunction::emitBlockBeSafeForConcurrentAccess_dmu_(llvm::Value *value) {
+  // nothing to do; assume ObjC atomically ref-counted
 }

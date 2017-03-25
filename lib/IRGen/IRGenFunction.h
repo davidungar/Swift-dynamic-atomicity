@@ -355,9 +355,13 @@ public:
   llvm::Value *emitObjCRetainCall(llvm::Value *value);
   llvm::Value *emitObjCAutoreleaseCall(llvm::Value *value);
   void emitObjCStrongRelease(llvm::Value *value);
+  void emitObjCVisitRefInScalar_dmu_(llvm::Value *value);
+  void emitObjCBeSafeForConcurrentAccess_dmu_(llvm::Value *value);
 
   llvm::Value *emitBlockCopyCall(llvm::Value *value);
   void emitBlockRelease(llvm::Value *value);
+  void emitBlockVisitRefInScalar_dmu_(llvm::Value *value);
+  void emitBlockBeSafeForConcurrentAccess_dmu_(llvm::Value *value);
 
   // Routines for an unknown reference-counting style (meaning,
   // dynamically something compatible with either the ObjC or Swift styles).
