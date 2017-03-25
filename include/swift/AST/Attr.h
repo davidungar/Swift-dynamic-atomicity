@@ -294,7 +294,7 @@ public:
     OnParam            = 1 << 30,
     OnModule           = 1 << 31,
     
-    OnVisitorOfRefsInInstance_dmu_ = 1 << 32, // TODO: (dmu) does this fit?
+    OnVisitRefsInInstance_dmu_ = 1 << 32, // TODO: (dmu) does this fit?
 
 
     // More coarse-grained aggregations for use in Attr.def.

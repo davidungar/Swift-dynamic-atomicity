@@ -1040,7 +1040,7 @@ public:
   bool typeCheckDestructorBodyUntil(DestructorDecl *DD,
                                     SourceLoc EndTypeCheckLoc);
 
-  bool VisitorOfRefsInInstance_dmu_Until(VisitorOfRefsInInstance_dmu_Decl *MD,
+  bool VisitRefsInInstance_dmu_Until(VisitRefsInInstance_dmu_Decl *MD,
                                     SourceLoc EndTypeCheckLoc);
 
   void typeCheckClosureBody(ClosureExpr *closure);
@@ -1236,7 +1236,7 @@ public:
   void addImplicitDestructor(ClassDecl *CD);
 
   /// \brief Add function to visit all refs and make them count atomically
-  void addVisitorOfRefsInInstance_dmu_(ClassDecl *CD);
+  void addVisitRefsInInstance_dmu_(ClassDecl *CD);
   
   /// \brief Add the RawOptionSet (todo:, Equatable, and Hashable) methods to an
   /// imported NS_OPTIONS struct.

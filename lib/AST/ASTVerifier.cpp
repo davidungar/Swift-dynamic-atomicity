@@ -547,7 +547,7 @@ struct ASTNodeBase {};
     FUNCTION_LIKE(AbstractClosureExpr)
     FUNCTION_LIKE(ConstructorDecl)
     FUNCTION_LIKE(DestructorDecl)
-    FUNCTION_LIKE(VisitorOfRefsInInstance_dmu_Decl)
+    FUNCTION_LIKE(VisitRefsInInstance_dmu_Decl)
     FUNCTION_LIKE(FuncDecl)
     SCOPE_LIKE(NominalTypeDecl)
     SCOPE_LIKE(ExtensionDecl)
@@ -2093,7 +2093,7 @@ struct ASTNodeBase {};
 
       // All of the parameter names should match.
       if (!isa<DestructorDecl>(AFD)
-          && !isa<VisitorOfRefsInInstance_dmu_Decl>(AFD)
+          && !isa<VisitRefsInInstance_dmu_Decl>(AFD)
           ) { // Destructor has no non-self params.
         auto paramNames = AFD->getFullName().getArgumentNames();
         bool checkParamNames = (bool)AFD->getFullName();
@@ -2213,18 +2213,18 @@ struct ASTNodeBase {};
       verifyParsedBase(DD);
     }
     
-    void verifyParsed(VisitorOfRefsInInstance_dmu_Decl *DD) {
-      PrettyStackTraceDecl debugStack("verifying VisitorOfRefsInInstance_dmu_Decl", DD);
+    void verifyParsed(VisitRefsInInstance_dmu_Decl *DD) {
+      PrettyStackTraceDecl debugStack("verifying VisitRefsInInstance_dmu_Decl", DD);
       
       if (DD->isGeneric()) {
-        Out << "VisitorOfRefsInInstance_dmu_Decl cannot be generic";
+        Out << "VisitRefsInInstance_dmu_Decl cannot be generic";
         abort();
       }
       
       auto *DC = DD->getDeclContext();
       if (!isa<NominalTypeDecl>(DC) && !isa<ExtensionDecl>(DC) &&
           !DD->isInvalid()) {
-        Out << "VisitorOfRefsInInstance_dmu_Decls outside nominal types and extensions "
+        Out << "VisitRefsInInstance_dmu_Decls outside nominal types and extensions "
         "should be marked invalid";
         abort();
       }
@@ -2335,12 +2335,12 @@ struct ASTNodeBase {};
       verifyCheckedBase(DD);
     }
     
-    void verifyChecked(VisitorOfRefsInInstance_dmu_Decl *DD) {
-      PrettyStackTraceDecl debugStack("verifying VisitorOfRefsInInstance_dmu_Decl", DD);
+    void verifyChecked(VisitRefsInInstance_dmu_Decl *DD) {
+      PrettyStackTraceDecl debugStack("verifying VisitRefsInInstance_dmu_Decl", DD);
       
       auto *ND = DD->getDeclContext()->getAsNominalTypeOrNominalTypeExtensionContext();
       if (!isa<ClassDecl>(ND) && !DD->isInvalid()) {
-        Out << "VisitorOfRefsInInstance_dmu_Decls outside classes should be marked invalid";
+        Out << "VisitRefsInInstance_dmu_Decls outside classes should be marked invalid";
         abort();
       }
       verifyCheckedBase(DD);
@@ -2446,13 +2446,13 @@ struct ASTNodeBase {};
                  "explicitly provided or created by the type checker\n";
           abort();
         }
-        unsigned NumVisitorOfRefsInInstance_dmu_s = 0; 
+        unsigned NumVisitRefsInInstance_dmu_s = 0; 
         for (auto Member : CD->getMembers()) {
-          if (isa<VisitorOfRefsInInstance_dmu_Decl>(Member)) {
-            NumVisitorOfRefsInInstance_dmu_s++;
+          if (isa<VisitRefsInInstance_dmu_Decl>(Member)) {
+            NumVisitRefsInInstance_dmu_s++;
           }
         }
-        if (const char* msg = CD->wrongNumberOf_VisitorOfRefsInInstance_dmu_Decl(NumVisitorOfRefsInInstance_dmu_s)) {
+        if (const char* msg = CD->wrongNumberOf_VisitRefsInInstance_dmu_Decl(NumVisitRefsInInstance_dmu_s)) {
           Out << msg;
           abort();
         }

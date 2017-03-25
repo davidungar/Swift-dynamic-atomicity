@@ -135,8 +135,8 @@ void SILGenFunction::emitClassMemberDestruction(SILValue selfValue,
   }
 }
 
-void SILGenFunction::emitVisitorOfRefsInInstance_dmu_(VisitorOfRefsInInstance_dmu_Decl *dd) {
-  MagicFunctionName = DeclName(SGM.M.getASTContext().getIdentifier("visitorOfRefsInInstance_dmu_"));
+void SILGenFunction::emitVisitRefsInInstance_dmu_(VisitRefsInInstance_dmu_Decl *dd) {
+  MagicFunctionName = DeclName(SGM.M.getASTContext().getIdentifier("visitRefsInInstance_dmu_"));
   
   SILValue selfValue = emitSelfDecl(dd->getImplicitSelfDecl());
 
@@ -146,14 +146,14 @@ void SILGenFunction::emitVisitorOfRefsInInstance_dmu_(VisitorOfRefsInInstance_dm
   auto cleanupLoc = CleanupLocation::get(loc);
   prepareEpilog(TupleType::getEmpty(getASTContext()), false, cleanupLoc);
 
-  emitVisitorOfRefsInInstance_dmu_(selfValue, cd, cleanupLoc);
+  emitVisitRefsInInstance_dmu_(selfValue, cd, cleanupLoc);
   
   B.createReturn(loc, emitEmptyTuple(loc));
   emitEpilog(loc);
 }
 
 // TODO: (dmu) check if we handle barrier in VisitStore, many calls to this may be redundant
-void SILGenFunction::emitVisitorOfRefsInInstance_dmu_(SILValue selfValue,
+void SILGenFunction::emitVisitRefsInInstance_dmu_(SILValue selfValue,
                                                 ClassDecl *cd,
                                                 CleanupLocation cleanupLoc) {
   for (VarDecl *vd : cd->getStoredProperties()) {

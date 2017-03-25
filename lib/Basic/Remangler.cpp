@@ -733,7 +733,7 @@ void Remangler::mangleDestructor(Node *node) {
   Buffer << "fd";
 }
   
-void Remangler::mangleVisitorOfRefsInInstance_dmu_(Node *node) {
+void Remangler::mangleVisitRefsInInstance_dmu_(Node *node) {
   mangleChildNodes(node);
   Buffer << "vr";
 }

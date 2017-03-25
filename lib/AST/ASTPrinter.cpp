@@ -1418,7 +1418,7 @@ bool swift::shouldPrint(const Decl *D, PrintOptions &Options) {
     return false;
   }
   
-  // TODO: (dmu) add for VisitorOfRefsInInstance_dmu_Decl
+  // TODO: (dmu) add for VisitRefsInInstance_dmu_Decl
 
   if (Options.SkipImports && isa<ImportDecl>(D)) {
     return false;
@@ -2879,12 +2879,12 @@ void PrintAST::visitDestructorDecl(DestructorDecl *decl) {
 }
 
 
-void PrintAST::visitVisitorOfRefsInInstance_dmu_Decl(VisitorOfRefsInInstance_dmu_Decl *decl) {
+void PrintAST::visitVisitRefsInInstance_dmu_Decl(VisitRefsInInstance_dmu_Decl *decl) {
   printDocumentationComment(decl);
   printAttributes(decl);
   recordDeclLoc(decl,
                 [&]{
-                  Printer << "visitOfRefsInInstance_dmu_";
+                  Printer << "visitRefsInInstance_dmu_";
                 });
   
   if (!Options.FunctionDefinitions || !decl->getBody()) {

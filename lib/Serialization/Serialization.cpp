@@ -1467,7 +1467,7 @@ static bool shouldSerializeMember(Decl *D) {
   case DeclKind::Protocol:
   case DeclKind::Constructor:
   case DeclKind::Destructor:
-  case DeclKind::VisitorOfRefsInInstance_dmu_:
+  case DeclKind::VisitRefsInInstance_dmu_:
   case DeclKind::PatternBinding:
   case DeclKind::Subscript:
   case DeclKind::TypeAlias:
@@ -1841,7 +1841,7 @@ DEF_VERIFY_ATTR(Var)
 DEF_VERIFY_ATTR(Subscript)
 DEF_VERIFY_ATTR(Constructor)
 DEF_VERIFY_ATTR(Destructor)
-DEF_VERIFY_ATTR(VisitorOfRefsInInstance_dmu_)
+DEF_VERIFY_ATTR(VisitRefsInInstance_dmu_)
 
 #undef DEF_VERIFY_ATTR
 #else
@@ -2906,14 +2906,14 @@ void Serializer::writeDecl(const Decl *D) {
     break;
   }
       
-  case DeclKind::VisitorOfRefsInInstance_dmu_: {
-    auto maker = cast<VisitorOfRefsInInstance_dmu_Decl>(D);
+  case DeclKind::VisitRefsInInstance_dmu_: {
+    auto maker = cast<VisitRefsInInstance_dmu_Decl>(D);
     verifyAttrSerializable(maker);
     
     auto contextID = addDeclContextRef(maker->getDeclContext());
     
-    unsigned abbrCode = DeclTypeAbbrCodes[VisitorOfRefsInInstance_dmu_Layout::Code];
-    VisitorOfRefsInInstance_dmu_Layout::emitRecord(Out, ScratchRecord, abbrCode,
+    unsigned abbrCode = DeclTypeAbbrCodes[VisitRefsInInstance_dmu_Layout::Code];
+    VisitRefsInInstance_dmu_Layout::emitRecord(Out, ScratchRecord, abbrCode,
                                  contextID,
                                  addGenericEnvironmentRef(
                                                           maker->getGenericEnvironment()),
@@ -3507,7 +3507,7 @@ void Serializer::writeAllDeclsAndTypes() {
   registerDeclTypeAbbr<SubscriptLayout>();
   registerDeclTypeAbbr<ExtensionLayout>();
   registerDeclTypeAbbr<DestructorLayout>();
-  registerDeclTypeAbbr<VisitorOfRefsInInstance_dmu_Layout>();
+  registerDeclTypeAbbr<VisitRefsInInstance_dmu_Layout>();
 
   registerDeclTypeAbbr<ParameterListLayout>();
   registerDeclTypeAbbr<ParameterListEltLayout>();

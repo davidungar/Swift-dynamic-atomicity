@@ -586,7 +586,7 @@ void TypeChecker::configureInterfaceType(AbstractFunctionDecl *func,
 
     initFuncTy = funcTy;
   } else {
-    assert(isa<DestructorDecl>(func) || isa<VisitorOfRefsInInstance_dmu_Decl>(func));
+    assert(isa<DestructorDecl>(func) || isa<VisitRefsInInstance_dmu_Decl>(func));
     funcTy = TupleType::getEmpty(Context);
   }
 
@@ -595,7 +595,7 @@ void TypeChecker::configureInterfaceType(AbstractFunctionDecl *func,
 
   // FIXME: Destructors don't have the '()' pattern in their signature, so
   // paste it here.
-  if (isa<DestructorDecl>(func) || isa<VisitorOfRefsInInstance_dmu_Decl>(func)) {
+  if (isa<DestructorDecl>(func) || isa<VisitRefsInInstance_dmu_Decl>(func)) {
     assert(paramLists.size() == 1 && "Only the self paramlist");
     storedParamLists.push_back(paramLists[0]);
     storedParamLists.push_back(ParameterList::createEmpty(Context));

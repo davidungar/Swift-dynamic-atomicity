@@ -290,7 +290,7 @@ struct LetDecl;
 struct FuncDecl;
 struct InitDecl;
 struct DeinitDecl;
-struct VisitorOfRefsInInstance_dmu_Decl;
+struct VisitRefsInInstance_dmu_Decl;
 
 /// A container for declarations contained in some declaration context.
 struct NestedDecls {
@@ -305,7 +305,7 @@ struct NestedDecls {
   std::vector<std::shared_ptr<FuncDecl>> Functions;
   std::vector<std::shared_ptr<InitDecl>> Initializers;
   std::vector<std::shared_ptr<DeinitDecl>> Deinitializers;
-  std::vector<std::shared_ptr<VisitorOfRefsInInstance_dmu_Decl>> Visitors_dmu_; // Is this chazeri needed?
+  std::vector<std::shared_ptr<VisitRefsInInstance_dmu_Decl>> Visitors_dmu_; // Is this chazeri needed?
 
   bool isEmpty() const {
     return Structs.empty() && Enums.empty() && Classes.empty() &&
@@ -456,7 +456,7 @@ struct DeinitDecl {
   DeclAttributes Attributes;
 };
   
-struct VisitorOfRefsInInstance_dmu_Decl { // TODO: (dmu) blind clone, fix, needed?
+struct VisitRefsInInstance_dmu_Decl { // TODO: (dmu) blind clone, fix, needed?
   Identifier Name;
   DeclAttributes Attributes;
 };
@@ -491,7 +491,7 @@ LLVM_YAML_IS_SEQUENCE_VECTOR(std::vector<::swift::sma::FuncParam>)
 LLVM_YAML_IS_SEQUENCE_VECTOR(std::shared_ptr<::swift::sma::FuncDecl>)
 LLVM_YAML_IS_SEQUENCE_VECTOR(std::shared_ptr<::swift::sma::InitDecl>)
 LLVM_YAML_IS_SEQUENCE_VECTOR(std::shared_ptr<::swift::sma::DeinitDecl>)
-LLVM_YAML_IS_SEQUENCE_VECTOR(std::shared_ptr<::swift::sma::VisitorOfRefsInInstance_dmu_Decl>)
+LLVM_YAML_IS_SEQUENCE_VECTOR(std::shared_ptr<::swift::sma::VisitRefsInInstance_dmu_Decl>)
 
 LLVM_YAML_IS_SEQUENCE_VECTOR(::swift::sma::GenericParam)
 LLVM_YAML_IS_SEQUENCE_VECTOR(::swift::sma::ConformanceRequirement)
@@ -695,8 +695,8 @@ template <> struct MappingTraits<::swift::sma::DeinitDecl> {
   }
 };
   
-template <> struct MappingTraits<::swift::sma::VisitorOfRefsInInstance_dmu_Decl> { // more blind cloning
-  static void mapping(IO &io, ::swift::sma::VisitorOfRefsInInstance_dmu_Decl &DD) {
+template <> struct MappingTraits<::swift::sma::VisitRefsInInstance_dmu_Decl> { // more blind cloning
+  static void mapping(IO &io, ::swift::sma::VisitRefsInInstance_dmu_Decl &DD) {
     io.mapRequired("Name", DD.Name);
     io.mapOptional("Attributes", DD.Attributes, ::swift::sma::DeclAttributes());
   }
@@ -890,9 +890,9 @@ public:
     Result.Deinitializers.emplace_back(std::move(ResultDD));
   }
   
-  void visitVisitorOfRefsInInstance_dmu_Decl(VisitorOfRefsInInstance_dmu_Decl *DD) { // blind cloning
-    auto ResultDD = std::make_shared<sma::VisitorOfRefsInInstance_dmu_Decl>();
-    ResultDD->Name.Name = "visitorOfRefsInInstance_dmu_";
+  void visitVisitRefsInInstance_dmu_Decl(VisitRefsInInstance_dmu_Decl *DD) { // blind cloning
+    auto ResultDD = std::make_shared<sma::VisitRefsInInstance_dmu_Decl>();
+    ResultDD->Name.Name = "visitRefsInInstance_dmu_";
     // FIXME
     // ResultDD->Attributes = ?;
     Result.Visitors_dmu_.emplace_back(std::move(ResultDD)); // TODO: (dmu) is this right???

@@ -48,7 +48,7 @@ public:
   void layout() {
     // HeapMetadata header.
     asImpl().addDestructorFunction();
-    asImpl().addVisitorOfRefsInInstance_dmu_Function();
+    asImpl().addVisitRefsInInstance_dmu_Function();
 
     // Metadata header.
     super::layout();
@@ -234,7 +234,7 @@ public:
   void addIVarDestroyer() { addPointer(); }
   void addValueWitnessTable() { addPointer(); }
   void addDestructorFunction() { addPointer(); }
-  void addVisitorOfRefsInInstance_dmu_Function() { addPointer(); }
+  void addVisitRefsInInstance_dmu_Function() { addPointer(); }
   void addParentMetadataRef(ClassDecl *forClass, Type classType) {addPointer();}
   void addSuperClass() { addPointer(); }
   void addClassFlags() { addInt32(); }

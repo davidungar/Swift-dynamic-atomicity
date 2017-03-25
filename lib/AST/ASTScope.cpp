@@ -980,7 +980,7 @@ ASTScope *ASTScope::createIfNeeded(const ASTScope *parent, Decl *decl) {
   case DeclKind::Func:
   case DeclKind::Constructor:
   case DeclKind::Destructor:
-  case DeclKind::VisitorOfRefsInInstance_dmu_:
+  case DeclKind::VisitRefsInInstance_dmu_:
     {
     auto abstractFunction = cast<AbstractFunctionDecl>(decl);
 
@@ -1498,7 +1498,7 @@ SourceRange ASTScope::getSourceRangeImpl() const {
       if (isa<DestructorDecl>(abstractFunctionParams.decl)) {
         startLoc = abstractFunctionParams.decl->getNameLoc();
       }
-      if (isa<VisitorOfRefsInInstance_dmu_Decl>(abstractFunctionParams.decl)) {
+      if (isa<VisitRefsInInstance_dmu_Decl>(abstractFunctionParams.decl)) {
         startLoc = abstractFunctionParams.decl->getNameLoc();
       }
       else {

@@ -533,7 +533,7 @@ namespace {
         Text = "dealloc";
         break;
           
-      case SILDeclRef::Kind::VisitorOfRefsInInstance_dmu_:
+      case SILDeclRef::Kind::VisitRefsInInstance_dmu_:
         Text = "refVisitor";
         break;
           

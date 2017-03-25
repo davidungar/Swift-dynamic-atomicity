@@ -1326,8 +1326,8 @@ bool TypeChecker::typeCheckAbstractFunctionBodyUntil(AbstractFunctionDecl *AFD,
   if (auto *CD = dyn_cast<ConstructorDecl>(AFD))
     return typeCheckConstructorBodyUntil(CD, EndTypeCheckLoc);
 
-  if (auto *MD = dyn_cast<VisitorOfRefsInInstance_dmu_Decl>(AFD)) // TODO: (dmu) needed?
-    return VisitorOfRefsInInstance_dmu_Until(MD, EndTypeCheckLoc);
+  if (auto *MD = dyn_cast<VisitRefsInInstance_dmu_Decl>(AFD)) // TODO: (dmu) needed?
+    return VisitRefsInInstance_dmu_Until(MD, EndTypeCheckLoc);
 
   auto *DD = cast<DestructorDecl>(AFD);
   return typeCheckDestructorBodyUntil(DD, EndTypeCheckLoc);
@@ -1593,7 +1593,7 @@ bool TypeChecker::typeCheckDestructorBodyUntil(DestructorDecl *DD,
 }
 
 
-bool TypeChecker::VisitorOfRefsInInstance_dmu_Until(VisitorOfRefsInInstance_dmu_Decl *MD,
+bool TypeChecker::VisitRefsInInstance_dmu_Until(VisitRefsInInstance_dmu_Decl *MD,
                                                SourceLoc EndTypeCheckLoc) {
   return false;
 }

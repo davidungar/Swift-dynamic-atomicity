@@ -45,7 +45,7 @@ namespace swift {
   class ASTWalker;
   class ConstructorDecl;
   class DestructorDecl;
-  class VisitorOfRefsInInstance_dmu_Decl;
+  class VisitRefsInInstance_dmu_Decl;
   class DiagnosticEngine;
   class DynamicSelfType;
   class Type;
@@ -123,7 +123,7 @@ enum class DescriptiveDeclKind : uint8_t {
   Subscript,
   Constructor,
   Destructor,
-  VisitorOfRefsInInstance_dmu_,
+  VisitRefsInInstance_dmu_,
   LocalFunction,
   GlobalFunction,
   OperatorFunction,
@@ -3259,7 +3259,7 @@ public:
   /// Retrieve the destructor for this class.
   DestructorDecl *getDestructor();
   
-  VisitorOfRefsInInstance_dmu_Decl *getVisitorOfRefsInInstance_dmu_();
+  VisitRefsInInstance_dmu_Decl *getVisitRefsInInstance_dmu_();
 
 
   /// Determine whether this class inherits the convenience initializers
@@ -3338,26 +3338,26 @@ public:
   
   
   
-  int correctNumberOf_VisitorOfRefsInInstance_dmu_Decl() {
+  int correctNumberOf_VisitRefsInInstance_dmu_Decl() {
     return isObjC() ? 0 : 1;
   }
   
-  const char* wrongNumberOf_VisitorOfRefsInInstance_dmu_Decl( int howMany) {
-    return  howMany == correctNumberOf_VisitorOfRefsInInstance_dmu_Decl()
+  const char* wrongNumberOf_VisitRefsInInstance_dmu_Decl( int howMany) {
+    return  howMany == correctNumberOf_VisitRefsInInstance_dmu_Decl()
     ? nullptr
     :  isObjC()
-      ?  "ObjC class should not have any VisitorOfRefsInInstance_dmu_"
-      :  "Swift class should have 1 VisitorOfRefsInInstance_dmu_";
+      ?  "ObjC class should not have any VisitRefsInInstance_dmu_"
+      :  "Swift class should have 1 VisitRefsInInstance_dmu_";
   }
   
-  void assertCorrectNumberOf_VisitorOfRefsInInstance_dmu_Decl( int howMany) {
+  void assertCorrectNumberOf_VisitRefsInInstance_dmu_Decl( int howMany) {
     
-    if  (howMany == correctNumberOf_VisitorOfRefsInInstance_dmu_Decl())
+    if  (howMany == correctNumberOf_VisitRefsInInstance_dmu_Decl())
       return;
     if (isObjC())
-      assert(false && "ObjC class should not have any VisitorOfRefsInInstance_dmu_");
+      assert(false && "ObjC class should not have any VisitRefsInInstance_dmu_");
     else
-      assert(false && "Swift class should have 1 VisitorOfRefsInInstance_dmu_");
+      assert(false && "Swift class should have 1 VisitRefsInInstance_dmu_");
   }
 };
 
@@ -5727,10 +5727,10 @@ public:
   }
 };
   
-class VisitorOfRefsInInstance_dmu_Decl : public AbstractFunctionDecl {
+class VisitRefsInInstance_dmu_Decl : public AbstractFunctionDecl {
   ParameterList *SelfParameter;
 public:
-  VisitorOfRefsInInstance_dmu_Decl(Identifier NameHack,
+  VisitRefsInInstance_dmu_Decl(Identifier NameHack,
                  SourceLoc makeLoc, ParamDecl *selfDecl, DeclContext *Parent);
   
   void setSelfDecl(ParamDecl *selfDecl);
@@ -5749,7 +5749,7 @@ public:
   SourceRange getSourceRange() const;
   
   static bool classof(const Decl *D) {
-    return D->getKind() == DeclKind::VisitorOfRefsInInstance_dmu_;
+    return D->getKind() == DeclKind::VisitRefsInInstance_dmu_;
   }
   static bool classof(const AbstractFunctionDecl *D) {
     return classof(static_cast<const Decl*>(D));
@@ -6123,8 +6123,8 @@ AbstractFunctionDecl::getParameterLists() {
     return cast<ConstructorDecl>(this)->getParameterLists();
   case DeclKind::Destructor:
     return cast<DestructorDecl>(this)->getParameterLists();
-  case DeclKind::VisitorOfRefsInInstance_dmu_:
-    return cast<VisitorOfRefsInInstance_dmu_Decl>(this)->getParameterLists();
+  case DeclKind::VisitRefsInInstance_dmu_:
+    return cast<VisitRefsInInstance_dmu_Decl>(this)->getParameterLists();
   case DeclKind::Func:
     return cast<FuncDecl>(this)->getParameterLists();
   }

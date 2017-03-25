@@ -223,7 +223,7 @@ public:
   void visitSubscriptDecl(SubscriptDecl *d) {}
   void visitConstructorDecl(ConstructorDecl *d) {}
   void visitDestructorDecl(DestructorDecl *d) {}
-  void visitVisitorOfRefsInInstance_dmu_Decl(VisitorOfRefsInInstance_dmu_Decl *d) {}
+  void visitVisitRefsInInstance_dmu_Decl(VisitRefsInInstance_dmu_Decl *d) {}
   void visitModuleDecl(ModuleDecl *d) { }
 
   void visitFuncDecl(FuncDecl *fd);
@@ -263,7 +263,7 @@ public:
   /// Generates code for the given class's ... and adds
   /// the SILFunction to the current SILModule under the name
   /// SILDeclRef(cd, Destructor).
-  void emitVisitorOfRefsInInstance_dmu_(ClassDecl *cd, VisitorOfRefsInInstance_dmu_Decl *md);
+  void emitVisitRefsInInstance_dmu_(ClassDecl *cd, VisitRefsInInstance_dmu_Decl *md);
 
 
   /// Generates the enum constructor for the given

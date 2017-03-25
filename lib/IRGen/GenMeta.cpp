@@ -3347,17 +3347,17 @@ namespace {
     }
     
     // TODO: (dmu) factor with addDestructorFunction above
-    void addVisitorOfRefsInInstance_dmu_Function() {
+    void addVisitRefsInInstance_dmu_Function() {
       auto none = llvm::ConstantPointerNull::get(IGM.FunctionPtrTy);
       
-      if (Target->correctNumberOf_VisitorOfRefsInInstance_dmu_Decl() == 0) {
+      if (Target->correctNumberOf_VisitRefsInInstance_dmu_Decl() == 0) {
         addWord(none);
         return;
       }
       
       auto expansion = ResilienceExpansion::Minimal;
-      auto makeRef = SILDeclRef(Target->getVisitorOfRefsInInstance_dmu_(),
-                                SILDeclRef::Kind::VisitorOfRefsInInstance_dmu_,
+      auto makeRef = SILDeclRef(Target->getVisitRefsInInstance_dmu_(),
+                                SILDeclRef::Kind::VisitRefsInInstance_dmu_,
                                 expansion);
       SILFunction *makeFunc = IGM.getSILModule().lookUpFunction(makeRef);
       

@@ -961,15 +961,15 @@ void SILGenModule::emitDestructor(ClassDecl *cd, DestructorDecl *dd) {
 }
 
 
-void SILGenModule::emitVisitorOfRefsInInstance_dmu_(ClassDecl *cd, 
-                                                    VisitorOfRefsInInstance_dmu_Decl *md) {
+void SILGenModule::emitVisitRefsInInstance_dmu_(ClassDecl *cd, 
+                                                    VisitRefsInInstance_dmu_Decl *md) {
   emitAbstractFuncDecl(md);
   
-  SILDeclRef mdref(md, SILDeclRef::Kind::VisitorOfRefsInInstance_dmu_);
+  SILDeclRef mdref(md, SILDeclRef::Kind::VisitRefsInInstance_dmu_);
   SILFunction *f = getFunction(mdref, ForDefinition);
   preEmitFunction(mdref, md, f, md);
-  PrettyStackTraceSILFunction X("silgen emitVisitorOfRefsInInstance_dmu_", f);
-  SILGenFunction(*this, *f).emitVisitorOfRefsInInstance_dmu_(md);
+  PrettyStackTraceSILFunction X("silgen emitVisitRefsInInstance_dmu_", f);
+  SILGenFunction(*this, *f).emitVisitRefsInInstance_dmu_(md);
   f->setDebugScope(new (M) SILDebugScope(md, f));
   postEmitFunction(mdref, f);
 }

@@ -1016,7 +1016,7 @@ namespace decls_block {
     // conformance info (if any).
   >;
 
-  using VisitorOfRefsInInstance_dmu_Layout = BCRecordLayout<
+  using VisitRefsInInstance_dmu_Layout = BCRecordLayout<
     VISITOR_OF_REFS_IN_INSTANCE_dmu__DECL,
     DeclContextIDField, // context decl
     GenericEnvironmentIDField, // generic environment

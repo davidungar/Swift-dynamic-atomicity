@@ -323,8 +323,8 @@ void SILDeclRef::print(raw_ostream &OS) const {
   case SILDeclRef::Kind::IVarDestroyer:
     OS << "!ivardestroyer";
     break;
-  case SILDeclRef::Kind::VisitorOfRefsInInstance_dmu_:
-    OS << "!visitorOfRefsInInstance_dmu_";
+  case SILDeclRef::Kind::VisitRefsInInstance_dmu_:
+    OS << "!visitRefsInInstance_dmu_";
     break;
   case SILDeclRef::Kind::GlobalAccessor:
     OS << "!globalaccessor";

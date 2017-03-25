@@ -2644,7 +2644,7 @@ private:
     case Node::Kind::ValueWitness:
     case Node::Kind::ValueWitnessTable:
     case Node::Kind::Variable:
-    case Node::Kind::VisitorOfRefsInInstance_dmu_:
+    case Node::Kind::VisitRefsInInstance_dmu_:
     case Node::Kind::VTableAttribute:
     case Node::Kind::Weak:
     case Node::Kind::WillSet:
@@ -3717,8 +3717,8 @@ void NodePrinter::print(NodePointer pointer, bool asContext, bool suppressType) 
   case Node::Kind::Destructor:
     printEntity(false, false, "deinit");
     return;
-  case Node::Kind::VisitorOfRefsInInstance_dmu_:
-    printEntity(false, false, "visitOfRefsInInstance_dmu_");
+  case Node::Kind::VisitRefsInInstance_dmu_:
+    printEntity(false, false, "visitRefsInInstance_dmu_");
     return;
   case Node::Kind::OutlinedVisitRefsInInitialValuesOfPayload_dmu_:
     printEntity(false, false, "outlinedVisedRefsInInitialValuesOfPayload_dmu_");

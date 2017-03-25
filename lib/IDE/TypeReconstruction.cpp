@@ -990,7 +990,7 @@ static void VisitNodeDestructor(
   }
 }
 
-static void VisitNodeVisitorOfRefsInInstance_dmu_(
+static void VisitNodeVisitRefsInInstance_dmu_(
                                 ASTContext *ast, std::vector<Demangle::NodePointer> &nodes,
                                 Demangle::NodePointer &cur_node, VisitNodeResult &result,
                                 const VisitNodeResult &generic_context) { // set by GenericType case
@@ -1013,7 +1013,7 @@ static void VisitNodeVisitorOfRefsInInstance_dmu_(
   
   if (kind_type_result.HasSingleType()) {
     // TODO: (dmu) factor: Same as VisitNodeDestructor EXCEPT for next line:
-    const size_t n = FindNamedDecls(ast, StringRef("visitorOfRefsInInstance_dmu_"), kind_type_result);
+    const size_t n = FindNamedDecls(ast, StringRef("visitRefsInInstance_dmu_"), kind_type_result);
     if (n == 1) {
       kind_type_result._types[0] = FixCallingConv(
                                                   kind_type_result._decls[0], kind_type_result._types[0].getPointer());
@@ -2116,8 +2116,8 @@ static void visitNodeImpl(
     VisitNodeDestructor(ast, nodes, node, result, genericContext);
     break;
 
-    case Demangle::Node::Kind::VisitorOfRefsInInstance_dmu_:
-      VisitNodeVisitorOfRefsInInstance_dmu_(ast, nodes, node, result, genericContext);
+    case Demangle::Node::Kind::VisitRefsInInstance_dmu_:
+      VisitNodeVisitRefsInInstance_dmu_(ast, nodes, node, result, genericContext);
       break;
       
   case Demangle::Node::Kind::DeclContext:

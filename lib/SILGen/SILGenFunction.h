@@ -474,7 +474,7 @@ public:
   void emitDestroyingDestructor(DestructorDecl *dd);
   
   /// Generates code for a TODO: (dmu) comment
-  void emitVisitorOfRefsInInstance_dmu_(VisitorOfRefsInInstance_dmu_Decl *dd);
+  void emitVisitRefsInInstance_dmu_(VisitRefsInInstance_dmu_Decl *dd);
 
 
   /// Generates code for an artificial top-level function that starts an
@@ -524,7 +524,7 @@ public:
                                   CleanupLocation cleanupLoc);
   
   /// TODO: (dmu) comment
-  void emitVisitorOfRefsInInstance_dmu_(SILValue selfValue,
+  void emitVisitRefsInInstance_dmu_(SILValue selfValue,
                                                   ClassDecl *cd,
                                                   CleanupLocation cleanupLoc);
   

@@ -293,13 +293,13 @@ public:
     }
   }
   
-  void visitVisitorOfRefsInInstance_dmu_Decl(VisitorOfRefsInInstance_dmu_Decl *md) {
+  void visitVisitRefsInInstance_dmu_Decl(VisitRefsInInstance_dmu_Decl *md) {
     if (md->getParent()->getAsClassOrClassExtensionContext() == theClass) {
       // Add the ... to the vtable just for the purpose
       // that it is referenced and cannot be eliminated by dead function removal.
       // In reality, the ... is referenced directly from
       // the HeapMetadata for the class.
-      addEntry(SILDeclRef(md, SILDeclRef::Kind::VisitorOfRefsInInstance_dmu_));
+      addEntry(SILDeclRef(md, SILDeclRef::Kind::VisitRefsInInstance_dmu_));
     }
   }
 
@@ -394,10 +394,10 @@ public:
     SGM.emitDestructor(cast<ClassDecl>(theType), dd);
   }
 
-  void visitVisitorOfRefsInInstance_dmu_Decl(VisitorOfRefsInInstance_dmu_Decl *md) {
-    assert(isa<ClassDecl>(theType) && "visitorOfRefsInInstance_dmu_Decl in a non-class type");
+  void visitVisitRefsInInstance_dmu_Decl(VisitRefsInInstance_dmu_Decl *md) {
+    assert(isa<ClassDecl>(theType) && "visitRefsInInstance_dmu_Decl in a non-class type");
     ProfilerRAII Profiler(SGM, md);
-    SGM.emitVisitorOfRefsInInstance_dmu_(cast<ClassDecl>(theType), md);
+    SGM.emitVisitRefsInInstance_dmu_(cast<ClassDecl>(theType), md);
   }
 
   void visitEnumCaseDecl(EnumCaseDecl *ecd) {}
@@ -493,7 +493,7 @@ public:
   void visitDestructorDecl(DestructorDecl *dd) {
     llvm_unreachable("destructor in extension?!");
   }
-  void visitVisitorOfRefsInInstance_dmu_Decl(VisitorOfRefsInInstance_dmu_Decl *) { 
+  void visitVisitRefsInInstance_dmu_Decl(VisitRefsInInstance_dmu_Decl *) { 
     llvm_unreachable("destructor in extension?!");
   }
 
