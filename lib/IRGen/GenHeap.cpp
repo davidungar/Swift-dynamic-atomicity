@@ -1132,7 +1132,9 @@ void IRGenFunction::emitVisitRefInScalar_dmu_(llvm::Value *objToSet,
     case ReferenceCounting::Block:
       return emitBlockVisitRefInScalar_dmu_(objToSet);
     case ReferenceCounting::Unknown:
+      return emitUnknownVisitRefInScalar_dmu_(objToSet);
     case ReferenceCounting::Bridge:
+      return emitBridgeVisitRefInScalar_dmu_(objToSet);
     case ReferenceCounting::Error:
       return emitErrorVisitRefInScalar_dmu_(objToSet);
       break;
@@ -1454,6 +1456,14 @@ void IRGenFunction::emitUnknownStrongRelease(llvm::Value *value,
                         value);
 }
 
+void IRGenFunction::emitUnknownVisitRefInScalar_dmu_(llvm::Value *objToSet) {
+  emitUnknownBeSafeForConcurrentAccess_dmu_(objToSet); // level-shift
+}
+
+void IRGenFunction::emitUnknownBeSafeForConcurrentAccess_dmu_(llvm::Value *objToSet) {
+  emitUnaryRefCountCall(*this, IGM.getUnknownBeSafeForConcurrentAccess_dmu_Fn(), objToSet);
+}
+
 void IRGenFunction::emitBridgeStrongRetain(llvm::Value *value,
                                            Atomicity atomicity) {
   emitUnaryRefCountCall(*this,
@@ -1486,6 +1496,14 @@ void IRGenFunction::emitErrorVisitRefInScalar_dmu_(llvm::Value *value) {
 
 void IRGenFunction::emitErrorBeSafeForConcurrentAccess_dmu_(llvm::Value *value) {
   emitUnaryRefCountCall(*this, IGM.getErrorBeSafeForConcurrentAccess_dmu_Fn(), value);
+}
+
+void IRGenFunction::emitBridgeVisitRefInScalar_dmu_(llvm::Value *value) {
+  emitBridgeBeSafeForConcurrentAccess_dmu_(value); // level-shift
+}
+
+void IRGenFunction::emitBridgeBeSafeForConcurrentAccess_dmu_(llvm::Value *value) {
+  emitUnaryRefCountCall(*this, IGM.getBridgeObjectBeSafeForConcurrentAccess_dmu_Fn(), value);
 }
 
 llvm::Value *IRGenFunction::emitNativeTryPin(llvm::Value *value,
