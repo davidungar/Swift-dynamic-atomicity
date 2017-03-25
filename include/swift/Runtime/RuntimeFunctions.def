@@ -337,7 +337,7 @@ FUNCTION(NonAtomicUnknownRelease, swift_nonatomic_unknownRelease, DefaultCC,
          ATTRS(NoUnwind))
 
 // void swift_unknownRelease(void *ptr);
-FUNCTION(UnknownBeSafeForConcurrentAccess_dmu_, swift_unknownBeSafeForConcurrentAccess, DefaultCC,
+FUNCTION(UnknownBeSafeForConcurrentAccess_dmu_, swift_unknownBeSafeForConcurrentAccess_dmu_, DefaultCC,
          RETURNS(VoidTy),
          ARGS(UnknownRefCountedPtrTy),
          ATTRS(NoUnwind))
