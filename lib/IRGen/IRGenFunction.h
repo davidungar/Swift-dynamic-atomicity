@@ -370,6 +370,9 @@ public:
                                Atomicity atomicity = Atomicity::Atomic);
   void emitUnknownStrongRelease(llvm::Value *valuei,
                                 Atomicity atomicity = Atomicity::Atomic);
+  void emitUnknownVisitRefInScalar_dmu_(llvm::Value *objToSet);
+  void emitUnknownBeSafeForConcurrentAccess_dmu_(llvm::Value *objToSet);
+  
   //   - unowned references
   void emitUnknownUnownedInit(llvm::Value *val, Address dest);
   void emitUnknownUnownedAssign(llvm::Value *value, Address dest);
@@ -399,6 +402,8 @@ public:
   // Routines for the Builtin.NativeObject reference-counting style.
   void emitBridgeStrongRetain(llvm::Value *value, Atomicity atomicity);
   void emitBridgeStrongRelease(llvm::Value *value, Atomicity atomicity);
+  void emitBridgeVisitRefInScalar_dmu_(llvm::Value *value);
+  void emitBridgeBeSafeForConcurrentAccess_dmu_(llvm::Value *value);
 
   // Routines for the ErrorType reference-counting style.
   void emitErrorStrongRetain(llvm::Value *value);

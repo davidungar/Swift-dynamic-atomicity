@@ -336,6 +336,12 @@ FUNCTION(NonAtomicUnknownRelease, swift_nonatomic_unknownRelease, DefaultCC,
          ARGS(UnknownRefCountedPtrTy),
          ATTRS(NoUnwind))
 
+// void swift_unknownRelease(void *ptr);
+FUNCTION(UnknownBeSafeForConcurrentAccess_dmu_, swift_unknownBeSafeForConcurrentAccess, DefaultCC,
+         RETURNS(VoidTy),
+         ARGS(UnknownRefCountedPtrTy),
+         ATTRS(NoUnwind))
+
 // void *swift_bridgeObjectRetain(void *ptr);
 FUNCTION(BridgeObjectStrongRetain, swift_bridgeObjectRetain, DefaultCC,
          RETURNS(BridgeObjectPtrTy),
@@ -356,6 +362,12 @@ FUNCTION(NonAtomicBridgeObjectStrongRetain, swift_nonatomic_bridgeObjectRetain, 
 
 // void swift_nonatomic_bridgeRelease(void *ptr);
 FUNCTION(NonAtomicBridgeObjectStrongRelease, swift_nonatomic_bridgeObjectRelease, DefaultCC,
+         RETURNS(VoidTy),
+         ARGS(BridgeObjectPtrTy),
+         ATTRS(NoUnwind))
+
+// void swift_bridgeObjectBeSafeForConcurrentAccess_dmu_(void *ptr);
+FUNCTION(BridgeObjectBeSafeForConcurrentAccess_dmu_, swift_bridgeObjectBeSafeForConcurrentAccess_dmu_, DefaultCC,
          RETURNS(VoidTy),
          ARGS(BridgeObjectPtrTy),
          ATTRS(NoUnwind))
