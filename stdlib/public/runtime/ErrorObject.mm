@@ -591,6 +591,19 @@ void swift::swift_errorRelease(SwiftError *error) {
   return _swift_errorRelease(error);
 }
 
+
+static void _swift_errorBeSafeForConcurrentAccess_dmu__(SwiftError *error) {
+  // For now, SwiftError is always objc-refcounted.
+  // Assume ObjC is atomically ref-counted.
+}
+
+SWIFT_RUNTIME_EXPORT
+auto *_swift_errorBeSafeForConcurrentAccess_dmu_ = _swift_errorBeSafeForConcurrentAccess_dmu__;
+
+void swift::swift_errorBeSafeForConcurrentAccess_dmu_(SwiftError *error) {
+  return _swift_errorBeSafeForConcurrentAccess_dmu_(error);
+}
+
 static void _swift_willThrow_(SwiftError *error) { }
 
 SWIFT_RUNTIME_EXPORT

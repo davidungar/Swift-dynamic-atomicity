@@ -1132,6 +1132,7 @@ void IRGenFunction::emitVisitRefInScalar_dmu_(llvm::Value *objToSet,
     case ReferenceCounting::Unknown:
     case ReferenceCounting::Bridge:
     case ReferenceCounting::Error:
+      return emitErrorVisitRefInScalar_dmu_(objToSet);
       break;
   }
 }
@@ -1475,6 +1476,14 @@ void IRGenFunction::emitErrorStrongRetain(llvm::Value *value) {
 
 void IRGenFunction::emitErrorStrongRelease(llvm::Value *value) {
   emitUnaryRefCountCall(*this, IGM.getErrorStrongReleaseFn(), value);
+}
+
+void IRGenFunction::emitErrorVisitRefInScalar_dmu_(llvm::Value *value) {
+  emitErrorBeSafeForConcurrentAccess_dmu_(value); // level-shift
+}
+
+void IRGenFunction::emitErrorBeSafeForConcurrentAccess_dmu_(llvm::Value *value) {
+  emitUnaryRefCountCall(*this, IGM.getErrorBeSafeForConcurrentAccess_dmu_Fn(), value);
 }
 
 llvm::Value *IRGenFunction::emitNativeTryPin(llvm::Value *value,

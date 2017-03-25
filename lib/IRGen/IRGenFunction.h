@@ -399,6 +399,8 @@ public:
   // Routines for the ErrorType reference-counting style.
   void emitErrorStrongRetain(llvm::Value *value);
   void emitErrorStrongRelease(llvm::Value *value);
+  void emitErrorVisitRefInScalar_dmu_(llvm::Value *value);
+  void emitErrorBeSafeForConcurrentAccess_dmu_(llvm::Value *value);
 
   llvm::Value *emitIsUniqueCall(llvm::Value *value, SourceLoc loc,
                                 bool isNonNull, bool checkPinned);
