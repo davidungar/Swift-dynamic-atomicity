@@ -1751,7 +1751,7 @@ private:
   
 public:
   
-  SILValue getSrc() const { return Operands[StoreInst::Src].get(); }
+  SILValue getSrc()  const { return Operands[StoreInst::Src ].get(); }
   SILValue getDest() const { return Operands[StoreInst::Dest].get(); }
   
   ArrayRef<Operand> getAllOperands() const { return Operands.asArray(); }
