@@ -76,6 +76,7 @@
 DECL_KEYWORD(associatedtype)
 DECL_KEYWORD(class)
 DECL_KEYWORD(deinit)
+DECL_KEYWORD(visitRefsInInstance)
 DECL_KEYWORD(enum)
 DECL_KEYWORD(extension)
 DECL_KEYWORD(func)

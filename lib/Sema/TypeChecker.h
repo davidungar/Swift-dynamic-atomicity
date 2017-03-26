@@ -1037,7 +1037,7 @@ public:
   bool typeCheckFunctionBodyUntil(FuncDecl *FD, SourceLoc EndTypeCheckLoc);
   bool typeCheckConstructorBodyUntil(ConstructorDecl *CD,
                                      SourceLoc EndTypeCheckLoc);
-  bool typeCheckDestructorBodyUntil(DestructorDecl *DD,
+  bool typeCheckDestructorOrVisitRefsInInstance_dmu_BodyUntil(DestructorDecl *DD,
                                     SourceLoc EndTypeCheckLoc);
 
   bool VisitRefsInInstance_dmu_Until(VisitRefsInInstance_dmu_Decl *MD,

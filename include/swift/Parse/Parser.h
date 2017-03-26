@@ -811,6 +811,8 @@ public:
   parseDeclInit(ParseDeclOptions Flags, DeclAttributes &Attributes);
   ParserResult<DestructorDecl>
   parseDeclDeinit(ParseDeclOptions Flags, DeclAttributes &Attributes);
+  ParserResult<VisitRefsInInstance_dmu_Decl>
+  parseDeclVisitRefsInInstance_dmu_(ParseDeclOptions Flags, DeclAttributes &Attributes);
 
   void addPatternVariablesToScope(ArrayRef<Pattern *> Patterns);
   void addParametersToScope(ParameterList *PL);

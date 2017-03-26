@@ -1809,6 +1809,7 @@ bool swift::isKeywordPossibleDeclStart(const Token &Tok) {
   case tok::kw_case:
   case tok::kw_class:
   case tok::kw_deinit:
+  case tok::kw_visitRefsInInstance:
   case tok::kw_enum:
   case tok::kw_extension:
   case tok::kw_fileprivate:
@@ -2268,7 +2269,10 @@ Parser::parseDecl(ParseDeclOptions Flags,
       DeclResult = parseDeclInit(Flags, Attributes);
       break;
     case tok::kw_deinit:
-      DeclResult = parseDeclDeinit(Flags, Attributes);
+        DeclResult = parseDeclDeinit(Flags, Attributes);
+      break;
+    case tok::kw_visitRefsInInstance:
+        DeclResult = parseDeclVisitRefsInInstance_dmu_(Flags, Attributes);
       break;
     case tok::kw_operator:
       DeclResult = parseDeclOperator(Flags, Attributes);
@@ -5619,7 +5623,6 @@ Parser::parseDeclInit(ParseDeclOptions Flags, DeclAttributes &Attributes) {
 ParserResult<DestructorDecl> Parser::
 parseDeclDeinit(ParseDeclOptions Flags, DeclAttributes &Attributes) {
   SourceLoc DestructorLoc = consumeToken(tok::kw_deinit);
-
   // Parse extraneous parentheses and remove them with a fixit.
   if (Tok.is(tok::l_paren)) {
     SourceRange ParenRange;
@@ -5655,7 +5658,7 @@ parseDeclDeinit(ParseDeclOptions Flags, DeclAttributes &Attributes) {
 
   auto *SelfDecl = ParamDecl::createUnboundSelf(DestructorLoc, CurDeclContext);
 
-  Scope S(this, ScopeKind::DestructorBody);
+  Scope S(this, ScopeKind::DestructorOrVisitRefsInInstance_dmu_Body);
   auto *DD = new (Context) DestructorDecl(Context.Id_deinit, DestructorLoc,
                                           SelfDecl, CurDeclContext);
 
@@ -5687,6 +5690,80 @@ parseDeclDeinit(ParseDeclOptions Flags, DeclAttributes &Attributes) {
     DD->setInvalid();
   }
 
+  return makeParserResult(DD);
+}
+
+// TODO: (dmu) factor with above
+ParserResult<VisitRefsInInstance_dmu_Decl> Parser::
+parseDeclVisitRefsInInstance_dmu_(ParseDeclOptions Flags, DeclAttributes &Attributes) {
+  SourceLoc DeclLoc = consumeToken(tok::kw_visitRefsInInstance);
+  // Parse extraneous parentheses and remove them with a fixit.
+  if (Tok.is(tok::l_paren)) {
+    SourceRange ParenRange;
+    SourceLoc LParenLoc = consumeToken();
+    SourceLoc RParenLoc;
+    skipUntil(tok::r_paren);
+    
+    if (Tok.is(tok::r_paren)) {
+      SourceLoc RParenLoc = consumeToken();
+      ParenRange = SourceRange(LParenLoc, RParenLoc);
+      
+      diagnose(ParenRange.Start, diag::visitRefsInInstance_dmu__params)
+      .fixItRemoveChars(Lexer::getLocForEndOfToken(Context.SourceMgr,
+                                                   DeclLoc),
+                        Lexer::getLocForEndOfToken(Context.SourceMgr,
+                                                   ParenRange.End));
+    } else {
+      diagnose(Tok, diag::opened_visitRefsInInstance_dmu__expected_rparen);
+      diagnose(LParenLoc, diag::opening_paren);
+    }
+  }
+  
+  // '{'
+  if (!Tok.is(tok::l_brace)) {
+    if (!Tok.is(tok::l_brace) && !isInSILMode()) {
+      if (Tok.is(tok::identifier)) {
+        diagnose(Tok, diag::visitRefsInInstance_dmu__has_name).fixItRemove(Tok.getLoc());
+      } else
+        diagnose(Tok, diag::expected_lbrace_visitRefsInInstance_dmu_);
+      return nullptr;
+    }
+  }
+  
+  auto *SelfDecl = ParamDecl::createUnboundSelf(DeclLoc, CurDeclContext);
+  
+  Scope S(this, ScopeKind::DestructorOrVisitRefsInInstance_dmu_Body);
+  auto *DD = new (Context) VisitRefsInInstance_dmu_Decl(Context.Id_visitRefsInInstance_dmu_, DeclLoc,
+                                                        SelfDecl, CurDeclContext);
+  
+  // Parse the body.
+  if (Tok.is(tok::l_brace)) {
+    // Record the curly braces but nothing inside.
+    SF.recordInterfaceToken("{");
+    SF.recordInterfaceToken("}");
+    llvm::SaveAndRestore<bool> T(IsParsingInterfaceTokens, false);
+    
+    ParseFunctionBody CC(*this, DD);
+    if (!isDelayedParsingEnabled()) {
+      ParserResult<BraceStmt> Body=parseBraceItemList(diag::invalid_diagnostic);
+      
+      if (!Body.isNull())
+        DD->setBody(Body.get());
+    } else {
+      consumeAbstractFunctionBody(DD, Attributes);
+    }
+  }
+  
+  DD->getAttrs() = Attributes;
+  
+  // Reject 'destructor' functions outside of classes
+  if (!(Flags & PD_AllowDestructor)) {
+    diagnose(DeclLoc, diag::visitRefsInInstance_dmu__decl_outside_class);
+    
+    // Tell the type checker not to touch this visitRefsInInstance_dmu_.
+    DD->setInvalid();
+  }
+  
   return makeParserResult(DD);
 }
 

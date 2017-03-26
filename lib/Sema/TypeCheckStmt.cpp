@@ -1330,7 +1330,7 @@ bool TypeChecker::typeCheckAbstractFunctionBodyUntil(AbstractFunctionDecl *AFD,
     return VisitRefsInInstance_dmu_Until(MD, EndTypeCheckLoc);
 
   auto *DD = cast<DestructorDecl>(AFD);
-  return typeCheckDestructorBodyUntil(DD, EndTypeCheckLoc);
+  return typeCheckDestructorOrVisitRefsInInstance_dmu_BodyUntil(DD, EndTypeCheckLoc);
 }
 
 bool TypeChecker::typeCheckAbstractFunctionBody(AbstractFunctionDecl *AFD) {
@@ -1578,7 +1578,7 @@ bool TypeChecker::typeCheckConstructorBodyUntil(ConstructorDecl *ctor,
   return HadError;
 }
 
-bool TypeChecker::typeCheckDestructorBodyUntil(DestructorDecl *DD,
+bool TypeChecker::typeCheckDestructorOrVisitRefsInInstance_dmu_BodyUntil(DestructorDecl *DD,
                                                SourceLoc EndTypeCheckLoc) {
   StmtChecker SC(*this, static_cast<AbstractFunctionDecl *>(DD));
   SC.EndTypeCheckLoc = EndTypeCheckLoc;

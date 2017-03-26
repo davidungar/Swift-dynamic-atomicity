@@ -68,7 +68,7 @@ enum class ScopeKind {
   ClassBody,
   ProtocolBody,
   ConstructorBody,
-  DestructorBody,
+  DestructorOrVisitRefsInInstance_dmu_Body,
   InheritanceClause,
 
   Brace,

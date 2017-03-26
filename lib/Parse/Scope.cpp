@@ -37,7 +37,7 @@ static bool isResolvableScope(ScopeKind SK) {
   case ScopeKind::FunctionBody:
   case ScopeKind::Generics:
   case ScopeKind::ConstructorBody:
-  case ScopeKind::DestructorBody:
+  case ScopeKind::DestructorOrVisitRefsInInstance_dmu_Body:
   case ScopeKind::Brace:
   case ScopeKind::ForVars:
   case ScopeKind::ForeachVars:

@@ -362,6 +362,9 @@ bool SILParser::parseSILIdentifier(Identifier &Result, SourceLoc &Loc,
   case tok::kw_deinit:
     Result = P.Context.Id_deinit;
     break;
+  case tok::kw_visitRefsInInstance:
+    Result = P.Context.Id_visitRefsInInstance_dmu_;
+    break;
   case tok::kw_init:
     Result = P.Context.Id_init;
     break;
