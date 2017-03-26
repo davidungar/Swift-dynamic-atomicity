@@ -1236,7 +1236,7 @@ public:
   void addImplicitDestructor(ClassDecl *CD);
 
   /// \brief Add function to visit all refs and make them count atomically
-  void addVisitRefsInInstance_dmu_(ClassDecl *CD);
+  void addImplicitVisitRefsInInstance_dmu_(ClassDecl *CD);
   
   /// \brief Add the RawOptionSet (todo:, Equatable, and Hashable) methods to an
   /// imported NS_OPTIONS struct.
