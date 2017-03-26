@@ -71,7 +71,10 @@ void TypeChecker::handleExternalDecl(Decl *decl) {
   if (auto CD = dyn_cast<ClassDecl>(decl)) {
     addImplicitDestructor(CD);
   }
-  if (auto ED = dyn_cast<EnumDecl>(decl)) {
+  if (auto CD = dyn_cast<ClassDecl>(decl)) {
+    addImplicitVisitRefsInInstance_dmu_(CD);
+  }
+ if (auto ED = dyn_cast<EnumDecl>(decl)) {
     addImplicitEnumConformances(ED);
   }
 }
