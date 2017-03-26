@@ -5295,6 +5295,8 @@ ParserResult<ClassDecl> Parser::parseDeclClass(SourceLoc ClassLoc,
       CD->addMember(D);
       if (isa<DestructorDecl>(D))
         CD->setHasDestructor();
+      else if (isa<VisitRefsInInstance_dmu_Decl>(D))
+        CD->setHasVisitRefsInInstance_dmu_();
     };
     if (parseDeclList(LBLoc, RBLoc, diag::expected_rbrace_class,
                       Options, Handler))
