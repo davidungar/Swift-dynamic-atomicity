@@ -4987,9 +4987,16 @@ SourceRange DestructorDecl::getSourceRange() const {
   return { getDestructorLoc(), getBody()->getEndLoc() };
 }
 
-
+// TODO: (dmu) factor with above
 SourceRange VisitRefsInInstance_dmu_Decl::getSourceRange() const {
-  return { SourceLoc(), SourceLoc() };
+  if (getBodyKind() == BodyKind::Unparsed ||
+      getBodyKind() == BodyKind::Skipped)
+    return { getVisitRefsInInstance_dmu_Loc(), BodyRange.End };
+  
+  if (getBodyKind() == BodyKind::None)
+    return getVisitRefsInInstance_dmu_Loc();
+  
+  return { getVisitRefsInInstance_dmu_Loc(), getBody()->getEndLoc() };
 }
 
 PrecedenceGroupDecl *

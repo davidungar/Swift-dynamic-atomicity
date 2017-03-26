@@ -5757,8 +5757,8 @@ public:
   
   
   
-  SourceLoc getDestructorLoc() const { return getNameLoc(); }
-  SourceLoc getStartLoc() const { return getDestructorLoc(); }
+  SourceLoc getVisitRefsInInstance_dmu_Loc() const { return getNameLoc(); }
+  SourceLoc getStartLoc() const { return getVisitRefsInInstance_dmu_Loc(); }
   SourceRange getSourceRange() const;
   
   static bool classof(const Decl *D) {
