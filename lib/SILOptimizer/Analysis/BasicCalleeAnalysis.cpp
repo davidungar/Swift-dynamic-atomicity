@@ -239,7 +239,7 @@ CalleeList CalleeCache::getCalleeList(SILInstruction *I) const {
     Ty = M.Types.getLoweredType(Ty.getSwiftRValueType()
                                     .getAnyOptionalObjectType());
   auto Class = Ty.getSwiftRValueType().getClassOrBoundGenericClass();
-  if (!Class || Class->hasClangNode() || !Class->hasDestructor())
+  if (!Class || Class->hasClangNode() || !Class->hasDestructor() || !Class->hasVisitRefsInInstance_dmu_())
     return CalleeList();
   SILDeclRef Destructor = SILDeclRef(Class->getDestructor());
   return getCalleeList(Destructor);

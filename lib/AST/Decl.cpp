@@ -2414,6 +2414,7 @@ ClassDecl::ClassDecl(SourceLoc ClassLoc, Identifier Name, SourceLoc NameLoc,
     = static_cast<unsigned>(StoredInheritsSuperclassInits::Unchecked);
   ClassDeclBits.RawForeignKind = 0;
   ClassDeclBits.HasDestructorDecl = 0;
+  ClassDeclBits.HasVisitRefsInInstance_dmu_Decl = 0;
 }
 
 DestructorDecl *ClassDecl::getDestructor() {

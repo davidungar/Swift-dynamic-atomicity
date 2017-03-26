@@ -2462,6 +2462,11 @@ struct ASTNodeBase {};
         Out << "every class's 'has destructor' bit must be set\n";
         abort();
       }
+      
+      if (!CD->hasVisitRefsInInstance_dmu_()) {
+        Out << "every class's 'has visitRefsInInstance' bit must be set\n";
+        abort();
+      }
 
       verifyCheckedBase(CD);
     }

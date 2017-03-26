@@ -513,6 +513,8 @@ class alignas(1 << DeclAlignInBits) Decl {
     /// it is implicit. This bit is used during parsing and type-checking to
     /// control inserting the implicit destructor.
     unsigned HasDestructorDecl : 1;
+    
+    unsigned HasVisitRefsInInstance_dmu_Decl: 1;
   };
   enum { NumClassDeclBits = NumNominalTypeDeclBits + 8 };
   static_assert(NumClassDeclBits <= 32, "fits in an unsigned");
@@ -3259,6 +3261,17 @@ public:
   /// Retrieve the destructor for this class.
   DestructorDecl *getDestructor();
   
+  
+  /// True if the class has a visitRefsInInstance function.
+  ///
+  /// Fully type-checked native classes always contain visitRefsInInstance_dmu_Decls, but during parsing
+  /// or type-checking, the implicit visitor may not have been synthesized
+  /// yet if one was not explicitly declared.
+  bool hasVisitRefsInInstance_dmu_() const { return ClassDeclBits.HasVisitRefsInInstance_dmu_Decl; }
+  
+  void setHasVisitRefsInInstance_dmu_() { ClassDeclBits.HasVisitRefsInInstance_dmu_Decl = 1; }
+  
+  /// Retrieve the destructor for this class.
   VisitRefsInInstance_dmu_Decl *getVisitRefsInInstance_dmu_();
 
 

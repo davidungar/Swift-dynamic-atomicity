@@ -691,6 +691,12 @@ private:
                                          FunctionOrder &BottomUpOrder,
                                          int RecursionDepth);
 
+  bool buildConnectionGraphForVisitRefsInInstance_dmu_(SILValue V,
+                                                       SILInstruction *Caller,
+                                                       FunctionInfo *FInfo,
+                                                       FunctionOrder &BottomUpOrder,
+                                                       int RecursionDepth);
+
   /// Builds the connection graph for a function, including called functions.
   /// Visited callees are added to \p BottomUpOrder until \p RecursionDepth
   /// reaches MaxRecursionDepth.

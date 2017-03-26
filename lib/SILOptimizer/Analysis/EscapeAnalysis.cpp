@@ -1178,6 +1178,42 @@ bool EscapeAnalysis::buildConnectionGraphForDestructor(
                                         RecursionDepth);
 }
 
+// TODO: (dmu) factor with above
+bool EscapeAnalysis::buildConnectionGraphForVisitRefsInInstance_dmu_(
+                                                                     SILValue V, SILInstruction *I, FunctionInfo *FInfo,
+                                                                     FunctionOrder &BottomUpOrder, int RecursionDepth) {
+  // It should be a locally allocated object.
+  if (!pointsToLocalObject(V))
+    return false;
+  SILModule &M = I->getFunction()->getModule();
+  // Determine the exact type of the value.
+  auto Ty = getExactDynamicTypeOfUnderlyingObject(V, M, nullptr);
+  if (!Ty) {
+    // The object is local, but we cannot determine its type.
+    return false;
+  }
+  // If Ty is an optional, its deallocation is equivalent to the deallocation
+  // of its payload.
+  // TODO: Generalize it. Destructor of an aggregate type is equivalent to calling
+  // destructors for its components.
+  while (Ty.getSwiftRValueType()->getAnyOptionalObjectType())
+    Ty = M.Types.getLoweredType(Ty.getSwiftRValueType()
+                                  .getAnyOptionalObjectType());
+  auto Class = Ty.getSwiftRValueType().getClassOrBoundGenericClass();
+  if (!Class || !Class->hasVisitRefsInInstance_dmu_())
+    return false;
+  auto Visitor = Class->getVisitRefsInInstance_dmu_();
+  SILDeclRef VisitorRef(Visitor, SILDeclRef::Kind::VisitRefsInInstance_dmu_);
+  // Find a SILFunction for visitor.
+  SILFunction *Visit = M.lookUpFunction(VisitorRef);
+  if (!Visit)
+    return false;
+  CalleeList Callees(Visit);
+  return buildConnectionGraphForCallees(I, Callees, FInfo, BottomUpOrder,
+                                        RecursionDepth);
+}
+
+
 void EscapeAnalysis::analyzeInstruction(SILInstruction *I,
                                         FunctionInfo *FInfo,
                                         FunctionOrder &BottomUpOrder,
@@ -1320,6 +1356,18 @@ void EscapeAnalysis::analyzeInstruction(SILInstruction *I,
       auto OpV = cast<RefCountingInst>(I)->getOperand(0);
       if (buildConnectionGraphForDestructor(OpV, I, FInfo, BottomUpOrder,
                                             RecursionDepth))
+        return;
+    }
+  }
+  
+  {
+    // 2nd verse, same as the first, just like the paragraph above
+    SILValue OpV;
+    if (auto II = dyn_cast< StoreBarrier_dmu_Inst   >(I))  OpV = II->getSrc();
+    else if (auto II = dyn_cast< VisitRefAtAddr_dmu_Inst >(I))  OpV = II->getOperand();
+    if ((bool)OpV  &&  RecursionDepth < MaxRecursionDepth) {
+      if (buildConnectionGraphForVisitRefsInInstance_dmu_(OpV, I, FInfo, BottomUpOrder,
+                                                          RecursionDepth))
         return;
     }
   }

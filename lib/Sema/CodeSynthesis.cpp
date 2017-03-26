@@ -2172,6 +2172,9 @@ void TypeChecker::addImplicitDestructor(ClassDecl *CD) {
 
 // factor with above?
 void TypeChecker::addImplicitVisitRefsInInstance_dmu_(ClassDecl *CD) {
+  if (CD->hasVisitRefsInInstance_dmu_() || CD->isInvalid())
+    return;
+
   auto *selfDecl = ParamDecl::createSelf(CD->getLoc(), CD);
   
   auto *MCRCD = new (Context) VisitRefsInInstance_dmu_Decl(Context.Id_visitRefsInInstance_dmu_,
@@ -2185,5 +2188,6 @@ void TypeChecker::addImplicitVisitRefsInInstance_dmu_(ClassDecl *CD) {
   // Create an empty body for the destructor.
   MCRCD->setBody(BraceStmt::create(Context, CD->getLoc(), { }, CD->getLoc(), true));
   CD->addMember(MCRCD);
+  CD->setHasVisitRefsInInstance_dmu_();
 }
 
