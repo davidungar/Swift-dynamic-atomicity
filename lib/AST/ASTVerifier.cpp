@@ -2464,7 +2464,7 @@ struct ASTNodeBase {};
       }
       
       if (!CD->isObjC() && !CD->hasVisitRefsInInstance_dmu_()) {
-        Out << "every non-ObjC class's 'has visitRefsInInstance' bit must be set\n";
+        Out << "every non-ObjC class's 'has visitRefsInInstance_dmu_' bit must be set\n";
         abort();
       }
 

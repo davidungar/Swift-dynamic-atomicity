@@ -710,6 +710,7 @@ class DeadObjectElimination : public SILFunctionTransform {
 };
 } // end anonymous namespace
 
+// TODO: (dmu) extend to visitRefsInInstance_dmu_?
 bool DeadObjectElimination::processAllocRef(AllocRefInst *ARI) {
   // Ok, we have an alloc_ref. Check the cache to see if we have already
   // computed the destructor behavior for its SILType.

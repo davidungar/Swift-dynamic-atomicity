@@ -381,16 +381,16 @@ ERROR(destructor_params,none,
 
 // VisitRefsInInstance_dmu_
 ERROR(visitRefsInInstance_dmu__decl_outside_class,none,
-"visitRefsInInstance may only be declared within a class", ())
+"visitRefsInInstance_dmu_ may only be declared within a class", ())
 ERROR(expected_lbrace_visitRefsInInstance_dmu_,PointsToFirstBadToken,
-"expected '{' for visitRefsInInstance", ())
+"expected '{' for visitRefsInInstance_dmu_", ())
 ERROR(visitRefsInInstance_dmu__has_name,PointsToFirstBadToken,
-"visitRefsInInstance cannot have a name", ())
+"visitRefsInInstance_dmu_ cannot have a name", ())
 
 ERROR(opened_visitRefsInInstance_dmu__expected_rparen,none,
 "expected ')' to close parameter list", ())
 ERROR(visitRefsInInstance_dmu__params,none,
-"no parameter clause allowed on visitRefsInInstance", ())
+"no parameter clause allowed on visitRefsInInstance_dmu_", ())
 
 
 // Operator

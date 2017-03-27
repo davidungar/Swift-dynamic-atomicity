@@ -355,10 +355,10 @@ ERROR(destructor_not_accessible,none,
       "deinitializers cannot be accessed", ())
 
 ERROR(visitRefsInInstance_dmu__not_accessible,none,
-      "visitRefsInInstance cannot be accessed", ())
+      "visitRefsInInstance_dmu_ cannot be accessed", ())
 
 ERROR(visitRefsInInstance_dmu__only_in_Swift,none,
-"visitRefsInInstance must only be in Swift (non-ObjC) class", ())
+"visitRefsInInstance_dmu_ must only be in Swift (non-ObjC) class", ())
 
 // Array Element
 ERROR(cannot_convert_array_element,none,

@@ -688,6 +688,29 @@ public struct ${Self}<Pointee>
     Builtin.destroyArray(Pointee.self, _rawValue, count._builtinWordValue)
     return UnsafeMutableRawPointer(self)
   }
+  
+  
+  /// Visits the specified number of values starting at this pointer.
+  ///
+  /// The region of memory starting at this pointer and covering `count`
+  /// instances of the pointer's `Pointee` type must be initialized. After
+  /// calling `visitRefs_dmu_(count:)`, each ref has been 'visited'.
+  /// As of 3/2017 visiting means making its reference count safe for concurrent access.
+  /// These must all be references to Swift classes, not ObjectiveC classes.
+  ///
+  /// - Parameter count: The number of instances to deinitialize. `count` must
+  ///   not be negative. The default value is `1`.
+  /// - Returns: A raw pointer to the same address as this pointer. The memory
+  ///   referenced by the returned raw pointer is still bound to `Pointee`.
+  @discardableResult
+  public func visitRefs_dmu_(count: Int = 1) -> UnsafeMutableRawPointer {
+    _debugPrecondition(count >= 0, "${Self}.visitRefsStartingAt_dmu_ with negative count")
+    // FIXME: optimization should be implemented, where if the `count` value
+    // is 1, the `Builtin.visitRefsInArray_dmu_(Pointee.self, _rawValue)` gets called.
+    visitRefsInArray_dmu_(Pointee.self, _rawValue, count._builtinWordValue)
+    return UnsafeMutableRawPointer(self)
+  }
+
 %  end
 
   /// Executes the given closure while temporarily binding the specified number

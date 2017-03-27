@@ -461,6 +461,9 @@ BUILTIN_MISC_OPERATION(CondUnreachable, "conditionallyUnreachable", "", Special)
 /// DestroyArray has type (T.Type, Builtin.RawPointer, Builtin.Word) -> ()
 BUILTIN_MISC_OPERATION(DestroyArray, "destroyArray", "", Special)
 
+/// VisitRefsInArray_dmu_  has type (T.Type, Builtin.RawPointer, Builtin.Word) -> ()
+BUILTIN_MISC_OPERATION(VisitRefsInArray_dmu_, "visitRefsInArray_dmu_", "", Special)
+
 /// CopyArray, TakeArrayFrontToBack, and TakeArrayBackToFront all have type
 /// (T.Type, Builtin.RawPointer, Builtin.RawPointer, Builtin.Word) -> ()
 BUILTIN_MISC_OPERATION(CopyArray, "copyArray", "", Special)

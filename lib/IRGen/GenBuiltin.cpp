@@ -774,6 +774,25 @@ if (Builtin.ID == BuiltinValueKind::id) { \
     return;
   }
   
+  // TODO: (dmu) factor with above
+  if (Builtin.ID == BuiltinValueKind::VisitRefsInArray_dmu_) {
+    // The input type is (T.Type, Builtin.RawPointer, Builtin.Word).
+    /* metatype (which may be thin) */
+    if (args.size() == 3)
+      args.claimNext();
+    llvm::Value *ptr = args.claimNext();
+    llvm::Value *count = args.claimNext();
+    
+    auto valueTy = getLoweredTypeAndTypeInfo(IGF.IGM,
+                                             substitutions[0].getReplacement());
+    
+    ptr = IGF.Builder.CreateBitCast(ptr,
+                                    valueTy.second.getStorageType()->getPointerTo());
+    Address array = valueTy.second.getAddressForPointer(ptr);
+    valueTy.second.visitRefsInArray_dmu_(IGF, array, count, valueTy.first);
+    return;
+  }
+  
   if (Builtin.ID == BuiltinValueKind::CopyArray
       || Builtin.ID == BuiltinValueKind::TakeArrayFrontToBack
       || Builtin.ID == BuiltinValueKind::TakeArrayBackToFront) {

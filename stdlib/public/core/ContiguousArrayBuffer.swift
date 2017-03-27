@@ -67,6 +67,10 @@ final class _ContiguousArrayStorage<Element> : _ContiguousArrayStorageBase {
     _elementPointer.deinitialize(count: countAndCapacity.count)
     _fixLifetime(self)
   }
+  
+  visitRefsInInstance_dmu_ {
+    _elementPointer.visitRefs_dmu_(count: countAndCapacity.count)
+  }
 
 #if _runtime(_ObjC)
   /// If the `Element` is bridged verbatim, invoke `body` on an

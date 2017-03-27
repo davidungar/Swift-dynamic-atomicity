@@ -3262,7 +3262,7 @@ public:
   DestructorDecl *getDestructor();
   
   
-  /// True if the class has a visitRefsInInstance function.
+  /// True if the class has a visitRefsInInstance_dmu_ function.
   ///
   /// Fully type-checked native classes always contain visitRefsInInstance_dmu_Decls, but during parsing
   /// or type-checking, the implicit visitor may not have been synthesized
