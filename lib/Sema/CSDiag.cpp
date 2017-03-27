@@ -2847,10 +2847,10 @@ diagnoseUnviableLookupResults(MemberLookupResult &result, Type baseObjTy,
       diagnose(nameLoc, diag::destructor_not_accessible);
       return;
     }
-      case MemberLookupResult::UR_VisitRefsInInstance_dmu_Inaccessible: {
-        diagnose(nameLoc, diag::visitRefsInInstance_dmu__not_accessible);
-        return;
-      }
+    case MemberLookupResult::UR_VisitRefsInInstance_dmu_Inaccessible: {
+      diagnose(nameLoc, diag::visitRefsInInstance_dmu__not_accessible);
+      return;
+    }
     }
   }
 
