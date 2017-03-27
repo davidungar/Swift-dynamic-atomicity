@@ -2430,7 +2430,8 @@ VisitRefsInInstance_dmu_Decl *ClassDecl::getVisitRefsInInstance_dmu_() {
   auto name = getASTContext().Id_visitRefsInInstance_dmu_;
   auto results = lookupDirect(name);
 
-  assert(results.size() == 1 && "More than one visitor?");
+  assert(results.size() > 0  &&  "No visitors?");
+  assert(results.size() < 2  &&  "More than one visitor?");
   return cast<VisitRefsInInstance_dmu_Decl>(results.front());
 }
 
