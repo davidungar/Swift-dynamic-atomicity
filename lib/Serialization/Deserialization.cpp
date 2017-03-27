@@ -3247,6 +3247,7 @@ Decl *ModuleFile::getDecl(DeclID DID, Optional<DeclContext *> ForcedContext) {
 
     theClass->setMemberLoader(this, DeclTypeCursor.GetCurrentBitNo());
     theClass->setHasDestructor();
+    theClass->setHasVisitRefsInInstance_dmu_();
     skipRecord(DeclTypeCursor, decls_block::MEMBERS);
     theClass->setConformanceLoader(
       this,
