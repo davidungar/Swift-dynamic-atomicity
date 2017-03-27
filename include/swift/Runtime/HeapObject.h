@@ -1172,7 +1172,7 @@ static inline void swift_unknownUnownedBeSafeForConcurrentAccess_dmu_(UnownedRef
 #else
   
   static inline void swift_unknownUnownedIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(UnownedReference *dst, UnownedReference *src) {
-    swift_unownedIfDestIsSafeForConcurrentAccessMakeSrcSafe(dst, src);
+    swift_unownedIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(dst, src);
   }
   
 #endif /* SWIFT_OBJC_INTEROP */
@@ -1273,7 +1273,7 @@ static inline void swift_unknownUnownedTakeAssign(UnownedReference *dest,
 #else
   
   static inline void swift_unknownUnownedCheckHolderThenVisitHeldRefs_dmu_(UnownedReference *dst, UnownedReference *src) {
-    swift_unownedIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(HeapObject *dst, HeapObject *src);
+    swift_unownedIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(dst, src);
   }
   
 #endif /* SWIFT_OBJC_INTEROP */
