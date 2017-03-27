@@ -167,23 +167,25 @@ void SILGenFunction::emitVisitRefsInInstance_dmu_(VisitRefsInInstance_dmu_Decl *
   // If we have a superclass, invoke its visitor.
   // If cd is ObjC, then it won't have a visitor, but all of its fields (and its superclasses') should be
   // atomically reference-counted.
-  if (cd->hasSuperclass() && !cd->isObjC()) {
+  if (cd->hasSuperclass()) {
     Type superclassTy = dd->mapTypeIntoContext(cd->getSuperclass());
     ClassDecl *superclass = superclassTy->getClassOrBoundGenericClass();
-    auto superclassVisitorDecl = superclass->getVisitRefsInInstance_dmu_();
-    SILDeclRef visitorConstant =
-    SILDeclRef(superclassVisitorDecl, SILDeclRef::Kind::VisitRefsInInstance_dmu_);
-    SILType baseSILTy = getLoweredLoadableType(superclassTy);
-    SILValue baseSelf = B.createUpcast(cleanupLoc, selfValue, baseSILTy);
-    ManagedValue visitorValue;
-    SILType visitorTy;
-    SubstitutionList subs
-    = superclassTy->gatherAllSubstitutions(SGM.M.getSwiftModule(), nullptr);
-    std::tie(visitorValue, visitorTy, subs)
-    = emitSiblingMethodRef(cleanupLoc, baseSelf, visitorConstant, subs);
-    SILType emptyType = getLoweredType(TupleType::getEmpty(SGM.M.getASTContext()));
-    B.createApply(cleanupLoc, visitorValue.forward(*this),
-                  visitorTy, emptyType, subs, baseSelf);
+    if (!superclass->isObjC()) {
+      auto superclassVisitorDecl = superclass->getVisitRefsInInstance_dmu_();
+      SILDeclRef visitorConstant =
+      SILDeclRef(superclassVisitorDecl, SILDeclRef::Kind::VisitRefsInInstance_dmu_);
+      SILType baseSILTy = getLoweredLoadableType(superclassTy);
+      SILValue baseSelf = B.createUpcast(cleanupLoc, selfValue, baseSILTy);
+      ManagedValue visitorValue;
+      SILType visitorTy;
+      SubstitutionList subs
+      = superclassTy->gatherAllSubstitutions(SGM.M.getSwiftModule(), nullptr);
+      std::tie(visitorValue, visitorTy, subs)
+      = emitSiblingMethodRef(cleanupLoc, baseSelf, visitorConstant, subs);
+      SILType emptyType = getLoweredType(TupleType::getEmpty(SGM.M.getASTContext()));
+      B.createApply(cleanupLoc, visitorValue.forward(*this),
+                    visitorTy, emptyType, subs, baseSelf);
+    }
   }
   emitVisitRefsInInstance_dmu_(selfValue, cd, cleanupLoc);
   
