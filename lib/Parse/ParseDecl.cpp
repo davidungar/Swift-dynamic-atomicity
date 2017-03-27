@@ -1809,7 +1809,7 @@ bool swift::isKeywordPossibleDeclStart(const Token &Tok) {
   case tok::kw_case:
   case tok::kw_class:
   case tok::kw_deinit:
-  case tok::kw_visitRefsInInstance:
+  case tok::kw_visitRefsInInstance_dmu_:
   case tok::kw_enum:
   case tok::kw_extension:
   case tok::kw_fileprivate:
@@ -2271,7 +2271,7 @@ Parser::parseDecl(ParseDeclOptions Flags,
     case tok::kw_deinit:
         DeclResult = parseDeclDeinit(Flags, Attributes);
       break;
-    case tok::kw_visitRefsInInstance:
+    case tok::kw_visitRefsInInstance_dmu_:
         DeclResult = parseDeclVisitRefsInInstance_dmu_(Flags, Attributes);
       break;
     case tok::kw_operator:
@@ -5698,7 +5698,7 @@ parseDeclDeinit(ParseDeclOptions Flags, DeclAttributes &Attributes) {
 // TODO: (dmu) factor with above
 ParserResult<VisitRefsInInstance_dmu_Decl> Parser::
 parseDeclVisitRefsInInstance_dmu_(ParseDeclOptions Flags, DeclAttributes &Attributes) {
-  SourceLoc DeclLoc = consumeToken(tok::kw_visitRefsInInstance);
+  SourceLoc DeclLoc = consumeToken(tok::kw_visitRefsInInstance_dmu_);
   // Parse extraneous parentheses and remove them with a fixit.
   if (Tok.is(tok::l_paren)) {
     SourceRange ParenRange;
