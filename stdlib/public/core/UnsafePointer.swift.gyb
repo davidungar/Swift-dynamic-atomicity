@@ -707,7 +707,7 @@ public struct ${Self}<Pointee>
     _debugPrecondition(count >= 0, "${Self}.visitRefsStartingAt_dmu_ with negative count")
     // FIXME: optimization should be implemented, where if the `count` value
     // is 1, the `Builtin.visitRefsInArray_dmu_(Pointee.self, _rawValue)` gets called.
-    visitRefsInArray_dmu_(Pointee.self, _rawValue, count._builtinWordValue)
+    Builtin.visitRefsInArray_dmu_(Pointee.self, _rawValue, count._builtinWordValue)
     return UnsafeMutableRawPointer(self)
   }
 
