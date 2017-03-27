@@ -629,7 +629,8 @@ static ManagedValue emitBuiltinReinterpretCast(SILGenFunction &gen,
   if (!fromTL.isLoadable() || !toTL.isLoadable()) {
     // Ensure that references use atomic reference-counting. -- (dmu)
     // TODO: (dmu) too conservative?
-    gen.B.emitVisitRefAtAddr_dmu_(loc, args[0].getValue());
+    // No, cannot do this because the library uses it for unitializedArrays!
+    // gen.B.emitVisitRefAtAddr_dmu_(loc, args[0].getValue());
 
     SILValue fromAddr;
 
