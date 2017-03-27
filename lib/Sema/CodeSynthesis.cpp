@@ -2178,8 +2178,8 @@ void TypeChecker::addImplicitVisitRefsInInstance_dmu_(ClassDecl *CD) {
   auto *selfDecl = ParamDecl::createSelf(CD->getLoc(), CD);
   
   auto *MCRCD = new (Context) VisitRefsInInstance_dmu_Decl(Context.Id_visitRefsInInstance_dmu_,
-                                                               CD->getLoc(),
-                                                               selfDecl, CD);
+                                                           CD->getLoc(),
+                                                           selfDecl, CD);
   MCRCD->setImplicit();
   
   // Type-check the declaration.

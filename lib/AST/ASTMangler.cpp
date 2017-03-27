@@ -89,7 +89,7 @@ std::string ASTMangler::mangleDestructorEntity(const DestructorDecl *decl,
 
 
 std::string ASTMangler::mangleVisitRefsInInstance_dmu_Entity(const VisitRefsInInstance_dmu_Decl *decl,
-                                               SymbolKind SKind) {
+                                                             SymbolKind SKind) {
   beginMangling();
   appendVisitRefsInInstance_dmu_Entity(decl);
   appendSymbolKind(SKind);

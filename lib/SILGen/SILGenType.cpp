@@ -494,7 +494,7 @@ public:
     llvm_unreachable("destructor in extension?!");
   }
   void visitVisitRefsInInstance_dmu_Decl(VisitRefsInInstance_dmu_Decl *) { 
-    llvm_unreachable("destructor in extension?!");
+    llvm_unreachable("visitRefsInInstance in extension?!");
   }
 
   void visitPatternBindingDecl(PatternBindingDecl *pd) {
