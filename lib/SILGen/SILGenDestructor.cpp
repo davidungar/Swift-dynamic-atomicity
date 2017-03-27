@@ -165,8 +165,6 @@ void SILGenFunction::emitVisitRefsInInstance_dmu_(VisitRefsInInstance_dmu_Decl *
   auto cleanupLoc = CleanupLocation::get(Loc);
   
   // If we have a superclass, invoke its visitor.
-  SILValue resultSelfValue;
-  SILType objectPtrTy = SILType::getNativeObjectType(F.getASTContext());
   // If cd is ObjC, then it won't have a visitor, but all of its fields (and its superclasses') should be
   // atomically reference-counted.
   if (cd->hasSuperclass() && !cd->isObjC()) {
@@ -183,16 +181,13 @@ void SILGenFunction::emitVisitRefsInInstance_dmu_(VisitRefsInInstance_dmu_Decl *
     = superclassTy->gatherAllSubstitutions(SGM.M.getSwiftModule(), nullptr);
     std::tie(visitorValue, visitorTy, subs)
     = emitSiblingMethodRef(cleanupLoc, baseSelf, visitorConstant, subs);
-    resultSelfValue = B.createApply(cleanupLoc, visitorValue.forward(*this),
-                                    visitorTy, objectPtrTy, subs, baseSelf);
-  } else {
-    resultSelfValue = B.createUncheckedRefCast(cleanupLoc, selfValue,
-                                               objectPtrTy);
+    SILType emptyType = getLoweredType(TupleType::getEmpty(SGM.M.getASTContext()));
+    B.createApply(cleanupLoc, visitorValue.forward(*this),
+                  visitorTy, emptyType, subs, baseSelf);
   }
-
   emitVisitRefsInInstance_dmu_(selfValue, cd, cleanupLoc);
   
-  B.createReturn(returnLoc, resultSelfValue);
+  B.createReturn(returnLoc, emitEmptyTuple(Loc));
 }
 
 // TODO: (dmu) check if we handle barrier in VisitStore, many calls to this may be redundant
