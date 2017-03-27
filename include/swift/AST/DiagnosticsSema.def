@@ -357,6 +357,9 @@ ERROR(destructor_not_accessible,none,
 ERROR(visitRefsInInstance_dmu__not_accessible,none,
       "visitRefsInInstance cannot be accessed", ())
 
+ERROR(visitRefsInInstance_dmu__only_in_Swift,none,
+"visitRefsInInstance must only be in Swift (non-ObjC) class", ())
+
 // Array Element
 ERROR(cannot_convert_array_element,none,
       "cannot convert value of type %0 to expected element type %1",

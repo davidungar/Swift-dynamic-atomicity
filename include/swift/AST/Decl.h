@@ -3362,16 +3362,6 @@ public:
       ?  "ObjC class should not have any VisitRefsInInstance_dmu_"
       :  "Swift class should have 1 VisitRefsInInstance_dmu_";
   }
-  
-  void assertCorrectNumberOf_VisitRefsInInstance_dmu_Decl( int howMany) {
-    
-    if  (howMany == correctNumberOf_VisitRefsInInstance_dmu_Decl())
-      return;
-    if (isObjC())
-      assert(false && "ObjC class should not have any VisitRefsInInstance_dmu_");
-    else
-      assert(false && "Swift class should have 1 VisitRefsInInstance_dmu_");
-  }
 };
 
 

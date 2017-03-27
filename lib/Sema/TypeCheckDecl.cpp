@@ -4314,6 +4314,10 @@ public:
           TC.diagnose(CD, diag::superclass_of_open_not_open, superclassTy);
           TC.diagnose(Super, diag::superclass_here);
         }
+        
+        if (CD->isObjC()  &&  CD->hasVisitRefsInInstance_dmu_()) {
+          TC.diagnose(CD->getVisitRefsInInstance_dmu_(), diag::visitRefsInInstance_dmu__only_in_Swift);
+        }
 
       }
 

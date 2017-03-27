@@ -380,8 +380,8 @@ ERROR(destructor_params,none,
 
 
 // VisitRefsInInstance_dmu_
-ERROR(visitRefsInInstance_dmu__decl_outside_Swift_class,none,
-"visitRefsInInstance may only be declared within a Swift (non-ObjC) class", ())
+ERROR(visitRefsInInstance_dmu__decl_outside_class,none,
+"visitRefsInInstance may only be declared within a class", ())
 ERROR(expected_lbrace_visitRefsInInstance_dmu_,PointsToFirstBadToken,
 "expected '{' for visitRefsInInstance", ())
 ERROR(visitRefsInInstance_dmu__has_name,PointsToFirstBadToken,
