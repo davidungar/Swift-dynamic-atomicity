@@ -648,6 +648,7 @@ public:
     PD_InStruct             = 1 << 9,
     PD_InEnum               = 1 << 10,
     PD_InLoop               = 1 << 11,
+    PD_AllowVisitRefsInInstance_dmu_ = 1 << 12,
   };
 
   /// Options that control the parsing of declarations.

@@ -5290,6 +5290,7 @@ ParserResult<ClassDecl> Parser::parseDeclClass(SourceLoc ClassLoc,
     ContextChange CC(*this, CD);
     Scope S(this, ScopeKind::ClassBody);
     ParseDeclOptions Options(PD_HasContainerType | PD_AllowDestructor |
+                             (CD->isObjC() ? 0 : PD_AllowVisitRefsInInstance_dmu_) |
                              PD_InClass);
     auto Handler = [&] (Decl *D) {
       CD->addMember(D);
@@ -5758,9 +5759,9 @@ parseDeclVisitRefsInInstance_dmu_(ParseDeclOptions Flags, DeclAttributes &Attrib
   
   DD->getAttrs() = Attributes;
   
-  // Reject 'destructor' functions outside of classes
+  // Reject 'visitor' functions outside of classes
   if (!(Flags & PD_AllowDestructor)) {
-    diagnose(DeclLoc, diag::visitRefsInInstance_dmu__decl_outside_class);
+    diagnose(DeclLoc, diag::visitRefsInInstance_dmu__decl_outside_Swift_class);
     
     // Tell the type checker not to touch this visitRefsInInstance_dmu_.
     DD->setInvalid();

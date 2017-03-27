@@ -804,6 +804,9 @@ struct MemberLookupResult {
     
     // A type's destructor cannot be referenced
     UR_DestructorInaccessible,
+    
+    // A type's ref visitor cannot be referenced
+    UR_VisitRefsInInstance_dmu_Inaccessible,
   };
   
   /// This is a list of considered, but rejected, candidates, along with a
