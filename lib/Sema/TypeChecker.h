@@ -1037,11 +1037,10 @@ public:
   bool typeCheckFunctionBodyUntil(FuncDecl *FD, SourceLoc EndTypeCheckLoc);
   bool typeCheckConstructorBodyUntil(ConstructorDecl *CD,
                                      SourceLoc EndTypeCheckLoc);
-  bool typeCheckDestructorOrVisitRefsInInstance_dmu_BodyUntil(DestructorDecl *DD,
+  bool typeCheckDestructorBodyUntil(DestructorDecl *DD,
                                     SourceLoc EndTypeCheckLoc);
-
-  bool VisitRefsInInstance_dmu_Until(VisitRefsInInstance_dmu_Decl *MD,
-                                    SourceLoc EndTypeCheckLoc);
+  bool typeCheckVisitRefsInInstance_dmu_BodyUntil(VisitRefsInInstance_dmu_Decl *VD,
+                                                  SourceLoc EndTypeCheckLoc);
 
   void typeCheckClosureBody(ClosureExpr *closure);
 

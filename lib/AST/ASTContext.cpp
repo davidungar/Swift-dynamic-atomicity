@@ -2021,6 +2021,9 @@ bool ASTContext::diagnoseUnintendedObjCMethodOverrides(SourceFile &sf) {
     // Skip deinitializers.
     if (isa<DestructorDecl>(method))
       continue;
+    
+    if (isa<VisitRefsInInstance_dmu_Decl>(method))
+      continue;
 
     // Skip invalid declarations.
     if (method->isInvalid())

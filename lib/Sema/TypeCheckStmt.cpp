@@ -1326,11 +1326,11 @@ bool TypeChecker::typeCheckAbstractFunctionBodyUntil(AbstractFunctionDecl *AFD,
   if (auto *CD = dyn_cast<ConstructorDecl>(AFD))
     return typeCheckConstructorBodyUntil(CD, EndTypeCheckLoc);
 
-  if (auto *MD = dyn_cast<VisitRefsInInstance_dmu_Decl>(AFD)) // TODO: (dmu) needed?
-    return VisitRefsInInstance_dmu_Until(MD, EndTypeCheckLoc);
+  if (auto *MD = dyn_cast<VisitRefsInInstance_dmu_Decl>(AFD))
+    return typeCheckVisitRefsInInstance_dmu_BodyUntil(MD, EndTypeCheckLoc);
 
   auto *DD = cast<DestructorDecl>(AFD);
-  return typeCheckDestructorOrVisitRefsInInstance_dmu_BodyUntil(DD, EndTypeCheckLoc);
+  return typeCheckDestructorBodyUntil(DD, EndTypeCheckLoc);
 }
 
 bool TypeChecker::typeCheckAbstractFunctionBody(AbstractFunctionDecl *AFD) {
@@ -1578,7 +1578,7 @@ bool TypeChecker::typeCheckConstructorBodyUntil(ConstructorDecl *ctor,
   return HadError;
 }
 
-bool TypeChecker::typeCheckDestructorOrVisitRefsInInstance_dmu_BodyUntil(DestructorDecl *DD,
+bool TypeChecker::typeCheckDestructorBodyUntil(DestructorDecl *DD,
                                                SourceLoc EndTypeCheckLoc) {
   StmtChecker SC(*this, static_cast<AbstractFunctionDecl *>(DD));
   SC.EndTypeCheckLoc = EndTypeCheckLoc;
@@ -1592,10 +1592,18 @@ bool TypeChecker::typeCheckDestructorOrVisitRefsInInstance_dmu_BodyUntil(Destruc
   return HadError;
 }
 
-
-bool TypeChecker::VisitRefsInInstance_dmu_Until(VisitRefsInInstance_dmu_Decl *MD,
-                                               SourceLoc EndTypeCheckLoc) {
-  return false;
+bool TypeChecker::typeCheckVisitRefsInInstance_dmu_BodyUntil(VisitRefsInInstance_dmu_Decl *VD,
+                                                             SourceLoc EndTypeCheckLoc) {
+  StmtChecker SC(*this, static_cast<AbstractFunctionDecl *>(VD));
+  SC.EndTypeCheckLoc = EndTypeCheckLoc;
+  BraceStmt *Body = VD->getBody();
+  if (!Body)
+    return false;
+  
+  bool HadError = SC.typeCheckBody(Body);
+  
+  VD->setBody(Body);
+  return HadError;
 }
 
 

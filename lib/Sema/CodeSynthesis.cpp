@@ -2172,7 +2172,7 @@ void TypeChecker::addImplicitDestructor(ClassDecl *CD) {
 
 // factor with above?
 void TypeChecker::addImplicitVisitRefsInInstance_dmu_(ClassDecl *CD) {
-  if (CD->hasVisitRefsInInstance_dmu_() || CD->isInvalid())
+  if (CD->hasVisitRefsInInstance_dmu_() || CD->isInvalid()  ||  CD->isObjC())
     return;
 
   auto *selfDecl = ParamDecl::createSelf(CD->getLoc(), CD);
