@@ -491,6 +491,7 @@ static void validateDeclForLayout(TypeChecker &TC, NominalTypeDecl *nominal) {
   if (auto *CD = dyn_cast<ClassDecl>(nominal)) {
     TC.addImplicitConstructors(CD);
     TC.addImplicitDestructor(CD);
+    TC.addImplicitVisitRefsInInstance_dmu_(CD);
   }
 }
 
