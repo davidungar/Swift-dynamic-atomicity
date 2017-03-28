@@ -522,7 +522,7 @@ struct UnknownRetainableBox : RetainableBoxBase<UnknownRetainableBox, void*> {
 #if SWIFT_OBJC_INTEROP
     swift_unknownBeSafeForConcurrentAccess_dmu_(obj);
 #else
-    swift_beSafeForConcurrentAccess_dmu(static_cast<HeapObject *>(obj));
+    swift_beSafeForConcurrentAccess_dmu_(static_cast<HeapObject *>(obj));
 #endif
   }
 };
