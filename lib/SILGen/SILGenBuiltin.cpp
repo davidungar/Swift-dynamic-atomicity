@@ -666,7 +666,8 @@ static ManagedValue emitBuiltinReinterpretCast(SILGenFunction &gen,
                                               toTL.getLoweredType());
 
   // Ensure that references use atomic reference-counting. -- (dmu)
-  gen.B.emitVisitRefAtAddr_dmu_(loc, in.getValue());
+  // Cannot do this because Arrays cast uninitialized BridgeObjects
+  // gen.B.emitVisitRefAtAddr_dmu_(loc, in.getValue());
 
   // If the cast reduces to unchecked_ref_cast, then the source and dest
   // have identical cleanup, so just forward the cleanup as an optimization.
