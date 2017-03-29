@@ -4867,10 +4867,13 @@ public:
       if (ops.size() == 0) {
         switch (v->getKind()) {
           case ValueKind::AllocStackInst: {
-            auto k = cast<AllocStackInst>(v)->getElementType().isReferenceCounted(M)
-            ? foundOutermostAggregate : noOutermostAggregateExists;
+            //            auto k = cast<AllocStackInst>(v)->getElementType().isReferenceCounted(M)
+            //            ? foundOutermostAggregate : noOutermostAggregateExists;
             // TODO: (dmu) is this too conservative? No if there is another use of this allocation in might not be
-            return OutermostAggregateResult_dmu_( vArg, k, v);
+            // YES, causes crash because newly allocated thing ref count is safe
+            // WHY?????
+            // Moving a ref to a garbage value on the stack: DON'T DO ANYTHING
+            return OutermostAggregateResult_dmu_( vArg, noOutermostAggregateExists, v);
           }
           case ValueKind::AllocBoxInst:
             assert( cast<AllocBoxInst>(v)->getType().isReferenceCounted(M) && "boxes are reference-counted?!");
