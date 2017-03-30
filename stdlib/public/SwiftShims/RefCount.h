@@ -12,6 +12,8 @@
 #ifndef SWIFT_STDLIB_SHIMS_REFCOUNT_H
 #define SWIFT_STDLIB_SHIMS_REFCOUNT_H
 
+#define FORCE_NON_ATOMIC 1
+
 #if !defined(__cplusplus)
 
 // These definitions are placeholders for importing into Swift.
@@ -92,7 +94,11 @@ class StrongRefCount {
 
   // Increment the reference count.
   void increment() {
+#if FORCE_NON_ATOMIC      
+    incrementNonAtomic();
+#else    
     __atomic_fetch_add(&refCount, RC_ONE, __ATOMIC_RELAXED);
+#endif    
   }
 
   void incrementNonAtomic() {
@@ -103,13 +109,25 @@ class StrongRefCount {
 
   // Increment the reference count by n.
   void increment(uint32_t n) {
+#if FORCE_NON_ATOMIC
+      incrementNonAtomic(n);
+#else      
     __atomic_fetch_add(&refCount, n << RC_FLAGS_COUNT, __ATOMIC_RELAXED);
+#endif    
   }
 
   void incrementNonAtomic(uint32_t n) {
+#if FORCE_NON_ATOMIC
+    uint32_t val = refCount;
+#else    
     uint32_t val = __atomic_load_n(&refCount, __ATOMIC_RELAXED);
+#endif    
     val += n << RC_FLAGS_COUNT;
+#if FORCE_NON_ATOMIC
+    refCount = val;
+#else
     __atomic_store_n(&refCount, val, __ATOMIC_RELAXED);
+#endif    
  }
 
   // Try to simultaneously set the pinned flag and increment the
@@ -122,6 +140,9 @@ class StrongRefCount {
   //
   // Postcondition: the flag is set.
   bool tryIncrementAndPin() {
+#if FORCE_NON_ATOMIC      
+    return tryIncrementAndPinNonAtomic();
+#else      
     uint32_t oldval = __atomic_load_n(&refCount, __ATOMIC_RELAXED);
     while (true) {
       // If the flag is already set, just fail.
@@ -138,10 +159,16 @@ class StrongRefCount {
 
       // Try again; oldval has been updated with the value we saw.
     }
+#endif    
   }
 
   bool tryIncrementAndPinNonAtomic() {
+#if FORCE_NON_ATOMIC      
+    uint32_t oldval = refCount;
+#else    
     uint32_t oldval = __atomic_load_n(&refCount, __ATOMIC_RELAXED);
+#endif
+    
     // If the flag is already set, just fail.
     if (oldval & RC_PINNED_FLAG) {
       return false;
@@ -149,7 +176,11 @@ class StrongRefCount {
 
     // Try to simultaneously set the flag and increment the reference count.
     uint32_t newval = oldval + (RC_PINNED_FLAG + RC_ONE);
+#if FORCE_NON_ATOMIC      
+    refCount = newval;
+#else    
     __atomic_store_n(&refCount, newval, __ATOMIC_RELAXED);
+#endif    
     return true;
   }
 
@@ -170,7 +201,11 @@ class StrongRefCount {
   //
   // Precondition: the pinned flag is set.
   bool decrementAndUnpinShouldDeallocate() {
+#if FORCE_NON_ATOMIC      
+    return doDecrementShouldDeallocateNonAtomic<true>();
+#else      
     return doDecrementShouldDeallocate<true>();
+#endif    
   }
 
   bool decrementAndUnpinShouldDeallocateNonAtomic() {
@@ -180,7 +215,11 @@ class StrongRefCount {
   // Decrement the reference count.
   // Return true if the caller should now deallocate the object.
   bool decrementShouldDeallocate() {
+#if FORCE_NON_ATOMIC
+    return doDecrementShouldDeallocateNonAtomic<false>();
+#else
     return doDecrementShouldDeallocate<false>();
+#endif    
   }
 
   bool decrementShouldDeallocateNonAtomic() {
@@ -188,7 +227,11 @@ class StrongRefCount {
   }
 
   bool decrementShouldDeallocateN(uint32_t n) {
+#if FORCE_NON_ATOMIC
+    return doDecrementShouldDeallocateNNonAtomic<false>(n);
+#else      
     return doDecrementShouldDeallocateN<false>(n);
+#endif    
   }
 
   // Set the RC_DEALLOCATING_FLAG flag non-atomically.
@@ -196,7 +239,11 @@ class StrongRefCount {
   // Precondition: the reference count must be 1
   void decrementFromOneAndDeallocateNonAtomic() {
     assert(refCount == RC_ONE && "Expect a count of 1");
+#if FORCE_NON_ATOMIC
+    refCount = RC_DEALLOCATING_FLAG;
+#else    
     __atomic_store_n(&refCount, RC_DEALLOCATING_FLAG, __ATOMIC_RELAXED);
+#endif    
   }
 
   bool decrementShouldDeallocateNNonAtomic(uint32_t n) {
@@ -206,7 +253,11 @@ class StrongRefCount {
   // Return the reference count.
   // During deallocation the reference count is undefined.
   uint32_t getCount() const {
+#if FORCE_NON_ATOMIC
+    return refCount >> RC_FLAGS_COUNT;
+#else      
     return __atomic_load_n(&refCount, __ATOMIC_RELAXED) >> RC_FLAGS_COUNT;
+#endif    
   }
 
   // Return whether the reference count is exactly 1.
@@ -218,7 +269,11 @@ class StrongRefCount {
   // Return whether the reference count is exactly 1 or the pin flag
   // is set.  During deallocation the reference count is undefined.
   bool isUniquelyReferencedOrPinned() const {
+#if FORCE_NON_ATOMIC
+      auto value = refCount;
+#else    
     auto value = __atomic_load_n(&refCount, __ATOMIC_RELAXED);
+#endif    
     // Rotating right by one sets the sign bit to the pinned bit. After
     // rotation, the dealloc flag is the least significant bit followed by the
     // reference count. A reference count of two or higher means that our value
@@ -234,7 +289,11 @@ class StrongRefCount {
 
   // Return true if the object is inside deallocation.
   bool isDeallocating() const {
+#if FORCE_NON_ATOMIC
+    return refCount & RC_DEALLOCATING_FLAG;
+#else      
     return __atomic_load_n(&refCount, __ATOMIC_RELAXED) & RC_DEALLOCATING_FLAG;
+#endif    
   }
 
 private:
@@ -281,9 +340,17 @@ private:
     // it's already set.
     constexpr uint32_t quantum =
       (ClearPinnedFlag ? RC_ONE + RC_PINNED_FLAG : RC_ONE);
+#if FORCE_NON_ATOMIC
+    uint32_t val = refCount;
+#else    
     uint32_t val = __atomic_load_n(&refCount, __ATOMIC_RELAXED);
+#endif    
     val -= quantum;
+#if FORCE_NON_ATOMIC
     __atomic_store_n(&refCount, val, __ATOMIC_RELEASE);
+#else    
+    __atomic_store_n(&refCount, val, __ATOMIC_RELEASE);
+#endif    
     uint32_t newval = refCount;
 
     assert((!ClearPinnedFlag || !(newval & RC_PINNED_FLAG)) &&
@@ -356,9 +423,17 @@ private:
     // If we're being asked to clear the pinned flag, we can assume
     // it's already set.
     uint32_t delta = (n << RC_FLAGS_COUNT) + (ClearPinnedFlag ? RC_PINNED_FLAG : 0);
+#if FORCE_NON_ATOMIC
+    uint32_t val = refCount;
+#else    
     uint32_t val = __atomic_load_n(&refCount, __ATOMIC_RELAXED);
+#endif    
     val -= delta;
+#if FORCE_NON_ATOMIC
+    refCount = val;
+#else    
     __atomic_store_n(&refCount, val, __ATOMIC_RELEASE);
+#endif    
     uint32_t newval = val;
 
     assert((!ClearPinnedFlag || !(newval & RC_PINNED_FLAG)) &&
