@@ -102,9 +102,17 @@ class StrongRefCount {
   }
 
   void incrementNonAtomic() {
+#if FORCE_NON_ATOMIC
+    uint32_t val = refCount;
+#else    
     uint32_t val = __atomic_load_n(&refCount, __ATOMIC_RELAXED);
+#endif    
     val += RC_ONE;
+#if FORCE_NON_ATOMIC
+    refCount = val;
+#else    
     __atomic_store_n(&refCount, val, __ATOMIC_RELAXED);
+#endif    
   }
 
   // Increment the reference count by n.
@@ -187,9 +195,18 @@ class StrongRefCount {
   // Increment the reference count, unless the object is deallocating.
   bool tryIncrement() {
     // FIXME: this could be better on LL/SC architectures like arm64
+#if FORCE_NON_ATOMIC      
+      uint32_t oldval = refCount;
+      refCount += RC_ONE;
+#else    
     uint32_t oldval = __atomic_fetch_add(&refCount, RC_ONE, __ATOMIC_RELAXED);
+#endif    
     if (oldval & RC_DEALLOCATING_FLAG) {
+#if FORCE_NON_ATOMIC      
+      refCount -= RC_ONE;
+#else      
       __atomic_fetch_sub(&refCount, RC_ONE, __ATOMIC_RELAXED);
+#endif      
       return false;
     } else {
       return true;
@@ -303,8 +320,13 @@ private:
     // it's already set.
     constexpr uint32_t quantum =
       (ClearPinnedFlag ? RC_ONE + RC_PINNED_FLAG : RC_ONE);
+#if FORCE_NON_ATOMIC
+    refCount -= quantum;
+    uint32_t newval =refCount;
+#else    
     uint32_t newval = __atomic_sub_fetch(&refCount, quantum, __ATOMIC_RELEASE);
-
+#endif
+    
     assert((!ClearPinnedFlag || !(newval & RC_PINNED_FLAG)) &&
            "unpinning reference that was not pinned");
     assert(newval + quantum >= RC_ONE &&
@@ -330,8 +352,17 @@ private:
                   "fix decrementShouldDeallocate() if you add more flags");
     uint32_t oldval = 0;
     newval = RC_DEALLOCATING_FLAG;
+#if FORCE_NON_ATOMIC
+    if (refCount == oldval) {
+        refCount = newval;
+        return true;
+    } else {
+        return false;
+    }
+#else    
     return __atomic_compare_exchange(&refCount, &oldval, &newval, 0,
                                      __ATOMIC_ACQUIRE, __ATOMIC_RELAXED);
+#endif    
   }
 
   template <bool ClearPinnedFlag>
@@ -347,7 +378,7 @@ private:
 #endif    
     val -= quantum;
 #if FORCE_NON_ATOMIC
-    __atomic_store_n(&refCount, val, __ATOMIC_RELEASE);
+    refCount = val;
 #else    
     __atomic_store_n(&refCount, val, __ATOMIC_RELEASE);
 #endif    
@@ -378,8 +409,17 @@ private:
                   "fix decrementShouldDeallocate() if you add more flags");
     uint32_t oldval = 0;
     newval = RC_DEALLOCATING_FLAG;
+#if FORCE_NON_ATOMIC
+    if (refCount == oldval) {
+        refCount = newval;
+        return true;
+    } else {
+        return false;
+    }
+#else    
     return __atomic_compare_exchange(&refCount, &oldval, &newval, 0,
                                      __ATOMIC_ACQUIRE, __ATOMIC_RELAXED);
+#endif    
   }
 
   template <bool ClearPinnedFlag>
@@ -387,8 +427,13 @@ private:
     // If we're being asked to clear the pinned flag, we can assume
     // it's already set.
     uint32_t delta = (n << RC_FLAGS_COUNT) + (ClearPinnedFlag ? RC_PINNED_FLAG : 0);
+#if FORCE_NON_ATOMIC
+    refCount -= delta;
+    uint32_t newval = refCount;
+#else    
     uint32_t newval = __atomic_sub_fetch(&refCount, delta, __ATOMIC_RELEASE);
-
+#endif
+    
     assert((!ClearPinnedFlag || !(newval & RC_PINNED_FLAG)) &&
            "unpinning reference that was not pinned");
     assert(newval + delta >= RC_ONE &&
@@ -414,8 +459,17 @@ private:
                   "fix decrementShouldDeallocate() if you add more flags");
     uint32_t oldval = 0;
     newval = RC_DEALLOCATING_FLAG;
+#if FORCE_NON_ATOMIC
+    if (refCount == oldval) {
+        refCount = newval;
+        return true;
+    } else {
+        return false;
+    }
+#else
     return __atomic_compare_exchange(&refCount, &oldval, &newval, 0,
                                      __ATOMIC_ACQUIRE, __ATOMIC_RELAXED);
+#endif
   }
 
   template <bool ClearPinnedFlag>
@@ -461,8 +515,17 @@ private:
                   "fix decrementShouldDeallocate() if you add more flags");
     uint32_t oldval = 0;
     newval = RC_DEALLOCATING_FLAG;
+#if FORCE_NON_ATOMIC
+    if (refCount == oldval) {
+        refCount = newval;
+        return true;
+    } else {
+        return false;
+    }
+#else    
     return __atomic_compare_exchange(&refCount, &oldval, &newval, 0,
                                      __ATOMIC_ACQUIRE, __ATOMIC_RELAXED);
+#endif    
   }
 };
 
