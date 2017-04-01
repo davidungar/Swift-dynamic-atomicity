@@ -461,6 +461,9 @@ BUILTIN_MISC_OPERATION(CondUnreachable, "conditionallyUnreachable", "", Special)
 /// DestroyArray has type (T.Type, Builtin.RawPointer, Builtin.Word) -> ()
 BUILTIN_MISC_OPERATION(DestroyArray, "destroyArray", "", Special)
 
+/// VisitRefs_dmu_  has type (T.Type, Builtin.RawPointer, Builtin.Word) -> ()
+BUILTIN_MISC_OPERATION(VisitRefs_dmu_, "visitRefs_dmu_", "", Special)
+
 /// VisitRefsInArray_dmu_  has type (T.Type, Builtin.RawPointer, Builtin.Word) -> ()
 BUILTIN_MISC_OPERATION(VisitRefsInArray_dmu_, "visitRefsInArray_dmu_", "", Special)
 

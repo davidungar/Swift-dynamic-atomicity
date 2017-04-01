@@ -646,8 +646,12 @@ static ValueDecl *getDestroyArrayOperation(ASTContext &Context, Identifier Id) {
   return builder.build(Id);
 }
 
+static ValueDecl *getVisitRefs_dmu_Operation(ASTContext &Context, Identifier Id) {
+    return getDestroyOperation(Context, Id); // reuse this
+}
+
 static ValueDecl *getVisitRefsInArray_dmu_Operation(ASTContext &Context, Identifier Id) {
-  return getDestroyArrayOperation(Context, Id);
+  return getDestroyArrayOperation(Context, Id); // reuse this
 }
 
 static ValueDecl *getTransferArrayOperation(ASTContext &Context, Identifier Id){
@@ -1612,7 +1616,11 @@ ValueDecl *swift::getBuiltinValueDecl(ASTContext &Context, Identifier Id) {
   case BuiltinValueKind::DestroyArray:
     if (!Types.empty()) return nullptr;
     return getDestroyArrayOperation(Context, Id);
-      
+          
+  case BuiltinValueKind::VisitRefs_dmu_:
+      if (!Types.empty()) return nullptr;
+      return getVisitRefs_dmu_Operation(Context, Id);
+  
   case BuiltinValueKind::VisitRefsInArray_dmu_:
     if (!Types.empty()) return nullptr;
     return getVisitRefsInArray_dmu_Operation(Context, Id);
