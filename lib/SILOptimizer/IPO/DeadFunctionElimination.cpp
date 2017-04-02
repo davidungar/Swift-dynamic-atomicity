@@ -442,10 +442,11 @@ class DeadFunctionElimination : FunctionLivenessComputation {
     // Collect vtable method implementations.
     for (SILVTable &vTable : Module->getVTableList()) {
       for (const SILVTable::Entry &entry : vTable.getEntries()) {
-        // We don't need to collect destructors because we mark them as alive
+        // We don't need to collect destructors or visitors because we mark them as alive
         // anyway.
         if (entry.Method.kind == SILDeclRef::Kind::Deallocator ||
-            entry.Method.kind == SILDeclRef::Kind::IVarDestroyer) {
+            entry.Method.kind == SILDeclRef::Kind::IVarDestroyer ||
+            entry.Method.kind == SILDeclRef::Kind::VisitRefsInInstance_dmu_) {
           continue;
         }
         SILFunction *F = entry.Implementation;
@@ -502,8 +503,9 @@ class DeadFunctionElimination : FunctionLivenessComputation {
     for (SILVTable &vTable : Module->getVTableList()) {
       for (const SILVTable::Entry &entry : vTable.getEntries()) {
         if (entry.Method.kind == SILDeclRef::Kind::Deallocator ||
-            entry.Method.kind == SILDeclRef::Kind::IVarDestroyer) {
-          // Destructors are alive because they are called from swift_release
+            entry.Method.kind == SILDeclRef::Kind::IVarDestroyer ||
+            entry.Method.kind == SILDeclRef::Kind::VisitRefsInInstance_dmu_) {
+          // Destructors and visitors are alive because they are called from swift_release and stores
           ensureAlive(entry.Implementation);
           continue;
         }
