@@ -2211,6 +2211,7 @@ void SILVTable::print(llvm::raw_ostream &OS, bool Verbose) const {
     case SILDeclRef::Kind::IVarDestroyer:
     case SILDeclRef::Kind::Destroyer:
     case SILDeclRef::Kind::Deallocator:
+    case SILDeclRef::Kind::VisitRefsInInstance_dmu_:
       HasSingleImplementation = true;
     }
     // No need to emit the signature for methods that may have only

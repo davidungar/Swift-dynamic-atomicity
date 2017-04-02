@@ -4913,7 +4913,9 @@ public:
         case ValueKind::AllocValueBufferInst:
         case ValueKind::PointerToAddressInst:
         case ValueKind::UncheckedTakeEnumDataAddrInst:
-        case ValueKind::ProjectExistentialBoxInst: {
+        case ValueKind::ProjectExistentialBoxInst:
+        case ValueKind::UncheckedAddrCastInst:
+          {
           auto k = v->getType().isReferenceCounted(M)
           ? foundOutermostAggregate : noOutermostAggregateExists;
           return OutermostAggregateResult_dmu_( vArg, k, v);

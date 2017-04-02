@@ -361,6 +361,7 @@ static void addLowLevelPassPipeline(SILPassPipelinePlan &P) {
 
   // Should be after FunctionSignatureOpts and before the last inliner.
   P.addReleaseDevirtualizer();
+  // TODO: (dmu) Optimized: also devirtualize VisitRefsInInstance_dmu_?
 
   addSSAPasses(P, OptimizationLevelKind::LowLevel);
   P.addDeadStoreElimination();
