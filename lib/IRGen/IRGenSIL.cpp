@@ -4871,9 +4871,9 @@ public:
         if (auto fa = dyn_cast<SILFunctionArgument>(sa)) {
           if (fa->getArgumentConvention().isIndirectConvention()) {
             SILValue firstRefIfAny = findFirstRefInsideOf(v);
-            auto k = bool(firstRefIfAny) ? Kind::foundOutermostAggregate : noOutermostAggregateExists;
-            //printf("\nWARNING: much too conservative for in-outs\n");
-            //auto k = Kind::outermostAggregateIsAccessedConcurrently;
+            // auto k = bool(firstRefIfAny) ? Kind::foundOutermostAggregate : noOutermostAggregateExists;
+            printf("\nWARNING: much too conservative for in-outs\n");
+            auto k = Kind::outermostAggregateIsAccessedConcurrently;
             return OutermostAggregateResult_dmu_(vArg, k, firstRefIfAny);
           }
         }
