@@ -474,6 +474,16 @@ SWIFT_CC(DefaultCC_IMPL) {
 }
 
 
+void swift::swift_unknownIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(void *dst, void *src) // TODO: (dmu) are my routines needed in this file?
+SWIFT_CC(DefaultCC_IMPL) {
+  if (!isObjCTaggedPointerOrNull(dst)) {
+    auto tmpD = static_cast<HeapObject *>(dst);
+    if (!tmpD->refCount.isSafeForConcurrentAccess_dmu_())
+      return
+  }
+  swift_unknownBeSafeForConcurrentAccess_dmu_(src);
+}
+
 void swift::swift_unknownRelease(void *object)
     SWIFT_CC(DefaultCC_IMPL) {
   if (isObjCTaggedPointerOrNull(object)) return;
@@ -725,6 +735,22 @@ SWIFT_CC(DefaultCC_IMPL) {
 }
 
 
+void swift::swift_bridgeObjectIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(void *dst, void* src)
+SWIFT_CC(DefaultCC_IMPL) {
+#if SWIFT_OBJC_INTEROP
+  if (isObjCTaggedPointerOrNull(src)  ||  isNonNative_unTagged_bridgeObject(src))
+    return;
+  if (isObjCTaggedPointerOrNull(dst)  ||  isNonNative_unTagged_bridgeObject(src)) {
+    swift_bridgeObjectBeSafeForConcurrentAccess_dmu_(src);
+    return;
+  }
+#endif
+  auto const dstRef = static_cast<HeapObject *>(toPlainObject_unTagged_bridgeObject(dst));
+  if (dstRef->refCount.isSafeForConcurrentAccess_dmu_())
+    swift_bridgeObjectBeSafeForConcurrentAccess_dmu_(src);
+}
+
+
 
 #if SWIFT_OBJC_INTEROP
 
@@ -967,22 +993,23 @@ void swift::swift_unknownUnownedBeSafeForConcurrentAccess_dmu_(UnownedReference 
   if (!ref->Value) {
     // Nothing to do.
     return;
-  } else if (auto objcRef = dyn_cast<ObjCUnownedReference>(ref)) {
+  } else if (dyn_cast<ObjCUnownedReference>(ref)) {
   } else {
     swift_unownedBeSafeForConcurrentAccess_dmu_(ref);
   }
 }
 
 void swift::swift_unknownUnownedIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(UnownedReference *dst, UnownedReference *src) {
-  if (!dst->Value || !src->Value)
+  if (dst->Value == nullptr  ||  src->Value == nullptr)
     return;
-  if (dyn_cast<ObjCUnownedReference>(src) == nullptr)
-    return; // Nothing to do
-  if (auto dstRef = dyn_cast<ObjCUnownedReference>(dst))
-    swift_beSafeForConcurrentAccess_dmu_(src->Value);
+  if (dyn_cast<ObjCUnownedReference>(dst))
+    swift_unknownUnownedBeSafeForConcurrentAccess_dmu_(src);
+  else if (dyn_cast<ObjCUnownedReference>(src))
+    swift_unownedBeSafeForConcurrentAccess_dmu_(src);
   else
-    swift_ifDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(dst->Value, src->Value);
+    swift_unownedIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(dst, src);
 }
+
 
 void swift::swift_unknownUnownedVisitRefs_dmu_(UnownedReference *ref) {
   swift_unknownUnownedBeSafeForConcurrentAccess_dmu_(ref);
@@ -1091,6 +1118,14 @@ void swift::swift_unknownWeakDestroy(WeakReference *addr) {
 void swift::swift_unknownWeakBeSafeForConcurrentAccess_dmu_(WeakReference *addr) {
   if (isNativeSwiftWeakReference(addr)) {
     swift_weakBeSafeForConcurrentAccess_dmu_(addr);
+  }
+}
+
+void swift::swift_unknownWeakIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(WeakReference *dst, WeakReference *src) {
+  if (!isNativeSwiftWeakReference(dst))
+    swift_unknownWeakBeSafeForConcurrentAccess_dmu_(src);
+  else if (isNativeSwiftWeakReference(src)) {
+    swift_weakIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(dst, src);
   }
 }
 

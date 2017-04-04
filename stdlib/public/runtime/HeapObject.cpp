@@ -805,10 +805,22 @@ void swift::swift_weakDestroy(WeakReference *ref) {
 }
 
 void swift::swift_weakBeSafeForConcurrentAccess_dmu_(WeakReference *ref) {
-  if (ref->Value & WR_NATIVE) {
-    auto tmp = (HeapObject*) (ref->Value & ~WR_NATIVE);
-    SWIFT_RT_ENTRY_CALL(swift_beSafeForConcurrentAccess_dmu_)(tmp);
+  if (!isNativeSwiftWeakReference(ref))
+    return;
+  auto tmp = (HeapObject*) (ref->Value & ~WR_NATIVE);
+  SWIFT_RT_ENTRY_CALL(swift_beSafeForConcurrentAccess_dmu_)(tmp);
   }
+}
+
+void swift::swift_weakIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(WeakReference *dst, WeakReference *src) {
+  if (!isNativeSwiftWeakReference(src))
+    return;
+  if (isNativeSwiftWeakReference(dst)) {
+    auto tmpD = (HeapObject*)(dst->Value & ~WR_NATIVE);
+    if (tmpD != nullptr  &&  !tmpD->refCount.isSafeForConcurrentAccess_dmu_())
+      return;
+  }
+  SWIFT_RT_ENTRY_CALL(swift_weakBeSafeForConcurrentAccess_dmu_)(src);
 }
 
 void swift::swift_weakCopyInit(WeakReference *dest, WeakReference *src) {

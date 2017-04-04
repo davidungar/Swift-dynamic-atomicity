@@ -604,6 +604,19 @@ void swift::swift_errorBeSafeForConcurrentAccess_dmu_(SwiftError *error) {
   return _swift_errorBeSafeForConcurrentAccess_dmu_(error);
 }
 
+
+static void _swift_errorIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu__(SwiftError *dst, SwiftError *src) {
+  // For now, SwiftError is always objc-refcounted.
+  // Assume ObjC is atomically ref-counted.
+}
+
+SWIFT_RUNTIME_EXPORT
+auto *_swift_errorIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_ = _swift_errorIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu__;
+
+void swift::swift_errorIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(SwiftError *dst, SwiftError *src) {
+  return _swift_errorIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(dst, src);
+}
+
 static void _swift_willThrow_(SwiftError *error) { }
 
 SWIFT_RUNTIME_EXPORT

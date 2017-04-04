@@ -709,6 +709,12 @@ void swift_weakDestroy(WeakReference *ref);
 SWIFT_RUNTIME_EXPORT
 void swift_weakBeSafeForConcurrentAccess_dmu_(WeakReference *ref);
   
+/// TODO: (dmu) comment
+///
+/// \param ref - never null, but can refer to a null object
+SWIFT_RUNTIME_EXPORT
+void swift_weakIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(WeakReference *dst, WeakReference *src);
+
 /// Copy initialize a weak reference.
 ///
 /// \param dest - never null, but can refer to a null object
@@ -764,7 +770,11 @@ void *swift_nonatomic_bridgeObjectRetain_n(void *value, int n)
   
 SWIFT_RUNTIME_EXPORT
 void swift_bridgeObjectBeSafeForConcurrentAccess_dmu_(void *value)
-SWIFT_CC(DefaultCC);
+    SWIFT_CC(DefaultCC);
+  
+SWIFT_RUNTIME_EXPORT
+void swift_bridgeObjectIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(void *dst, void *src)
+    SWIFT_CC(DefaultCC);
 
 
 /*****************************************************************************/
@@ -795,9 +805,14 @@ SWIFT_RUNTIME_EXPORT
 void swift_nonatomic_unknownRetain_n(void *value, int n)
     SWIFT_CC(DefaultCC);
 
-  /// TODO: (dmu): comment
+/// TODO: (dmu): comment
 SWIFT_RUNTIME_EXPORT
 void swift_unknownBeSafeForConcurrentAccess_dmu_(void *value)
+    SWIFT_CC(DefaultCC);
+  
+/// TODO: (dmu): comment
+SWIFT_RUNTIME_EXPORT
+void swift_unknownIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(void *dst, void *src)
     SWIFT_CC(DefaultCC);
 
 
@@ -828,6 +843,11 @@ SWIFT_CC(DefaultCC) {
   swift_beSafeForConcurrentAccess_dmu_(static_cast<HeapObject *>(value));
 }
   
+static inline void swift_unknownIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(void *dst, void *src)
+SWIFT_CC(DefaultCC) {
+  swift_IfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(static_cast<HeapObject *>(dst), static_cast<HeapObject *>(src));
+}
+
 
 #endif /* SWIFT_OBJC_INTEROP */
 
@@ -995,6 +1015,20 @@ static inline void swift_unknownWeakDestroy(WeakReference *object) {
   
   static inline void swift_unknownWeakBeSafeForConcurrentAccess_dmu_(WeakReference *object) {
     swift_weakBeSafeForConcurrentAccess_dmu_(object);
+  }
+  
+#endif /* SWIFT_OBJC_INTEROP */
+  
+#if SWIFT_OBJC_INTEROP
+  
+  /// TODO: (dmu) comment
+  SWIFT_RUNTIME_EXPORT
+  void swift_unknownIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(WeakReference *dst, WeakReference *src);
+  
+#else
+  
+  static inline void swift_unknownIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_WeakReference *dst, WeakReference *src) {
+    swift_weakIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_WeakReference(dst, src);
   }
   
 #endif /* SWIFT_OBJC_INTEROP */
@@ -1258,6 +1292,21 @@ static inline void swift_unknownUnownedTakeAssign(UnownedReference *dest,
   
   static inline void swift_unknownUnownedVisitRefs_dmu_(UnownedReference *ref) {
     swift_unownedBeSafeForConcurrentAccess_dmu_(ref);
+  }
+  
+#endif /* SWIFT_OBJC_INTEROP */
+  
+  
+#if SWIFT_OBJC_INTEROP
+  
+  /// TODO: (dmu) explain
+  SWIFT_RUNTIME_EXPORT
+  void swift_unknownUnownedIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(UnownedReference *dst, UnownedReference *src);
+  
+#else
+  
+  static inline void swift_unknownUnownedIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(UnownedReference *dst, UnownedReference *src) {
+    swift_unownedIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(dst, src);
   }
   
 #endif /* SWIFT_OBJC_INTEROP */
