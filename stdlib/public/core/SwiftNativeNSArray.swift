@@ -293,7 +293,7 @@ internal class _ContiguousArrayStorageBase
     var s = self
     if isSafeForConcurrentAccess_dmu_(s) { return }
     if isSafeForConcurrentAccess_dmu_(from) {
-      force_safety_dmu_ = self // make safe
+      _ContiguousArrayStorageBase.force_safety_dmu_ = self // make safe
     }
   }
   // TODO: (dmu) remove this hack once the compiler handles Array.append, etc.
