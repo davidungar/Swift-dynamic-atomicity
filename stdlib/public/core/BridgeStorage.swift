@@ -149,6 +149,7 @@ struct _BridgeStorage<
   }
 
 
+  // TODO: (dmu) remove this hack once the compiler handles Array.append, etc.
   internal func propagate_safety_dmu_(from: _BridgeStorage<_ContiguousArrayStorageBase, _NSArrayCore>) {
     if isObjC { return }
     if from.isObjC  ||  isSafeForConcurrentAccess_dmu_(from.rawValue) {
@@ -162,10 +163,12 @@ struct _BridgeStorage<
   internal var rawValue: Builtin.BridgeObject
 }
 
+// TODO: (dmu) remove this hack once the compiler handles Array.append, etc.
 private class Class_dmu_ {}
 private var force_safety_dmu_: Builtin.BridgeObject = _makeNativeBridgeObject( Class_dmu_(), 0)
 
 
+// TODO: (dmu) remove this hack once the compiler handles Array.append, etc.
 private func isSafeForConcurrentAccess_dmu_(_ ref: Builtin.BridgeObject) -> Bool {
   var mutableReference = ref
   return withUnsafePointer(to: &mutableReference) {

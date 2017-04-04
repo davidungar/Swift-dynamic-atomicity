@@ -80,6 +80,7 @@ internal struct _ArrayBuffer<Element> : _ArrayBufferProtocol {
     _storage = storage
   }
   
+  // TODO: (dmu) remove this hack once the compiler handles Array.append, etc.
   internal mutating func checkAndStoreToSelf_dmu_(from: _ArrayBuffer) {
     from._storage.propagate_safety_dmu_(from: _storage)
     self = from

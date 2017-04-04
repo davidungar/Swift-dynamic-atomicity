@@ -1976,6 +1976,8 @@ extension _ArrayBufferProtocol {
       let tailEnd = endIndex
       _copyContents(subRange: tailStart..<tailEnd, initializing: newEnd)
     }
+    // TODO: (dmu) remove this hack once the compiler handles Array.append, etc.
+    // should be: self = Self(_buffer: dest, shiftedToStartIndex: startIndex)
     let t = Self(_buffer: dest, shiftedToStartIndex: startIndex)
     checkAndStoreToSelf_dmu_(from: t)
   }

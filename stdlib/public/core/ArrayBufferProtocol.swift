@@ -126,6 +126,7 @@ internal protocol _ArrayBufferProtocol
   var startIndex: Int { get }
   var endIndex: Int { get }
 
+  // TODO: (dmu) remove this hack once the compiler handles Array.append, etc.
   mutating func checkAndStoreToSelf_dmu_(from: Self)
 }
 

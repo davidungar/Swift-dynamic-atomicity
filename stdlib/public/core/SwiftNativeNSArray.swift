@@ -288,6 +288,7 @@ internal class _ContiguousArrayStorageBase
   }
 
 
+  // TODO: (dmu) remove this hack once the compiler handles Array.append, etc.
   internal func propagate_safety_dmu_(from: _ContiguousArrayStorageBase) {
     var s = self
     if isSafeForConcurrentAccess_dmu_(s) { return }
@@ -295,9 +296,11 @@ internal class _ContiguousArrayStorageBase
       force_safety_dmu_ = self // make safe
     }
   }
-  private var force_safety_dmu_: _ContiguousArrayStorageBase?
+  // TODO: (dmu) remove this hack once the compiler handles Array.append, etc.
+  private static var force_safety_dmu_: _ContiguousArrayStorageBase?
 }
 
+// TODO: (dmu) remove this hack once the compiler handles Array.append, etc.
 private func isSafeForConcurrentAccess_dmu_(_ ref: _ContiguousArrayStorageBase) -> Bool {
   var mutableReference = ref
   return withUnsafePointer(to: &mutableReference) {
