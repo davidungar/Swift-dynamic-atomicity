@@ -469,6 +469,11 @@ internal struct _ContiguousArrayBuffer<Element> : _ArrayBufferProtocol {
     }
     return true
   }
+  
+  internal mutating func checkAndStoreToSelf_dmu_(from: _ContiguousArrayBuffer) {
+    from._storage.propagate_safety_dmu_(from: _storage)
+    self = from
+  }
 
   internal var _storage: _ContiguousArrayStorageBase
 }

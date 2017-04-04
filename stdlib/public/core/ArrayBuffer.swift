@@ -79,6 +79,11 @@ internal struct _ArrayBuffer<Element> : _ArrayBufferProtocol {
   internal init(storage: _ArrayBridgeStorage) {
     _storage = storage
   }
+  
+  internal mutating func checkAndStoreToSelf_dmu_(from: _ArrayBuffer) {
+    from._storage.propagate_safety_dmu_(from: _storage)
+    self = from
+  }
 
   @_versioned
   internal var _storage: _ArrayBridgeStorage

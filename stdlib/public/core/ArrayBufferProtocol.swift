@@ -125,6 +125,8 @@ internal protocol _ArrayBufferProtocol
 
   var startIndex: Int { get }
   var endIndex: Int { get }
+
+  mutating func checkAndStoreToSelf_dmu_(from: Self)
 }
 
 extension _ArrayBufferProtocol {

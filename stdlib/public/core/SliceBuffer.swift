@@ -325,6 +325,13 @@ internal struct _SliceBuffer<Element>
     return try body(
       UnsafeMutableBufferPointer(start: firstElementAddress, count: count))
   }
+
+  
+  internal mutating func checkAndStoreToSelf_dmu_(from: _SliceBuffer) {
+    // TODO: (dmu) implement me someday, or fix the compielr
+    self = from
+  }
+
 }
 
 extension _SliceBuffer {

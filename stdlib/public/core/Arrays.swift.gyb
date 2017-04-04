@@ -1976,7 +1976,8 @@ extension _ArrayBufferProtocol {
       let tailEnd = endIndex
       _copyContents(subRange: tailStart..<tailEnd, initializing: newEnd)
     }
-    self = Self(_buffer: dest, shiftedToStartIndex: startIndex)
+    let t = Self(_buffer: dest, shiftedToStartIndex: startIndex)
+    checkAndStoreToSelf_dmu_(from: t)
   }
 }
 

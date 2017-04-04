@@ -148,8 +148,30 @@ struct _BridgeStorage<
     }
   }
 
+
+  internal func propagate_safety_dmu_(from: _BridgeStorage<_ContiguousArrayStorageBase, _NSArrayCore>) {
+    if isObjC { return }
+    if from.isObjC  ||  isSafeForConcurrentAccess_dmu_(from.rawValue) {
+      force_safety_dmu_ = rawValue // make safe
+    }
+  }
+
   // rawValue is passed inout to _isUnique.  Although its value
   // is unchanged, it must appear mutable to the optimizer.
   @_versioned
   internal var rawValue: Builtin.BridgeObject
 }
+
+private class Class_dmu_ {}
+private var force_safety_dmu_: Builtin.BridgeObject = _makeNativeBridgeObject( Class_dmu_(), 0)
+
+
+private func isSafeForConcurrentAccess_dmu_(_ ref: Builtin.BridgeObject) -> Bool {
+  var mutableReference = ref
+  return withUnsafePointer(to: &mutableReference) {
+    $0.withMemoryRebound(to: UnsafePointer<UInt32>.self, capacity: 1) {
+      0 != (($0.pointee+2).pointee & 4)
+    }
+  }
+}
+
