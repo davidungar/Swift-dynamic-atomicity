@@ -174,20 +174,20 @@ FUNCTION(NativeSetDeallocating, swift_setDeallocating,
          ARGS(RefCountedPtrTy),
          ATTRS(NoUnwind))
 
-// void swift_ifDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(HeapObject *dst, HeapObject *src);
-FUNCTION_WITH_GLOBAL_SYMBOL_AND_IMPL(IfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_, swift_ifDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_,
-         _swift_ifDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_, _swift_ifDestIsSafeForConcurrentAccessMakeSrcSafe_dmu__,
-         DefaultCC, // TODO: (dmu optimize) I think this may be conservative
-         RETURNS(VoidTy),
-         ARGS(RefCountedPtrTy, RefCountedPtrTy),
-         ATTRS(NoUnwind))
-
 // void swift_beSafeForConcurrentAccess_dmu(void* ptr);
 FUNCTION_WITH_GLOBAL_SYMBOL_AND_IMPL(BeSafeForConcurrentAccess_dmu_, swift_beSafeForConcurrentAccess_dmu_, /* dmu */
         _swift_beSafeForConcurrentAccess_dmu_, _swift_beSafeForConcurrentAccess_dmu__,
         DefaultCC, // TODO: (dmu optimize) I think this may be conservative
         RETURNS(VoidTy),
         ARGS(RefCountedPtrTy),
+        ATTRS(NoUnwind))
+
+// void swift_ifDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(HeapObject *dst, HeapObject *src);
+FUNCTION_WITH_GLOBAL_SYMBOL_AND_IMPL(IfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_, swift_ifDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_,
+_swift_ifDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_, _swift_ifDestIsSafeForConcurrentAccessMakeSrcSafe_dmu__,
+        DefaultCC, // TODO: (dmu optimize) I think this may be conservative
+        RETURNS(VoidTy),
+        ARGS(RefCountedPtrTy, RefCountedPtrTy),
         ATTRS(NoUnwind))
 
 // void swift_nonatomic_retain_n(void *ptr, int32_t n);
@@ -336,10 +336,16 @@ FUNCTION(NonAtomicUnknownRelease, swift_nonatomic_unknownRelease, DefaultCC,
          ARGS(UnknownRefCountedPtrTy),
          ATTRS(NoUnwind))
 
-// void swift_unknownRelease(void *ptr);
+// void swift_unknownBeSafeForConcurrentAccess_dmu_(void *ptr);
 FUNCTION(UnknownBeSafeForConcurrentAccess_dmu_, swift_unknownBeSafeForConcurrentAccess_dmu_, DefaultCC,
          RETURNS(VoidTy),
          ARGS(UnknownRefCountedPtrTy),
+         ATTRS(NoUnwind))
+
+// void swift_unknownIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(void *dst, void *src);
+FUNCTION(UnknownIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_, swift_unknownIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_, DefaultCC,
+         RETURNS(VoidTy),
+         ARGS(UnknownRefCountedPtrTy, UnknownRefCountedPtrTy),
          ATTRS(NoUnwind))
 
 // void *swift_bridgeObjectRetain(void *ptr);
@@ -372,6 +378,11 @@ FUNCTION(BridgeObjectBeSafeForConcurrentAccess_dmu_, swift_bridgeObjectBeSafeFor
          ARGS(BridgeObjectPtrTy),
          ATTRS(NoUnwind))
 
+// void swift_bridgeObjectIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(void *dst, void *src);
+FUNCTION(BridgeObjectIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_, swift_bridgeObjectIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_, DefaultCC,
+         RETURNS(VoidTy),
+         ARGS(BridgeObjectPtrTy, BridgeObjectPtrTy),
+         ATTRS(NoUnwind))
 
 // error *swift_errorRetain(error *ptr);
 FUNCTION(ErrorStrongRetain, swift_errorRetain, DefaultCC,
@@ -385,10 +396,16 @@ FUNCTION(ErrorStrongRelease, swift_errorRelease, DefaultCC,
          ARGS(ErrorPtrTy),
          ATTRS(NoUnwind))
 
-// void swift_errorRelease(void *ptr);
+// void swift_errorBeSafeForConcurrentAccess_dmu_(void *ptr);
 FUNCTION(ErrorBeSafeForConcurrentAccess_dmu_, swift_errorBeSafeForConcurrentAccess_dmu_, DefaultCC,
          RETURNS(VoidTy),
          ARGS(ErrorPtrTy),
+         ATTRS(NoUnwind))
+
+// void swift_errorIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu__(void *dst, void *src);
+FUNCTION(ErrorObjectIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_, swift_errorIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu__, DefaultCC,
+         RETURNS(VoidTy),
+         ARGS(ErrorPtrTy, ErrorPtrTy),
          ATTRS(NoUnwind))
 
 // void swift_unownedRetain(void *ptr);
@@ -410,7 +427,7 @@ FUNCTION(NativeUnownedBeSafeForConcurrentAccess_dmu_, swift_unownedBeSafeForConc
          ATTRS(NoUnwind))
 
 
-// void swift_unownedBeSafeForConcurrentAccess_dmu_(void *ptr);
+// void swift_unownedIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(void *ptr);
 FUNCTION(NativeUnownedIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_, swift_unownedIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_, RegisterPreservingCC,
          RETURNS(VoidTy),
          ARGS(RefCountedPtrTy, RefCountedPtrTy),
@@ -453,6 +470,12 @@ FUNCTION(NativeWeakDestroy, swift_weakDestroy, DefaultCC,
 FUNCTION(NativeWeakBeSafeForConcurrentAccess_dmu_, swift_weakBeSafeForConcurrentAccess_dmu_, DefaultCC,
          RETURNS(VoidTy),
          ARGS(WeakReferencePtrTy),
+         ATTRS(NoUnwind))
+
+// void swift_weakIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(WeakReference *dst, WeakReference *src);
+FUNCTION(NativeWeakIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_, swift_weakIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_, DefaultCC,
+         RETURNS(VoidTy),
+         ARGS(WeakReferencePtrTy, WeakReferencePtrTy),
          ATTRS(NoUnwind))
 
 // void swift_weakInit(WeakReference *object, void *value);
@@ -515,6 +538,12 @@ FUNCTION(UnknownWeakBeSafeForConcurrentAccess_dmu_, swift_unknownWeakBeSafeForCo
           ARGS(WeakReferencePtrTy),
           ATTRS(NoUnwind))
 
+// void swift_unknownWeakIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(WeakReference *dst, WeakReference *src); // TODO: (dmu) check needed?
+FUNCTION(UnknownWeakIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_, swift_unknownWeakIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_, DefaultCC,
+         RETURNS(VoidTy),
+         ARGS(WeakReferencePtrTy, WeakReferencePtrTy),
+         ATTRS(NoUnwind))
+
 // void swift_unknownWeakInit(WeakReference *object, void *value);
 FUNCTION(UnknownWeakInit, swift_unknownWeakInit, DefaultCC,
          RETURNS(VoidTy),
@@ -573,6 +602,12 @@ FUNCTION(UnknownUnownedDestroy, swift_unknownUnownedDestroy, DefaultCC,
 FUNCTION(UnknownUnownedBeSafeForConcurrentAccess_dmu_, swift_unknownUnownedBeSafeForConcurrentAccess_dmu_, DefaultCC,
          RETURNS(VoidTy),
          ARGS(UnownedReferencePtrTy),
+         ATTRS(NoUnwind))
+
+// void swift_unknownUnownedIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(UnownedReference *dst, UnownedReference *src);
+FUNCTION(UnknownUnownedIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_, swift_unknownUnownedIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_, DefaultCC,
+         RETURNS(VoidTy),
+         ARGS(UnownedReferencePtrTy, UnownedReferencePtrTy),
          ATTRS(NoUnwind))
 
 // void swift_unknownUnownedInit(UnownedReference *object, void *value);
