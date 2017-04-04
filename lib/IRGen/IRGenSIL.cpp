@@ -4873,8 +4873,7 @@ public:
             SILValue firstRefIfAny = findFirstRefInsideOf(v);
             auto k = bool(firstRefIfAny) ? Kind::foundOutermostAggregate : noOutermostAggregateExists;
             //printf("\nWARNING: much too conservative for in-outs\n");
-            //auto k = Kind::outermostAggregateIsAccessedConcurrently;
-            return OutermostAggregateResult_dmu_(vArg, k, firstRefIfAny);
+            //return OutermostAggregateResult_dmu_(vArg, k, firstRefIfAny);
           }
         }
         return OutermostAggregateResult_dmu_(vArg, Kind::noOutermostAggregateExists, v);
