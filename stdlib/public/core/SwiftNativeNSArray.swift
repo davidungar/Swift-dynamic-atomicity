@@ -296,9 +296,9 @@ internal class _ContiguousArrayStorageBase
       _ContiguousArrayStorageBase.force_safety_dmu_ = self // make safe
     }
   }
+  // TODO: (dmu) remove this hack once the compiler handles Array.append, etc.
+  private static var force_safety_dmu_: _ContiguousArrayStorageBase?
 }
-// TODO: (dmu) remove this hack once the compiler handles Array.append, etc.
-private var force_safety_dmu_: _ContiguousArrayStorageBase?
 
 // TODO: (dmu) remove this hack once the compiler handles Array.append, etc.
 private func isSafeForConcurrentAccess_dmu_(_ ref: _ContiguousArrayStorageBase) -> Bool {
