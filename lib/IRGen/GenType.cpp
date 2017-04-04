@@ -404,6 +404,9 @@ namespace {
     void genIRToVisitRefsInInitialValues_dmu_(IRGenFunction &IGF, Explosion &e) const override {
       (void)e.claimAll(); // TODO: (dmu cleanup) should not be needed, should be empty
     }
+    void genIRToVisitRefsInValuesAssignedTo_dmu_(IRGenFunction &IGF, Explosion &e, Address dest) const override {
+      (void)e.claimAll(); // TODO: (dmu cleanup) should not be needed, should be empty
+    }
 
     void copy(IRGenFunction &IGF, Explosion &src,
               Explosion &dest, Atomicity atomicity) const override {}
@@ -529,6 +532,9 @@ namespace {
     }
     
     void genIRToVisitRefsInInitialValues_dmu_(IRGenFunction &IGF, Explosion &e) const override {
+      (void)e.claimNext();
+    }
+    void genIRToVisitRefsInValuesAssignedTo_dmu_(IRGenFunction &IGF, Explosion &e, Address dest) const override {
       (void)e.claimNext();
     }
 

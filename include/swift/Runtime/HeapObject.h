@@ -547,7 +547,7 @@ SWIFT_RT_ENTRY_VISIBILITY
 void swift_unownedBeSafeForConcurrentAccess_dmu_(HeapObject *value)
   SWIFT_CC(RegisterPreservingCC);
   
-  // TODO: (dmu) check if any of these *IfDestIsSafe* are needed anymore since we're open-coding it
+  
 /// TODO: (dmu) comment
 SWIFT_RT_ENTRY_VISIBILITY
 void swift_unownedIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(HeapObject *dst, HeapObject *src)SWIFT_CC(RegisterPreservingCC);

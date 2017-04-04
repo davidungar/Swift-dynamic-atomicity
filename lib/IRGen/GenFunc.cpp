@@ -303,6 +303,8 @@ namespace {
      if (!isPOD(ResilienceExpansion::Maximal)) {
        IGF.emitNativeVisitRefInScalar_dmu_(context);
      }
+     void genIRToVisitRefsInValuesAssignedTo_dmu_(IRGenFunction &IGF, Explosion &e, Address dest) const override {
+       (void)e.claimNext(); // TODO: (dmu implement funcs)
    }
 
     void copy(IRGenFunction &IGF, Explosion &src,

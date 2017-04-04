@@ -1641,6 +1641,10 @@ void Remangler::mangleOutlinedVisitRefsInInitialValuesOfPayload_dmu_(Node *node)
   mangleSingleChildNode(node);
   Buffer << "Du";
 }
+void Remangler::mangleOutlinedVisitRefsInValuesOfPayloadAssignedTo_dmu_(Node *node) {
+  mangleSingleChildNode(node);
+  Buffer << "Dd";
+}
 
 
 void Remangler::mangleSILBoxTypeWithLayout(Node *node) {

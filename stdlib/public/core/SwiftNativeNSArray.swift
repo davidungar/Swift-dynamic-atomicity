@@ -286,27 +286,4 @@ internal class _ContiguousArrayStorageBase
     _sanityCheck(
       self !== _emptyArrayStorage, "Deallocating empty array storage?!")
   }
-
-
-  // TODO: (dmu) remove this hack once the compiler handles Array.append, etc.
-  internal func propagate_safety_dmu_(from: _ContiguousArrayStorageBase) {
-    var s = self
-    if isSafeForConcurrentAccess_dmu_(s) { return }
-    if isSafeForConcurrentAccess_dmu_(from) {
-      _ContiguousArrayStorageBase.force_safety_dmu_ = self // make safe
     }
-  }
-  // TODO: (dmu) remove this hack once the compiler handles Array.append, etc.
-  private static var force_safety_dmu_: _ContiguousArrayStorageBase?
-}
-
-// TODO: (dmu) remove this hack once the compiler handles Array.append, etc.
-private func isSafeForConcurrentAccess_dmu_(_ ref: _ContiguousArrayStorageBase) -> Bool {
-  var mutableReference = ref
-  return withUnsafePointer(to: &mutableReference) {
-    $0.withMemoryRebound(to: UnsafePointer<UInt32>.self, capacity: 1) {
-      0 != (($0.pointee+2).pointee & 4)
-    }
-  }
-}
-

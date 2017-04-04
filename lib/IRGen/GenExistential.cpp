@@ -822,10 +822,14 @@ public:
     asDerived().emitStoreOfTables(IGF, e, address);
   }
 
+  // dmu
   void genIRToVisitRefsInInitialValues_dmu_(IRGenFunction &IGF, Explosion &e) const override {
     llvm::Value *instance = e.claimNext();
     asDerived().emitValueVisitRefInScalar_dmu_(IGF, instance);
-    asDerived().claimTables(IGF, e);
+  }
+  void genIRToVisitRefsInValuesAssignedTo_dmu_(IRGenFunction &IGF, Explosion &src, Address dest) const override {
+    // TODO: (dmu check) is the getAddress right???
+    asDerived().emitValueCheckHolderThenVisitHeldRefInScalar_dmu_(IGF, dest.getAddress(), src.claimNext());
   }
   
   void copy(IRGenFunction &IGF, Explosion &src, Explosion &dest,
@@ -1207,6 +1211,10 @@ public:
 
   void emitValueVisitRefInScalar_dmu_(IRGenFunction &IGF, llvm::Value *value) const {
     IGF.emitVisitRefInScalar_dmu_(value, Refcounting);
+  }
+
+  void emitValueCheckHolderThenVisitHeldRefInScalar_dmu_(IRGenFunction &IGF, llvm::Value *dst, llvm::Value *src) const {
+    IGF.emitCheckHolderThenVisitHeldRefs_dmu_(dst, src, Refcounting);
   }
 
   void emitValueFixLifetime(IRGenFunction &IGF, llvm::Value *value) const {

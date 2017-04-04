@@ -325,14 +325,7 @@ internal struct _SliceBuffer<Element>
     return try body(
       UnsafeMutableBufferPointer(start: firstElementAddress, count: count))
   }
-
-  // TODO: (dmu) remove this hack once the compiler handles Array.append, etc.
-  internal mutating func checkAndStoreToSelf_dmu_(from: _SliceBuffer) {
-    // TODO: (dmu) implement me someday, or fix the compielr
-    self = from
   }
-
-}
 
 extension _SliceBuffer {
   internal func _copyToContiguousArray() -> ContiguousArray<Element> {

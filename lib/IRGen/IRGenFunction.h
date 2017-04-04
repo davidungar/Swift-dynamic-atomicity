@@ -247,6 +247,7 @@ public:
   llvm::Value *emitLoadRefcountedPtr(Address addr, ReferenceCounting style);
 
   void emitVisitRefInScalar_dmu_(llvm::Value *objToSet, ReferenceCounting refcounting);
+  void emitCheckHolderThenVisitHeldRefs_dmu_(llvm::Value *objToCheck, llvm::Value *objToSet, ReferenceCounting refcounting);
 
 
   //   - unowned references

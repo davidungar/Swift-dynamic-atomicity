@@ -410,6 +410,8 @@ public:
                           Address addr) const = 0;
   
   virtual void genIRToVisitRefsInInitialValues_dmu_(IRGenFunction &IGF, Explosion &e) const = 0;
+  virtual void genIRToVisitRefsInValuesAssignedTo_dmu_(IRGenFunction &IGF, Explosion &e,
+                                                 Address dest) const = 0;
   
   virtual void reexplode(IRGenFunction &IGF, Explosion &src,
                          Explosion &dest) const = 0;
