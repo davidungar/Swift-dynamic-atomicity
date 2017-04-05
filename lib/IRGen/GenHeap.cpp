@@ -1483,6 +1483,12 @@ void IRGenFunction::emitUnknownBeSafeForConcurrentAccess_dmu_(llvm::Value *objTo
   emitUnaryRefCountCall(*this, IGM.getUnknownBeSafeForConcurrentAccess_dmu_Fn(), objToSet);
 }
 
+
+void IRGenFunction::emitUnknownIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(llvm::Value *objToCheck, llvm::Value *objToCheck) {
+  emitBinaryRefCountCall(*this, IGM.UnknownIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(), objToCheck, objToSet);
+}
+
+
 void IRGenFunction::emitBridgeStrongRetain(llvm::Value *value,
                                            Atomicity atomicity) {
   emitUnaryRefCountCall(*this,
@@ -1517,12 +1523,20 @@ void IRGenFunction::emitErrorBeSafeForConcurrentAccess_dmu_(llvm::Value *value) 
   emitUnaryRefCountCall(*this, IGM.getErrorBeSafeForConcurrentAccess_dmu_Fn(), value);
 }
 
+void IRGenFunction::emitErrorIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(llvm::Value *objToCheck, llvm::Value *objToSet) {
+  emitBinaryRefCountCall(*this, IGM.getErrorIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(), objToCheck, objToSet);
+}
+
 void IRGenFunction::emitBridgeVisitRefInScalar_dmu_(llvm::Value *value) {
   emitBridgeBeSafeForConcurrentAccess_dmu_(value); // level-shift
 }
 
 void IRGenFunction::emitBridgeBeSafeForConcurrentAccess_dmu_(llvm::Value *value) {
   emitUnaryRefCountCall(*this, IGM.getBridgeObjectBeSafeForConcurrentAccess_dmu_Fn(), value);
+}
+
+void IRGenFunction::emitBridgeIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(llvm::Value *objToCheck, llvm:::Value *objToSet) {
+  emitBinaryRefCountCall(*this, IGM.getBridgeObjectIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_Fn(), objToCheck, objToCheck);
 }
 
 llvm::Value *IRGenFunction::emitNativeTryPin(llvm::Value *value,
