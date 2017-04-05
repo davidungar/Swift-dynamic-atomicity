@@ -487,9 +487,9 @@ namespace {
                                        llvm::Value *objToSet) const {
       IGF.emitVisitRefInScalar_dmu_(objToSet, ReferenceCounting::Native);
     }
-    void emitCheckHolderThenVisitHeldRefs_dmu_(IRGenFunction &IGF,
+    void emitCheckHolderThenVisitHeldRefsInScalar_dmu_(IRGenFunction &IGF,
                                        llvm::Value *objToCheck, llvm::Value *objToSet) const {
-      IGF.emitCheckHolderThenVisitHeldRefs_dmu_(objToCheck, objToSet, ReferenceCounting::Native);
+      IGF.emitCheckHolderThenVisitHeldRefsInScalar_dmu_(objToCheck, objToSet, ReferenceCounting::Native);
     }
     
     unsigned getFixedExtraInhabitantCount(IRGenModule &IGM) const override {
@@ -1116,7 +1116,7 @@ void IRGenFunction::emitVisitRefInScalar_dmu_(llvm::Value *objToSet,
       break;
   }
 }
-void IRGenFunction::emitCheckHolderThenVisitHeldRefs_dmu_(llvm::Value *objToCheck,
+void IRGenFunction::emitCheckHolderThenVisitHeldRefsInScalar_dmu_(llvm::Value *objToCheck,
                                                                    llvm::Value *objToSet,
                                                                    ReferenceCounting refcounting) {
   switch (refcounting) {

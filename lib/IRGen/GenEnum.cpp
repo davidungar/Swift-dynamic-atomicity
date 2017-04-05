@@ -887,7 +887,7 @@ namespace {
     void emitVisitRefInScalar_dmu_(IRGenFunction &IGF,
                                    llvm::Value *objToSet) const {}
 
-    void emitCheckHolderThenVisitHeldRefs_dmu_(IRGenFunction &IGF,
+    void emitCheckHolderThenVisitHeldRefsInScalar_dmu_(IRGenFunction &IGF,
                                                         llvm::Value *objToCheck, llvm::Value *objToSet) const {}
     
     void initializeWithTake(IRGenFunction &IGF, Address dest, Address src,
@@ -2405,7 +2405,7 @@ namespace {
 //          llvm::Value *val = src.claimNext();
 //          llvm::Value *ptr = IGF.Builder.CreateBitOrPointerCast(
 //                                                                val, getRefcountedPtrType(IGF.IGM));
-//          IGF.emitCheckHolderThenVisitHeldRefs_dmu_(dest.getAddress(), ptr, Refcounting);
+//          IGF.emitCheckHolderThenVisitHeldRefsInScalar_dmu_(dest.getAddress(), ptr, Refcounting);
 //          return;
 //        }
 //      }
@@ -2906,7 +2906,7 @@ namespace {
     }
 
     // TODO: (dmu implement enums)
-    void emitCheckHolderThenVisitHeldRefs_dmu_(IRGenFunction &IGF,
+    void emitCheckHolderThenVisitHeldRefsInScalar_dmu_(IRGenFunction &IGF,
                                                llvm::Value *objToCheck,
                                                llvm::Value *objToSet) const {}
     

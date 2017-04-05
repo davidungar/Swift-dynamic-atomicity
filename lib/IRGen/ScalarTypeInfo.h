@@ -171,7 +171,7 @@ public:
       return;
     }
 // TODO: (dmu check) is the getAddress right???
-    asDerived().emitCheckHolderThenVisitHeldRefs_dmu_(IGF, dest.getAddress(), src.claimNext());
+    asDerived().emitCheckHolderThenVisitHeldRefsInScalar_dmu_(IGF, dest.getAddress(), src.claimNext());
   }
 
   void copy(IRGenFunction &IGF, Explosion &in, Explosion &out,
@@ -260,7 +260,7 @@ private:
   
   void emitVisitRefInScalar_dmu_(IRGenFunction &IGF,
                                   llvm::Value *objToSet) const {}
-  void emitCheckHolderThenVisitHeldRefs_dmu_(IRGenFunction &IGF, // dmu
+  void emitCheckHolderThenVisitHeldRefsInScalar_dmu_(IRGenFunction &IGF, // dmu
                                              llvm::Value *objToCheck, llvm::Value *objToSet) const {}
 };
 

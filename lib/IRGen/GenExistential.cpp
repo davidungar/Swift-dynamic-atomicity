@@ -1214,7 +1214,7 @@ public:
   }
 
   void emitValueCheckHolderThenVisitHeldRefInScalar_dmu_(IRGenFunction &IGF, llvm::Value *dst, llvm::Value *src) const {
-    IGF.emitCheckHolderThenVisitHeldRefs_dmu_(dst, src, Refcounting);
+    IGF.emitCheckHolderThenVisitHeldRefsInScalar_dmu_(dst, src, Refcounting);
   }
 
   void emitValueFixLifetime(IRGenFunction &IGF, llvm::Value *value) const {
