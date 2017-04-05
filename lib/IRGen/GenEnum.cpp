@@ -1615,41 +1615,42 @@ namespace {
       IGF.Builder.CreateRetVoid();
       return func;
     }
-#error dmu really unimp
-    llvm::Function *emitVisitRefsInValuesOfPayloadAssignedTo_dmu_EnumFunction(IRGenModule &IGM, EnumDecl *theEnum) {
-      IRGenMangler Mangler;
-      std::string name = Mangler.mangleOutlinedVisitRefsInValuesOfPayloadAssignedTo_dmu_EnumFunction(theEnum);
-      // TODO: (dmu) fix this awful implementation that checks the dest for every field!
-      auto func = createOutlineLLVMFunction(IGM, name, RefTypePayloadTypesAndTagType_dmu_);
-    
-      IRGenFunction IGF(IGM, func);
-      Explosion src = IGF.collectParameters();
-    
-//      EnumPayload payload;
-//      llvm::Value *extraTag;
-//      std::tie(payload, extraTag) =
-//      getPayloadAndExtraTagFromExplosionOutlined(IGF, src);
-//      llvm::BasicBlock *endBB =
-//      testFixedEnumContainsPayload(IGF, payload, extraTag);
-//      
-//      if (PayloadBitCount > 0) {
-//        ConditionalDominanceScope condition(IGF);
-//        Explosion payloadValue;
-//        Explosion payloadCopy;
-//        auto &loadableTI = getLoadablePayloadTypeInfo();
-//        loadableTI.unpackFromEnumPayload(IGF, payload, payloadValue, 0);
-//        // dmu unimp
-//        loadableTI.genIRToVisitRefsInValuesAssignedTo_dmu_(IGF, payloadValue, destAddress);
-//        (void)payloadCopy.claimAll(); // FIXME: repack if not bit-identical
-//      }
-//      
-//      IGF.Builder.CreateBr(endBB);
-//      IGF.Builder.emitBlock(endBB);
-//      
-//      IGF.Builder.CreateRetVoid();
-      return func;
-    }
-    
+
+//    llvm::Function *emitVisitRefsInValuesOfPayloadAssignedTo_dmu_EnumFunction(IRGenModule &IGM, EnumDecl *theEnum) {
+//      IRGenMangler Mangler;
+//      std::string name = Mangler.mangleOutlinedVisitRefsInValuesOfPayloadAssignedTo_dmu_EnumFunction(theEnum);
+//      // TODO: (dmu) fix this awful implementation that checks the dest for every field!
+//      auto func = createOutlineLLVMFunction(IGM, name, RefTypePayloadTypesAndTagType_dmu_);
+//    
+//      IRGenFunction IGF(IGM, func);
+//      Explosion src = IGF.collectParameters();
+//      assert(false && "unused and unimp");
+//    
+////      EnumPayload payload;
+////      llvm::Value *extraTag;
+////      std::tie(payload, extraTag) =
+////      getPayloadAndExtraTagFromExplosionOutlined(IGF, src);
+////      llvm::BasicBlock *endBB =
+////      testFixedEnumContainsPayload(IGF, payload, extraTag);
+////      
+////      if (PayloadBitCount > 0) {
+////        ConditionalDominanceScope condition(IGF);
+////        Explosion payloadValue;
+////        Explosion payloadCopy;
+////        auto &loadableTI = getLoadablePayloadTypeInfo();
+////        loadableTI.unpackFromEnumPayload(IGF, payload, payloadValue, 0);
+////        // dmu unimp
+////        loadableTI.genIRToVisitRefsInValuesAssignedTo_dmu_(IGF, payloadValue, destAddress);
+////        (void)payloadCopy.claimAll(); // FIXME: repack if not bit-identical
+////      }
+////      
+////      IGF.Builder.CreateBr(endBB);
+////      IGF.Builder.emitBlock(endBB);
+////      
+////      IGF.Builder.CreateRetVoid();
+//      return func;
+//    }
+//    
     
     
     static EnumPayloadSchema getPreferredPayloadSchema(Element payloadElement) {
@@ -3192,28 +3193,29 @@ namespace {
       return func;
     }
     
-    llvm::Function *emitVisitRefsInValuesOfPayloadAssignedTo_dmu_EnumFunction(IRGenModule &IGM, EnumDecl *theEnum) {
-      IRGenMangler Mangler;
-      std::string name = Mangler.mangleOutlinedVisitRefsInInitialValuesOfPayload_dmu_EnumFunction(theEnum);
-      auto func = createOutlineLLVMFunction(IGM, name, PayloadTypesAndTagType);
-      
-      IRGenFunction IGF(IGM, func);
-      Explosion src = IGF.collectParameters();
-#error dmu unimp
-//      auto parts = destructureAndTagLoadableEnumFromOutlined(IGF, src);
+//    llvm::Function *emitVisitRefsInValuesOfPayloadAssignedTo_dmu_EnumFunction(IRGenModule &IGM, EnumDecl *theEnum) {
+//      IRGenMangler Mangler;
+//      std::string name = Mangler.mangleOutlinedVisitRefsInInitialValuesOfPayload_dmu_EnumFunction(theEnum);
+//      auto func = createOutlineLLVMFunction(IGM, name, PayloadTypesAndTagType);
 //      
-//      forNontrivialPayloads(IGF, parts.tag, [&](unsigned tagIndex,
-//                                                EnumImplStrategy::Element elt) {
-//        auto &lti = cast<LoadableTypeInfo>(*elt.ti);
-//        Explosion value;
-//        projectPayloadValue(IGF, parts.payload, tagIndex, lti, value);
-//        
-//        lti.genIRToVisitRefsInInitialValues_dmu_(IGF, value);
-//      });
-      
-      IGF.Builder.CreateRetVoid();
-      return func;
-    }
+//      IRGenFunction IGF(IGM, func);
+//      Explosion src = IGF.collectParameters();
+//      assert("is this even used?" && false);
+//
+////      auto parts = destructureAndTagLoadableEnumFromOutlined(IGF, src);
+////      
+////      forNontrivialPayloads(IGF, parts.tag, [&](unsigned tagIndex,
+////                                                EnumImplStrategy::Element elt) {
+////        auto &lti = cast<LoadableTypeInfo>(*elt.ti);
+////        Explosion value;
+////        projectPayloadValue(IGF, parts.payload, tagIndex, lti, value);
+////        
+////        lti.genIRToVisitRefsInInitialValues_dmu_(IGF, value);
+////      });
+//      
+//      IGF.Builder.CreateRetVoid();
+//      return func;
+//    }
 
     
     static EnumPayloadSchema getPayloadSchema(ArrayRef<Element> payloads) {
@@ -5956,7 +5958,7 @@ TypeInfo *SinglePayloadEnumImplStrategy::completeFixedLayout(
     copyEnumFunction = emitCopyEnumFunction(TC.IGM, theEnum);
     consumeEnumFunction = emitConsumeEnumFunction(TC.IGM, theEnum);
     visitRefsInInitialValuesOfPayload_dmu_EnumFunction = emitVisitRefsInInitialValuesOfPayload_dmu_EnumFunction(TC.IGM, theEnum);
-    visitRefsInValuesOfPayloadAssignedTo_dmu_EnumFunction = emitVisitRefsInValuesOfPayloadAssignedTo_dmu_EnumFunction(TC.IGM, theEnum);
+//    visitRefsInValuesOfPayloadAssignedTo_dmu_EnumFunction = emitVisitRefsInValuesOfPayloadAssignedTo_dmu_EnumFunction(TC.IGM, theEnum);
   }
 
   return const_cast<TypeInfo *>(TI);
@@ -6148,7 +6150,7 @@ MultiPayloadEnumImplStrategy::completeFixedLayout(TypeConverter &TC,
     copyEnumFunction = emitCopyEnumFunction(TC.IGM, theEnum);
     consumeEnumFunction = emitConsumeEnumFunction(TC.IGM, theEnum);
     visitRefsInInitialValuesOfPayload_dmu_EnumFunction = emitVisitRefsInInitialValuesOfPayload_dmu_EnumFunction(TC.IGM, theEnum);
-    visitRefsInValuesOfPayloadAssignedTo_dmu_EnumFunction = emitVisitRefsInValuesOfPayloadAssignedTo_dmu_EnumFunction(TC.IGM, theEnum);
+//    visitRefsInValuesOfPayloadAssignedTo_dmu_EnumFunction = emitVisitRefsInValuesOfPayloadAssignedTo_dmu_EnumFunction(TC.IGM, theEnum);
   }
 
   return const_cast<TypeInfo *>(TI);

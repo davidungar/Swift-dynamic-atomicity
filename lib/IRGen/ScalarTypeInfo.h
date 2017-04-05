@@ -170,7 +170,6 @@ public:
       (void)src.claimNext();
       return;
     }
-// TODO: (dmu check) is the getAddress right???
     asDerived().emitCheckHolderThenVisitHeldRefsInScalar_dmu_(IGF, dest.getAddress(), src.claimNext());
   }
 
