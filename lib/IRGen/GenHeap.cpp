@@ -1320,10 +1320,10 @@ void IRGenFunction::emitNativeUnownedCheckHolderThenVisitHeldRefInScalar_dmu_(ll
 
 
 void IRGenFunction::emitNativeCheckHolderThenVisitHeldRefs_dmu_(llvm::Value *objToCheck, llvm::Value *objToSet) {
-  emitIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(objToCheck, objToSet); // dmu level-shift
+  emitNativeIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(objToCheck, objToSet); // dmu level-shift
 }
 
-void IRGenFunction::emitIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(llvm::Value *objToCheck, llvm::Value *objToSet) {
+void IRGenFunction::emitNativeIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(llvm::Value *objToCheck, llvm::Value *objToSet) {
   if (doesNotRequireRefCounting(objToSet)) {
     return;
   }
