@@ -921,35 +921,6 @@ static void emitUnaryRefCountCall(IRGenFunction &IGF,
   call->setDoesNotThrow();
 }
 
-// TODO: (dmu factor) Evil copying of emitAllocatingCall!
-/// Emit a binary call to perform a ref-counting operation.
-///
-/// \param fn - expected signature 'void (T, T)'
-static void emitBinaryRefCountCall_dmu_(IRGenFunction &IGF,
-                                        llvm::Constant *fn,
-                                        llvm::Value *value1,
-                                        llvm::Value *value2) {
-  std::initializer_list<llvm::Value*>  values     = {value1,            value2};
-  std::initializer_list<llvm::Type* >  valueTypes = {value1->getType(), value2->getType()};
-  auto cc = IGF.IGM.DefaultCC;
-  if (auto fun = dyn_cast<llvm::Function>(fn))
-    cc = fun->getCallingConv();
-  
-  // Instead of casting the input, we cast the function type.
-  // This tends to produce less IR, but might be evil.
-  if (   value1->getType() != getTypeOfFunction(fn)->getParamType(0)
-      || value2->getType() != getTypeOfFunction(fn)->getParamType(1)) {
-    ArrayRef<llvm::Type*> types = ArrayRef<llvm::Type*>(valueTypes);
-    llvm::FunctionType *fnType = llvm::FunctionType::get(IGF.IGM.VoidTy, types, false);
-    fn = llvm::ConstantExpr::getBitCast(fn, fnType->getPointerTo());
-  }
-  
-  // Emit the call.
-  llvm::CallInst *call = IGF.Builder.CreateCall(fn, values);
-  call->setCallingConv(cc);
-  call->setDoesNotThrow();
-}
-
 
 /// Emit a copy-like call to perform a ref-counting operation.
 ///
@@ -1327,7 +1298,7 @@ void IRGenFunction::emitNativeIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(ll
   if (doesNotRequireRefCounting(objToSet)) {
     return;
   }
-  emitBinaryRefCountCall_dmu_(*this,
+  emitCopyLikeCall(*this,
                               IGM.getIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_Fn(),
                               objToCheck,
                               objToSet);
@@ -1907,7 +1878,7 @@ DEFINE_VALUE_OP(NativeUnownedRelease)
 DEFINE_VALUE_OP(NativeUnownedRetain)
 DEFINE_VALUE_OP(NativeUnownedBeSafeForConcurrentAccess_dmu_)
 void IRGenFunction::emitNativeUnownedIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(llvm::Value *dst, llvm::Value *src) {
-  emitBinaryRefCountCall_dmu_(*this, IGM.getNativeUnownedIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_Fn(), dst, src);
+  emitCopyLikeCall(*this, IGM.getNativeUnownedIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_Fn(), dst, src);
 }
 DEFINE_LOAD_WEAK_OP(NativeWeakLoadStrong)
 DEFINE_LOAD_WEAK_OP(NativeWeakTakeStrong)
