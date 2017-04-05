@@ -2378,38 +2378,10 @@ namespace {
       
     }
     
-    // TODO (dmu) fixme: checks dst for each field!!
-    void genIRToVisitRefsInValuesOfPayloadAssignedTo_dmu_(IRGenFunction &IGF, Explosion &src, Address dest) const override {
-#error dmu eliminate
-//      assert(TIK >= Loadable);
-//      switch (CopyDestroyKind) {
-//        case POD:
-//          (void)src.claim(getExplosionSize());
-//          return;
-//          
-//        case Normal: {
-//          assert(visitRefsInValuesOfPayloadAssignedTo_dmu_EnumFunction
-//                 && "Did not create visitRefsInValuesOfPayloadAssignedTo_dmu_EnumFunction function for enum");
-//          Explosion tmp;
-//          tmp.add(dest.Address);
-//          fillExplosionForOutlinedCall(IGF, src, tmp);
-//          llvm::CallInst *call =
-//          IGF.Builder.CreateCall(visitRefsInValuesOfPayloadAssignedTo_dmu_EnumFunction, tmp.getAll());
-//          call->setCallingConv(IGF.IGM.DefaultCC);
-//          // Copy to the new explosion.
-//          dest.add(tmp.claimAll());
-//          return;
-//        }
-//          
-//        case NullableRefcounted: {
-//          // Bitcast to swift.refcounted*, and retain the pointer.
-//          llvm::Value *val = src.claimNext();
-//          llvm::Value *ptr = IGF.Builder.CreateBitOrPointerCast(
-//                                                                val, getRefcountedPtrType(IGF.IGM));
-//          IGF.emitCheckHolderThenVisitHeldRefsInScalar_dmu_(dest.getAddress(), ptr, Refcounting);
-//          return;
-//        }
-//      }
+    void genIRToVisitRefsInValuesOfPayloadAssignedTo_dmu_(IRGenFunction &IGF, Explosion &e, Address dest) const override {
+      fprintf(stderr, "WARNING: genIRToVisitRefsInValuesOfPayloadAssignedTo_dmu_ not really done; being too conservative");
+      // TODO: (dmu): In fact may not use this at all
+      genIRToVisitRefsInInitialValuesOfPayload_dmu_(IGF, e);
     }
     
     
@@ -3071,10 +3043,6 @@ namespace {
   : public PayloadEnumImplStrategyBase
   {
   private:
-    void genIRToVisitRefsInValuesOfPayloadAssignedTo_dmu_(IRGenFunction &IGF, Explosion &e, Address dest) const override {
-#error dmu implement
-    }
-    
     
     // The spare bits shared by all payloads, if any.
     // Invariant: The size of the bit vector is the size of the payload in bits,
@@ -4267,6 +4235,14 @@ namespace {
         }
       }
     }
+    
+    void genIRToVisitRefsInValuesOfPayloadAssignedTo_dmu_(IRGenFunction &IGF, Explosion &e, Address dest) const override {
+      fprintf(stderr, "WARNING: genIRToVisitRefsInValuesOfPayloadAssignedTo_dmu_ not really done; being too conservative");
+      // TODO: (dmu): In fact may not use this at all
+      genIRToVisitRefsInInitialValuesOfPayload_dmu_(IGF, e);
+    }
+    
+
     
     
     void consume(IRGenFunction &IGF, Explosion &src,

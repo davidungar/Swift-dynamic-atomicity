@@ -3305,6 +3305,9 @@ void IRGenSILFunction::emitVisitRefsInValuesAssignedTo_dmu_(SILValue const &srcS
   
   Builder.CreateBr(safeOrNot);
   Builder.emitBlock(safeOrNot);
+  
+  // NOTE: Used to call genIRToVisitRefsInValuesAssignedTo_dmu_
+  // TODO: (dmu) remove genIRToVisitRefsInValuesAssignedTo_dmu_ and all unique callees
 }
 
 
