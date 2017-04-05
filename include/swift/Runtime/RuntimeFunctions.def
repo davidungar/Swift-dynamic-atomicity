@@ -403,7 +403,7 @@ FUNCTION(ErrorBeSafeForConcurrentAccess_dmu_, swift_errorBeSafeForConcurrentAcce
          ATTRS(NoUnwind))
 
 // void swift_errorIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu__(void *dst, void *src);
-FUNCTION(ErrorObjectIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_, swift_errorIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu__, DefaultCC,
+FUNCTION(ErrorIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_, swift_errorIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu__, DefaultCC,
          RETURNS(VoidTy),
          ARGS(ErrorPtrTy, ErrorPtrTy),
          ATTRS(NoUnwind))

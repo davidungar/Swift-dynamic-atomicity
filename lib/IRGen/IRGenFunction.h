@@ -355,14 +355,23 @@ public:
   void emitObjCStrongRetain(llvm::Value *value);
   llvm::Value *emitObjCRetainCall(llvm::Value *value);
   llvm::Value *emitObjCAutoreleaseCall(llvm::Value *value);
+
   void emitObjCStrongRelease(llvm::Value *value);
+  void emitObjCCheckHolderThenVisitHeldRefs_dmu_(llvm::Value *valueToCheck, llvm::Value *valueToSet);
+  
   void emitObjCVisitRefInScalar_dmu_(llvm::Value *value);
+  
   void emitObjCBeSafeForConcurrentAccess_dmu_(llvm::Value *value);
+  void emitObjCIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(llvm::Value *valueToCheck, llvm::Value *valueToSet);
 
   llvm::Value *emitBlockCopyCall(llvm::Value *value);
   void emitBlockRelease(llvm::Value *value);
+  
   void emitBlockVisitRefInScalar_dmu_(llvm::Value *value);
+  void emitBlockCheckHolderThenVisitHeldRefs_dmu_(llvm::Value *valueToCheck, llvm::Value *valueToSet);
+  
   void emitBlockBeSafeForConcurrentAccess_dmu_(llvm::Value *value);
+  void emitBlockIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(llvm::Value *valueCheck, llvm::Value *valueToSet);
 
   // Routines for an unknown reference-counting style (meaning,
   // dynamically something compatible with either the ObjC or Swift styles).
@@ -372,6 +381,7 @@ public:
   void emitUnknownStrongRelease(llvm::Value *valuei,
                                 Atomicity atomicity = Atomicity::Atomic);
   void emitUnknownVisitRefInScalar_dmu_(llvm::Value *objToSet);
+  void emitUnknownCheckHolderThenVisitHeldRefs_dmu_(llvm::Value *objToCheck, llvm::Value *objToSet);
   void emitUnknownBeSafeForConcurrentAccess_dmu_(llvm::Value *objToSet);
   void emitUnknownIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(llvm::Value *objToCheck, llvm::Value *objToSet);
   
@@ -406,6 +416,7 @@ public:
   void emitBridgeStrongRetain(llvm::Value *value, Atomicity atomicity);
   void emitBridgeStrongRelease(llvm::Value *value, Atomicity atomicity);
   void emitBridgeVisitRefInScalar_dmu_(llvm::Value *value);
+  void emitBridgeCheckHolderThenVisitHeldRefs_dmu_(llvm::Value *valueToCheck, llvm::Value *valueToSet);
   void emitBridgeBeSafeForConcurrentAccess_dmu_(llvm::Value *value);
   void emitBridgeIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(llvm::Value *valueToCheck, llvm::Value *valueToSet);
 
@@ -415,6 +426,7 @@ public:
   void emitErrorVisitRefInScalar_dmu_(llvm::Value *value);
   void emitErrorBeSafeForConcurrentAccess_dmu_(llvm::Value *value);
   void emitErrorIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(llvm::Value *valueToCheck, llvm::Value *valueToSet);
+  void emitErrorCheckHolderThenVisitHeldRefs_dmu_(llvm::Value *objToCheck, llvm::Value *objToSet);
 
   llvm::Value *emitIsUniqueCall(llvm::Value *value, SourceLoc loc,
                                 bool isNonNull, bool checkPinned);

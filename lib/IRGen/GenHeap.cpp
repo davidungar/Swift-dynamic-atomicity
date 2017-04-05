@@ -1123,11 +1123,15 @@ void IRGenFunction::emitCheckHolderThenVisitHeldRefs_dmu_(llvm::Value *objToChec
     case ReferenceCounting::Native:
       return emitNativeCheckHolderThenVisitHeldRefs_dmu_(objToCheck, objToSet);
     case ReferenceCounting::ObjC:
+      return emitObjCCheckHolderThenVisitHeldRefs_dmu_(objToCheck, objToSet);
     case ReferenceCounting::Block:
+      return emitBlockCheckHolderThenVisitHeldRefs_dmu_(objToCheck, objToSet);
     case ReferenceCounting::Unknown:
+      return emitUnknownCheckHolderThenVisitHeldRefs_dmu_(objToCheck, objToSet);
     case ReferenceCounting::Bridge:
+      return emitBridgeCheckHolderThenVisitHeldRefs_dmu_(objToCheck, objToSet);
     case ReferenceCounting::Error:
-      break;
+      return emitErrorCheckHolderThenVisitHeldRefs_dmu_(objToCheck, objToSet);
   }
 }
 
@@ -1454,9 +1458,11 @@ void IRGenFunction::emitUnknownBeSafeForConcurrentAccess_dmu_(llvm::Value *objTo
   emitUnaryRefCountCall(*this, IGM.getUnknownBeSafeForConcurrentAccess_dmu_Fn(), objToSet);
 }
 
-
-void IRGenFunction::emitUnknownIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(llvm::Value *objToCheck, llvm::Value *objToCheck) {
-  emitBinaryRefCountCall(*this, IGM.getUnknownIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_Fn(), objToCheck, objToSet);
+void IRGenFunction::emitUnknownCheckHolderThenVisitHeldRefs_dmu_(llvm::Value *objToCheck, llvm::Value *objToSet) {
+  emitUnknownIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(objToCheck, objToSet); // level-shift
+}
+void IRGenFunction::emitUnknownIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(llvm::Value *objToCheck, llvm::Value *objToSet) {
+  emitCopyLikeCall(*this, IGM.getUnknownIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_Fn(), objToCheck, objToSet);
 }
 
 
@@ -1494,8 +1500,12 @@ void IRGenFunction::emitErrorBeSafeForConcurrentAccess_dmu_(llvm::Value *value) 
   emitUnaryRefCountCall(*this, IGM.getErrorBeSafeForConcurrentAccess_dmu_Fn(), value);
 }
 
+void IRGenFunction::emitErrorCheckHolderThenVisitHeldRefs_dmu_(llvm::Value *objToCheck, llvm::Value *objToSet) {
+  emitErrorIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(objToCheck, objToSet); // level-shift
+}
+
 void IRGenFunction::emitErrorIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(llvm::Value *objToCheck, llvm::Value *objToSet) {
-  emitBinaryRefCountCall(*this, IGM.getErrorIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_Fn(), objToCheck, objToSet);
+  emitCopyLikeCall(*this, IGM.getErrorIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_Fn(), objToCheck, objToSet);
 }
 
 void IRGenFunction::emitBridgeVisitRefInScalar_dmu_(llvm::Value *value) {
@@ -1506,8 +1516,12 @@ void IRGenFunction::emitBridgeBeSafeForConcurrentAccess_dmu_(llvm::Value *value)
   emitUnaryRefCountCall(*this, IGM.getBridgeObjectBeSafeForConcurrentAccess_dmu_Fn(), value);
 }
 
-void IRGenFunction::emitBridgeIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(llvm::Value *objToCheck, llvm:::Value *objToSet) {
-  emitBinaryRefCountCall(*this, IGM.getBridgeObjectIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_Fn(), objToCheck, objToCheck);
+void IRGenFunction::emitBridgeCheckHolderThenVisitHeldRefs_dmu_(llvm::Value *valueToCheck, llvm::Value *valueToSet) {
+  emitBridgeIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(valueToCheck, valueToSet);
+}
+
+void IRGenFunction::emitBridgeIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(llvm::Value *objToCheck, llvm::Value *objToSet) {
+  emitCopyLikeCall(*this, IGM.getBridgeObjectIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_Fn(), objToCheck, objToCheck);
 }
 
 llvm::Value *IRGenFunction::emitNativeTryPin(llvm::Value *value,
