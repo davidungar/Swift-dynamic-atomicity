@@ -479,7 +479,7 @@ SWIFT_CC(DefaultCC_IMPL) {
   if (!isObjCTaggedPointerOrNull(dst)) {
     auto tmpD = static_cast<HeapObject *>(dst);
     if (!tmpD->refCount.isSafeForConcurrentAccess_dmu_())
-      return
+      return;
   }
   swift_unknownBeSafeForConcurrentAccess_dmu_(src);
 }

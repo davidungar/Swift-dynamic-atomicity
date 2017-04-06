@@ -711,7 +711,8 @@ void swift_weakBeSafeForConcurrentAccess_dmu_(WeakReference *ref);
   
 /// TODO: (dmu) comment
 ///
-/// \param ref - never null, but can refer to a null object
+/// \param dst - never null, but can refer to a null object
+/// \param src - never null, but can refer to a null object
 SWIFT_RUNTIME_EXPORT
 void swift_weakIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(WeakReference *dst, WeakReference *src);
 
@@ -1023,11 +1024,11 @@ static inline void swift_unknownWeakDestroy(WeakReference *object) {
   
   /// TODO: (dmu) comment
   SWIFT_RUNTIME_EXPORT
-  void swift_unknownIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(WeakReference *dst, WeakReference *src);
+  void swift_unknownWeakIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(WeakReference *dst, WeakReference *src);
   
 #else
   
-  static inline void swift_unknownIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_WeakReference *dst, WeakReference *src) {
+  static inline void swift_unknownWeakIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_WeakReference *dst, WeakReference *src) {
     swift_weakIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_WeakReference(dst, src);
   }
   

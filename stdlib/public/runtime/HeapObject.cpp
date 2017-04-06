@@ -809,7 +809,6 @@ void swift::swift_weakBeSafeForConcurrentAccess_dmu_(WeakReference *ref) {
     return;
   auto tmp = (HeapObject*) (ref->Value & ~WR_NATIVE);
   SWIFT_RT_ENTRY_CALL(swift_beSafeForConcurrentAccess_dmu_)(tmp);
-  }
 }
 
 void swift::swift_weakIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(WeakReference *dst, WeakReference *src) {
