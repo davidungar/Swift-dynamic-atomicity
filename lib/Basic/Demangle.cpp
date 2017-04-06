@@ -2608,6 +2608,7 @@ private:
     case Node::Kind::Number:
     case Node::Kind::ObjCAttribute:
     case Node::Kind::ObjCBlock:
+    case Node::Kind::OutlinedVisitRefsInValuesOfPayloadAssignedTo_dmu_:
     case Node::Kind::OwningAddressor:
     case Node::Kind::OwningMutableAddressor:
     case Node::Kind::PartialApplyForwarder:
@@ -3723,7 +3724,10 @@ void NodePrinter::print(NodePointer pointer, bool asContext, bool suppressType) 
   case Node::Kind::OutlinedVisitRefsInInitialValuesOfPayload_dmu_:
     printEntity(false, false, "outlinedVisedRefsInInitialValuesOfPayload_dmu_");
     return;
-  case Node::Kind::Deallocator:
+  case Node::Kind::OutlinedVisitRefsInValuesOfPayloadAssignedTo_dmu_:
+    printEntity(false, false, "outlinedVisitRefsInValuesOfPayloadAssignedTo_dmu_");
+    return;
+ case Node::Kind::Deallocator:
     printEntity(false, false,
                 isClassType(pointer->getChild(0))
                   ? "__deallocating_deinit" : "deinit");
