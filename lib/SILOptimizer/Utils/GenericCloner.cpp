@@ -105,6 +105,7 @@ void GenericCloner::populateCloned() {
           auto *NewArg = ClonedEntryBB->createFunctionArgument(
               mappedType, OrigArg->getDecl());
           getBuilder().createStore(Loc, NewArg, ASI,
+                                   IsInitialization_t::IsInitialization,
                                    StoreOwnershipQualifier::Unqualified);
 
           // Try to create a new debug_value from an existing debug_value_addr.

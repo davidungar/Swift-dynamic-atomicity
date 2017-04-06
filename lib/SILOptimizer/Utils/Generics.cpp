@@ -325,6 +325,7 @@ static ApplySite replaceWithSpecializedCallee(ApplySite AI,
           ValueOwnershipKind::Owned);
       // Store the direct result to the original result address.
       Builder.createStore(Loc, Arg, StoreResultTo,
+                          ,
                           StoreOwnershipQualifier::Unqualified);
     }
     return NewTAI;
@@ -336,6 +337,7 @@ static ApplySite replaceWithSpecializedCallee(ApplySite AI,
       // Store the direct result to the original result address.
       fixUsedVoidType(A, Loc, Builder);
       Builder.createStore(Loc, NewAI, StoreResultTo,
+                          ,
                           StoreOwnershipQualifier::Unqualified);
     }
     A->replaceAllUsesWith(NewAI);
@@ -453,6 +455,7 @@ SILFunction *ReabstractionThunkGenerator::createThunk() {
   if (ReturnValueAddr) {
     // Need to store the direct results to the original indirect address.
     Builder.createStore(Loc, ReturnValue, ReturnValueAddr,
+                        ,
                         StoreOwnershipQualifier::Unqualified);
     SILType VoidTy =
         OrigPAI->getSubstCalleeType()->getDirectFormalResultsType();

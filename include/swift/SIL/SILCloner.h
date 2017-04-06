@@ -690,6 +690,7 @@ void SILCloner<ImplClass>::visitStoreInst(StoreInst *Inst) {
   doPostProcess(Inst, getBuilder().createStore(getOpLocation(Inst->getLoc()),
                                                getOpValue(Inst->getSrc()),
                                                getOpValue(Inst->getDest()),
+                                               Inst->isInitializationOfDest(),
                                                Inst->getOwnershipQualifier()));
 }
   

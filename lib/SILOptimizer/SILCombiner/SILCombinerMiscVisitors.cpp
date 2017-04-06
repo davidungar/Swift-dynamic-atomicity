@@ -784,6 +784,7 @@ SILCombiner::visitInjectEnumAddrInst(InjectEnumAddrInst *IEAI) {
       Builder.createEnum(IEAI->getLoc(), SILValue(), IEAI->getElement(),
                           IEAI->getOperand()->getType().getObjectType());
     Builder.createStore(IEAI->getLoc(), E, IEAI->getOperand(),
+                        IsInitialization_t::IsInitialization,
                         StoreOwnershipQualifier::Unqualified);
     return eraseInstFromFunction(*IEAI);
   }
@@ -900,6 +901,7 @@ SILCombiner::visitInjectEnumAddrInst(InjectEnumAddrInst *IEAI) {
         DataAddrInst->getLoc(), SI->getSrc(), DataAddrInst->getElement(),
         DataAddrInst->getOperand()->getType().getObjectType());
     Builder.createStore(DataAddrInst->getLoc(), E, DataAddrInst->getOperand(),
+                        SI->isInitializationOfDest(),
                         StoreOwnershipQualifier::Unqualified);
     // Cleanup.
     eraseInstFromFunction(*SI);
@@ -952,6 +954,7 @@ SILCombiner::visitInjectEnumAddrInst(InjectEnumAddrInst *IEAI) {
       DataAddrInst->getLoc(), Load, DataAddrInst->getElement(),
       DataAddrInst->getOperand()->getType().getObjectType());
   Builder.createStore(DataAddrInst->getLoc(), E, DataAddrInst->getOperand(),
+                      ,
                       StoreOwnershipQualifier::Unqualified);
   Builder.createDeallocStack(DataAddrInst->getLoc(), AllocStack);
   eraseInstFromFunction(*DataAddrInst);

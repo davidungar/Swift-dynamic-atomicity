@@ -659,8 +659,10 @@ uint64_t StringLiteralInst::getCodeUnitCount() {
 
 StoreInst::StoreInst(
     SILDebugLocation Loc, SILValue Src, SILValue Dest,
+    IsInitialization_t isInitializationOfDest,
     StoreOwnershipQualifier Qualifier = StoreOwnershipQualifier::Unqualified)
     : SILInstruction(ValueKind::StoreInst, Loc), Operands(this, Src, Dest),
+      IsInitializationOfDest(isInitializationOfDest),
       OwnershipQualifier(Qualifier) {}
 
 StoreBarrier_dmu_Inst::StoreBarrier_dmu_Inst(

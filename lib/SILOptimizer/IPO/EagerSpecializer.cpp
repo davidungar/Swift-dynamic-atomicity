@@ -308,6 +308,7 @@ void EagerDispatch::emitDispatchTo(SILFunction *NewFunc) {
   if (StoreResultTo) {
     // Store the direct result to the original result address.
     Builder.createStore(Loc, Result, StoreResultTo,
+                        ,
                         StoreOwnershipQualifier::Unqualified);
     // And return Void.
     Result = Builder.createTuple(Loc, VoidTy, { });

@@ -328,6 +328,7 @@ SILCombiner::visitUncheckedRefCastAddrInst(UncheckedRefCastAddrInst *URCI) {
                                                  DestTy.getObjectType());
   assert(cast && "SILBuilder cannot handle reference-castable types");
   Builder.createStore(Loc, cast, URCI->getDest(),
+                      IsInitialization_t::IsInitialization,
                       StoreOwnershipQualifier::Unqualified);
 
   return eraseInstFromFunction(*URCI);

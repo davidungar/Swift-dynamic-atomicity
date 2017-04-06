@@ -244,6 +244,7 @@ public:
   /// SILValue keeps the value of the store.
   llvm::SetVector<SILValue> LiveAddr;
   llvm::DenseMap<SILValue, SILValue> LiveStores;
+  llvm::DenseMap<SILValue, IsInitialization> LiveIsInitializations;
 
   /// Constructors.
   BlockState(SILBasicBlock *B, unsigned LocationNum, bool Optimistic) 
@@ -964,6 +965,7 @@ void DSEContext::processWrite(SILInstruction *I, SILValue Val, SILValue Mem,
       SILValue Addr = X.getPath()->createExtract(Mem, I, false);
       S->LiveAddr.insert(Addr);
       S->LiveStores[Addr] = Value;
+      S->LiveIsInitializations[Addr] = ;
     }
 
     // Lastly, mark the old store as dead.
@@ -1194,7 +1196,10 @@ bool DSEContext::run() {
       SILInstruction *Inst = cast<SILInstruction>(I->first);
       auto *IT = &*std::next(Inst->getIterator());
       SILBuilderWithScope Builder(IT);
+      // TODO: (dmu) need to set init/change bit in createStore
+      auto initialization = S->LiveIsInitializations.find(X);
       Builder.createStore(Inst->getLoc(), I->second, Inst,
+                          initialization,
                           StoreOwnershipQualifier::Unqualified);
     }
     // Delete the dead stores.

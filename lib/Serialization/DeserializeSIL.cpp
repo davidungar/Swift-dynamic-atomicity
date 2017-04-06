@@ -1402,9 +1402,12 @@ bool SILDeserializer::readSILInstruction(SILFunction *Fn, SILBasicBlock *BB,
     auto Ty = MF->getType(TyID);
     SILType addrType = getSILType(Ty, (SILValueCategory)TyCategory);
     SILType ValType = addrType.getObjectType();
+    IsInitialization_t isInitialiaization = ;
     auto Qualifier = StoreOwnershipQualifier(Attr);
     ResultVal = Builder.createStore(Loc, getLocalValue(ValID, ValType),
-                                    getLocalValue(ValID2, addrType), Qualifier);
+                                    getLocalValue(ValID2, addrType),
+                                    isInitialiaization,
+                                    Qualifier);
     break;
   }
   case ValueKind::StoreBorrowInst: {

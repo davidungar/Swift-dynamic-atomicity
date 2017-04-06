@@ -1769,6 +1769,7 @@ optimizeBridgedSwiftToObjCCast(SILInstruction *Inst,
           "of the source operand");
     }
     NewI = Builder.createStore(Loc, CastedValue, Dest,
+                               IsInitialization_t::IsNotInitialization,
                                StoreOwnershipQualifier::Unqualified);
   }
 
@@ -2145,6 +2146,7 @@ optimizeCheckedCastAddrBranchInst(CheckedCastAddrBranchInst *Inst) {
           B.setInsertionPoint(SuccessBB->begin());
           // Store the result
           B.createStore(Loc, SuccessBB->getArgument(0), Dest,
+                        IsInitialization_t::IsInitialization,
                         StoreOwnershipQualifier::Unqualified);
           EraseInstAction(Inst);
           return NewI;
@@ -2454,6 +2456,7 @@ optimizeUnconditionalCheckedCastAddrInst(UnconditionalCheckedCastAddrInst *Inst)
       auto undef = SILValue(SILUndef::get(DestType.getObjectType(),
                                           Builder.getModule()));
       Builder.createStore(Loc, undef, Dest,
+                          IsInitialization_t::IsInitialization,
                           StoreOwnershipQualifier::Unqualified);
     }
     auto *TrapI = Builder.createBuiltinTrap(Loc);

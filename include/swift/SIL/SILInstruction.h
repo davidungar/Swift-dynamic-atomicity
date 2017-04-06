@@ -1709,7 +1709,13 @@ private:
   StoreOwnershipQualifier OwnershipQualifier;
 
   StoreInst(SILDebugLocation DebugLoc, SILValue Src, SILValue Dest,
+            IsInitialization_t isInitializationOfDest,
             StoreOwnershipQualifier Qualifier);
+  
+  
+  /// IsInitializationOfDest - True if this is the initialization of the
+  /// uninitialized destination memory location.
+  unsigned IsInitializationOfDest : 1;
 
 public:
   enum {
@@ -1732,6 +1738,15 @@ public:
   StoreOwnershipQualifier getOwnershipQualifier() const {
     return OwnershipQualifier;
   }
+  
+  IsInitialization_t isInitializationOfDest() const {
+    return IsInitialization_t(IsInitializationOfDest);
+  }
+
+  void setIsInitializationOfDest(IsInitialization_t I) {
+    IsInitializationOfDest = (bool)I;
+  }
+
 };
 
   

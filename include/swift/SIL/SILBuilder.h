@@ -496,6 +496,7 @@ public:
   }
 
   StoreInst *createStore(SILLocation Loc, SILValue Src, SILValue DestAddr,
+                         IsInitialization_t isInitialize,
                          StoreOwnershipQualifier Qualifier) {
     assert((Qualifier != StoreOwnershipQualifier::Unqualified) ||
            F.hasUnqualifiedOwnership() &&
@@ -504,7 +505,7 @@ public:
            F.hasQualifiedOwnership() &&
                "Qualified inst in unqualified function");
     return insert(new (F.getModule()) StoreInst(getSILDebugLocation(Loc), Src,
-                                                DestAddr, Qualifier));
+                                                DestAddr, isInitialize, Qualifier));
   }
 
   /// Convenience function for calling emitStore on the type lowering for

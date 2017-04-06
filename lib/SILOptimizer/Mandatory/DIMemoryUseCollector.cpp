@@ -879,6 +879,7 @@ void ElementUseCollector::collectUses(SILValue Pointer, unsigned BaseEltNo) {
         
         for (unsigned i = 0, e = ElementAddrs.size(); i != e; ++i)
           B.createStore(SI->getLoc(), ElementTmps[i], ElementAddrs[i],
+                        SI->isInitializationOfDest(),
                         StoreOwnershipQualifier::Unqualified);
         SI->eraseFromParent();
         continue;
