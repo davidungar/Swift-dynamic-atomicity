@@ -106,6 +106,10 @@ struct SILArgumentConvention {
     }
     llvm_unreachable("covered switch isn't covered?!");
   }
+  
+  bool mayBeContainedInALargerInstance_dmu_() {
+    return isIndirectConvention();
+  }
 };
 
 } // namespace swift

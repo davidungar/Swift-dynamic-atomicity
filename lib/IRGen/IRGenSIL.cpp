@@ -4843,10 +4843,6 @@ struct OutermostAggregateResult_dmu_ {
 private:
   OutermostAggregateResult_dmu_(SILValue start, Kind k, SILValue v) : startingValue(start), kind(k), value(v) {}
   
-  static SILValue findFirstRefInsideOf(SILValue v) {
-    return SILValue();// TODO: (dmu) implement this and fix usage below
-  }
-  
 public:
   static OutermostAggregateResult_dmu_ _get(IRGenSILFunction& IGF, SILValue vArg) {
     SILModule &M = IGF.IGM.getSILModule();
@@ -4862,24 +4858,24 @@ public:
         // it looks like I can get a 'yes' for unowneds and others, not just simple native
         // refs.
         
-        SILType type = sa->getType();
-        if (type.isReferenceCounted(M))
-          return OutermostAggregateResult_dmu_(vArg, Kind::foundOutermostAggregate, v);
         
-        // Consider:
-        // struct S { let c = A_Class(); mutating func m() { self = S() } }
+        // Be conservative about outs: Consider:
+        // struct S { let c = A_Class(); mutating func m() { self = S() } } // self is an INOUT
         // static s = S(); s.m()
         //
         //
-        if (auto fa = dyn_cast<SILFunctionArgument>(sa)) {
-          if (fa->getArgumentConvention().isIndirectConvention()) {
-            SILValue firstRefIfAny = findFirstRefInsideOf(v);
-            auto k = bool(firstRefIfAny) ? Kind::foundOutermostAggregate : noOutermostAggregateExists;
-            //printf("\nWARNING: much too conservative for in-outs\n");
-            //return OutermostAggregateResult_dmu_(vArg, k, firstRefIfAny);
-          }
+        Kind k;
+        auto fa = dyn_cast<SILFunctionArgument>(sa);
+        SILType type = sa->getType();
+        if (type.isReferenceCounted(M))
+          k = Kind::foundOutermostAggregate;
+        else if (fa != nullptr  &&  fa->getArgumentConvention().mayBeContainedInALargerInstance_dmu_()) {
+          fprintf(stderr, "\nWARNING: conservative for indirect arguments\n");
+          k = Kind::outermostAggregateIsAccessedConcurrently;
         }
-        return OutermostAggregateResult_dmu_(vArg, Kind::noOutermostAggregateExists, v);
+        else
+          k = Kind::noOutermostAggregateExists;
+        return OutermostAggregateResult_dmu_(vArg, k, v);
       }
       if (!isa<SILInstruction>(v)) {
         return OutermostAggregateResult_dmu_(vArg, Kind::dontKnowBecauseNotAnInstruction, v);
