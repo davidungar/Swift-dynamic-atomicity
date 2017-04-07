@@ -286,4 +286,4 @@ internal class _ContiguousArrayStorageBase
     _sanityCheck(
       self !== _emptyArrayStorage, "Deallocating empty array storage?!")
   }
-    }
+}
