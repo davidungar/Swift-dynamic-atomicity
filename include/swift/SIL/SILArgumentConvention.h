@@ -109,7 +109,7 @@ struct SILArgumentConvention {
   
   bool mayBeContainedInALargerInstance_dmu_() {
     // conservative: registers ins, too: return isIndirectConvention();
-    switch (this) {
+    switch (Value) {
         case Indirect_In:
         case Indirect_In_Guaranteed:
         return false;
@@ -123,7 +123,7 @@ struct SILArgumentConvention {
         case Direct_Unowned:
         case Direct_Deallocating:
         case Direct_Guaranteed:
-        return false
+        return false;
     }
   }
 };
