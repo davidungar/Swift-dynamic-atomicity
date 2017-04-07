@@ -109,7 +109,7 @@ struct SILArgumentConvention {
   
   bool mayBeContainedInALargerInstance_dmu_() {
     // conservative: registers ins, too: return isIndirectConvention();
-    switch (self) {
+    switch (this) {
         case Indirect_In:
         case Indirect_In_Guaranteed:
         return false;
