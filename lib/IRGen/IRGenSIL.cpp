@@ -4869,8 +4869,11 @@ public:
         SILType type = sa->getType();
         if (type.isReferenceCounted(M))
           k = Kind::foundOutermostAggregate;
-        else if (fa != nullptr  &&  fa->getArgumentConvention().mayBeContainedInALargerInstance_dmu_()) {
-          fprintf(stderr, "\nWARNING: conservative for indirect arguments\n");
+        else if (fa != nullptr  &&
+                 fa->getArgumentConvention().mayBeContainedInALargerInstance_dmu_()
+                 ) {
+          fprintf(stderr, "\nWARNING: conservative for indirect argument:\n");
+          fa->dump();
           k = Kind::outermostAggregateIsAccessedConcurrently;
         }
         else
