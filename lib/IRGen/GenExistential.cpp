@@ -826,10 +826,12 @@ public:
   void genIRToVisitRefsInInitialValues_dmu_(IRGenFunction &IGF, Explosion &e) const override {
     llvm::Value *instance = e.claimNext();
     asDerived().emitValueVisitRefInScalar_dmu_(IGF, instance);
+    asDerived().claimTables(IGF, e);
   }
   void genIRToVisitRefsInValuesAssignedTo_dmu_(IRGenFunction &IGF, Explosion &src, Address dest) const override {
     // TODO: (dmu check) is the getAddress right???
     asDerived().emitValueCheckHolderThenVisitHeldRefInScalar_dmu_(IGF, dest.getAddress(), src.claimNext());
+    asDerived().claimTables(IGF, src);
   }
   
   void copy(IRGenFunction &IGF, Explosion &src, Explosion &dest,
