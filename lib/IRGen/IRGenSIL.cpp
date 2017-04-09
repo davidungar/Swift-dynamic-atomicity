@@ -4889,7 +4889,9 @@ public:
             ? IGF.CurSILFn->getLocation().getSourceLoc()
             : SourceLoc();
             
-            M.getASTContext().Diags.diagnose(
+            
+           if (false) //brdg
+             M.getASTContext().Diags.diagnose(
                                                                  loc,
                                                                  diag::conservative_for_indirect_argument_dmu_,
                                                                  argName, fnName
@@ -4933,6 +4935,7 @@ public:
               SourceLoc loc = gv->hasLocation()
                 ? gv->getLocation().getSourceLoc()
                 : SourceLoc();
+              if (false) //brdg
               M.getASTContext().Diags.diagnose(
               loc,
                                                diag::escaping_for_global_dmu_,
