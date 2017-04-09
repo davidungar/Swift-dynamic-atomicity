@@ -72,6 +72,7 @@
 #include "WeakTypeInfo.h"
 
 #include "swift/Basic/DemangleWrappers.h" // dmu
+#include "swift/AST/DiagnosticsSema.h" // dmu
 
 using namespace swift;
 using namespace irgen;
@@ -2099,8 +2100,12 @@ void IRGenSILFunction::visitFullApplySite(FullApplySite site) {
   if (nonSwiftCallee) {
     for (auto index : indices(args)) {
       if (site.getArgumentConvention(index).isIndirectConvention()) {
-        //asdf printf("\nWARNING: not handling inout parameter passed to non-Swift callee\n"); // dmu TODO: dpg.  Actually hande this correctly.
-        // asdf Diags.diagnose
+        // dmu TODO: dpg.  Actually hande this correctly.
+        SILFunction *fn = site.getFunction();
+        StringRef fnName = demangle_wrappers::demangleSymbolAsString(fn->getName());
+        IGM.getSwiftModule()->getASTContext().Diags.diagnose(site.getLoc().getSourceLoc(),
+                                                             diag::not_handling_inout_to_non_Swift_dmu_,
+                                                             fnName);
       } else {
         emitVisitRefsInInitialValues_dmu_(args[index]);
       }
@@ -4876,13 +4881,19 @@ public:
                  fa->getArgumentConvention().mayBeContainedInALargerInstance_dmu_()
                  ) {
           {
-            std::string fnName = demangle_wrappers::demangleSymbolAsString(IGF.CurSILFn->getName());
-            const char* argName = fa->isSelf() ? "self" :
-            fa->getDecl() == nullptr ? "<no decl>"
-            : demangle_wrappers::demangleSymbolAsString(fa->getDecl()->getName().str()).c_str();
+            StringRef fnName = StringRef(demangle_wrappers::demangleSymbolAsString(IGF.CurSILFn->getName()));
+            StringRef argName = fa->isSelf() ? StringRef("self") :
+            fa->getDecl() == nullptr ? StringRef("<no decl>")
+            : StringRef(demangle_wrappers::demangleSymbolAsString(fa->getDecl()->getName().str()));
+            SourceLoc loc = IGF.CurSILFn->hasLocation()
+            ? IGF.CurSILFn->getLocation().getSourceLoc()
+            : SourceLoc();
             
-            // fprintf(stderr, "\nWARNING: conservative for indirect argument %s in %s\n", argName, fnName.c_str());
-            // asdf Diags.diagnose
+            M.getASTContext().Diags.diagnose(
+                                                                 loc,
+                                                                 diag::conservative_for_indirect_argument_dmu_,
+                                                                 argName, fnName
+);
           }
 
           k = Kind::outermostAggregateIsAccessedConcurrently;
@@ -4918,12 +4929,14 @@ public:
             {
               GlobalAddrInst *g = cast<GlobalAddrInst>(v);
               SILGlobalVariable *gv = g->getReferencedGlobal();
-              std::string demangledName = demangle_wrappers::demangleSymbolAsString(gv->getName());
-              // Does this interfere with build-toolchain
-              // /s/swiftpm/Utilities/bootstrap --sysroot=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.12.sdk -v --swiftc=/s/build/rc-dynamic-apr-outOnly/swift-macosx-x86_64/bin/swiftc --sbt=/s/build/rc-dynamic-apr-outOnly/llbuild-macosx-x86_64/bin/swift-build-tool --build=/s/build/rc-dynamic-apr-outOnly/swiftpm-macosx-x86_64
-
-              // fprintf(stderr, "\nWARNING: conservative for global %s\n", demangledName.c_str());
-              // asdf Diags.diagnose
+              StringRef demangledName = StringRef(demangle_wrappers::demangleSymbolAsString(gv->getName()));
+              SourceLoc loc = gv->hasLocation()
+                ? gv->getLocation().getSourceLoc()
+                : SourceLoc();
+              M.getASTContext().Diags.diagnose(
+              loc,
+                                               diag::escaping_for_global_dmu_,
+                                               demangledName);
             }
             return OutermostAggregateResult_dmu_(vArg, outermostAggregateIsAccessedConcurrently, v);
           }

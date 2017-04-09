@@ -3465,6 +3465,23 @@ WARNING(debug_long_closure_body, none,
         "closure took %0ms to type-check (limit: %1ms)",
         (unsigned, unsigned))
 
+//------------------------------------------------------------------------------
+// Dynamic reference count diagnostics
+//------------------------------------------------------------------------------
+
+
+WARNING(not_handling_inout_to_non_Swift_dmu_,none,
+        "not handling inout parameter passed to non-Swift callee '%0'",
+        (StringRef))
+
+NOTE(conservative_for_indirect_argument_dmu_,none,
+        "being conservative for indirect argument %0 of %1",
+        (StringRef, StringRef))
+
+NOTE(escaping_for_global_dmu_,none,
+        "escaping global '%0'",(StringRef))
+
+
 #ifndef DIAG_NO_UNDEF
 # if defined(DIAG)
 #  undef DIAG
