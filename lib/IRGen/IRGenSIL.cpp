@@ -71,6 +71,8 @@
 #include "ReferenceTypeInfo.h"
 #include "WeakTypeInfo.h"
 
+#include "swift/Basic/DemangleWrappers.h" // dmu
+
 using namespace swift;
 using namespace irgen;
 
@@ -2097,7 +2099,8 @@ void IRGenSILFunction::visitFullApplySite(FullApplySite site) {
   if (nonSwiftCallee) {
     for (auto index : indices(args)) {
       if (site.getArgumentConvention(index).isIndirectConvention()) {
-        printf("\nWARNING: not handling inout parameter passed to non-Swift callee\n"); // dmu TODO: dpg.  Actually hande this correctly.
+        //asdf printf("\nWARNING: not handling inout parameter passed to non-Swift callee\n"); // dmu TODO: dpg.  Actually hande this correctly.
+        // asdf Diags.diagnose
       } else {
         emitVisitRefsInInitialValues_dmu_(args[index]);
       }
@@ -4872,8 +4875,16 @@ public:
         else if (fa != nullptr  &&
                  fa->getArgumentConvention().mayBeContainedInALargerInstance_dmu_()
                  ) {
-          fprintf(stderr, "\nWARNING: conservative for indirect argument:\n");
-          fa->dump();
+          {
+            std::string fnName = demangle_wrappers::demangleSymbolAsString(IGF.CurSILFn->getName());
+            const char* argName = fa->isSelf() ? "self" :
+            fa->getDecl() == nullptr ? "<no decl>"
+            : demangle_wrappers::demangleSymbolAsString(fa->getDecl()->getName().str()).c_str();
+            
+            // fprintf(stderr, "\nWARNING: conservative for indirect argument %s in %s\n", argName, fnName.c_str());
+            // asdf Diags.diagnose
+          }
+
           k = Kind::outermostAggregateIsAccessedConcurrently;
         }
         else
@@ -4904,6 +4915,16 @@ public:
             // outermost aggregate may be a structure.
             //              auto k = cast<GlobalAddrInst>(v)->getType().isReferenceCounted(M)
             //            ? Kind::outermostAggregateIsAccessedConcurrently : Kind::noOutermostAggregateExists;
+            {
+              GlobalAddrInst *g = cast<GlobalAddrInst>(v);
+              SILGlobalVariable *gv = g->getReferencedGlobal();
+              std::string demangledName = demangle_wrappers::demangleSymbolAsString(gv->getName());
+              // Does this interfere with build-toolchain
+              // /s/swiftpm/Utilities/bootstrap --sysroot=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.12.sdk -v --swiftc=/s/build/rc-dynamic-apr-outOnly/swift-macosx-x86_64/bin/swiftc --sbt=/s/build/rc-dynamic-apr-outOnly/llbuild-macosx-x86_64/bin/swift-build-tool --build=/s/build/rc-dynamic-apr-outOnly/swiftpm-macosx-x86_64
+
+              // fprintf(stderr, "\nWARNING: conservative for global %s\n", demangledName.c_str());
+              // asdf Diags.diagnose
+            }
             return OutermostAggregateResult_dmu_(vArg, outermostAggregateIsAccessedConcurrently, v);
           }
             
