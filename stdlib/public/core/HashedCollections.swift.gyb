@@ -2631,6 +2631,32 @@ internal class _TypedNative${Self}Storage<${TypeParameters}> :
 %end
     _fixLifetime(self)
   }
+  
+  visitRefsInInstance_dmu_ {
+    let keys = self.keys.assumingMemoryBound(to: Key.self)
+    %if Self == 'Dictionary':
+    let values = self.values.assumingMemoryBound(to: Value.self)
+    %end
+    
+    if !_isPOD(Key.self) {
+      for i in 0 ..< capacity {
+        if initializedEntries[i] {
+          (keys+i).visitRefs_dmu_()
+        }
+      }
+    }
+    
+    %if Self == 'Dictionary':
+    if !_isPOD(Value.self) {
+      for i in 0 ..< capacity {
+        if initializedEntries[i] {
+          (values+i).visitRefs_dmu_()
+        }
+      }
+    }
+    %end
+    _fixLifetime(self)
+  }
 
   // This type is made with allocWithTailElems, so no init is ever called.
   // But we still need to have an init to satisfy the compiler.

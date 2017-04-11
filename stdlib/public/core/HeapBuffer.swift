@@ -49,6 +49,9 @@ class _HeapBufferStorage<Value, Element> {
   deinit {
     Buffer(self)._value.deinitialize()
   }
+  visitRefsInInstance_dmu_ {
+    Buffer(self)._value.visitRefs_dmu_()
+  }
 
   final func __getInstanceSizeAndAlignMask() -> (Int, Int) {
     return Buffer(self)._allocatedSizeAndAlignMask()
