@@ -3257,6 +3257,9 @@ void IRGenSILFunction::visitLoadInst(swift::LoadInst *i) {
 // Another optimization could be to reuse the ref count load for a direct store of a ref.
 
 void IRGenSILFunction::visitStoreInst(swift::StoreInst *i) {
+  if (CurFn->getName().equals(StringRef("_TZFV4main2CD6checkEfGVs10DictionaryCS_1HS2__T_"))) {
+    //printf("hooha");
+  }
   emitStoreBarrier_dmu_(i->getSrc(), i->getDest());
   
   Explosion source = getLoweredExplosion(i->getSrc());
@@ -4966,9 +4969,29 @@ public:
           v = firstOperand;
           break;
           
+        case ValueKind::PointerToAddressInst: {
+          /*
+           Could be global:
+           // function_ref C.I.unsafeMutableAddressor
+           %4 = function_ref @_TFC4main1Cau1ISi : $@convention(thin) () -> Builtin.RawPointer, scope 16 // user: %5
+           %5 = apply %4() : $@convention(thin) () -> Builtin.RawPointer, scope 16 // user: %6
+           %6 = pointer_to_address %5 : $Builtin.RawPointer to [strict] $*Int, scope 16 // user: %7
+           store %0 to %6 : $*Int, scope 16                // id: %7           */
+          if (v->getType().isReferenceCounted(M))
+            return OutermostAggregateResult_dmu_( vArg, foundOutermostAggregate, v);
+          PointerToAddressInst *PTAI = cast<PointerToAddressInst>(v);
+          SILValue ptaiOp = PTAI->getOperand();
+          if (ptaiOp->getKind() != ValueKind::ApplyInst)
+            return OutermostAggregateResult_dmu_(vArg, noOutermostAggregateExists, ptaiOp); // right?
+          ApplyInst *AI = cast<ApplyInst>(ptaiOp);
+          SILValue callee = AI->getCallee();
+          const SILFunction *cf = AI->getCalleeFunction();
+          auto k = cf->isGlobalInit() ? outermostAggregateIsAccessedConcurrently : noOutermostAggregateExists;
+          return OutermostAggregateResult_dmu_(vArg, k, callee);
+        }
+
           
         case ValueKind::AllocValueBufferInst:
-        case ValueKind::PointerToAddressInst:
         case ValueKind::UncheckedTakeEnumDataAddrInst:
         case ValueKind::ProjectExistentialBoxInst:
         case ValueKind::UncheckedAddrCastInst:
