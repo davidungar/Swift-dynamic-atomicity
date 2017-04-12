@@ -4209,10 +4209,12 @@ namespace {
       
       switch (CopyDestroyKind) {
         case POD:
-        case BitwiseTakable:
           (void)src.claim(getExplosionSize());
           return;
           
+        // Must put BitwiseTakable with Normal because payload might be something like _TypedNativeSetStorage
+        // with a VisitRefsInInstance_dmu_
+        case BitwiseTakable:
         case Normal: {
           assert(visitRefsInInitialValuesOfPayload_dmu_EnumFunction && "Did not create visitRefsInInitialValuesOfPayload_dmu_EnumFunction function for enum");
           Explosion tmp;
@@ -4563,8 +4565,8 @@ namespace {
       auto &C = IGF.IGM.getLLVMContext();
       switch (CopyDestroyKind) {
         case POD: return;
-        case BitwiseTakable: return;
           
+        case BitwiseTakable:
         case TaggedRefcounted:
         case Normal:
           break;
