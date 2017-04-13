@@ -118,6 +118,7 @@ public struct _StringBuffer {
       var p = result.start.assumingMemoryBound(to: UTF8.CodeUnit.self)
       let sink: (UTF32.CodeUnit) -> Void = {
         p.pointee = UTF8.CodeUnit($0)
+        // _dmu_ add store barrier here or call initialize
         p += 1
       }
       let hadError = transcode(

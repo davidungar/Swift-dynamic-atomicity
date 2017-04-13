@@ -3041,6 +3041,7 @@ internal struct _Native${Self}Buffer<${TypeParameters}> {
     defer { _fixLifetime(self) }
 
     (keys + i).pointee = key
+    // _dmu_ add store barrier here or call initialize
   }
 
 %elif Self == 'Dictionary':
@@ -3081,6 +3082,8 @@ internal struct _Native${Self}Buffer<${TypeParameters}> {
 
     (keys + i).pointee = key
     (values + i).pointee = value
+  
+    // _dmu_ add store barrier here or call initialize
   }
 
 %end

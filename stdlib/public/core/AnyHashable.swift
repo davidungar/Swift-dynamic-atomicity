@@ -302,6 +302,7 @@ func _stdlib_makeAnyHashableUsingDefaultRepresentation<H : Hashable>(
   storingResultInto result: UnsafeMutablePointer<AnyHashable>
 ) {
   result.pointee = AnyHashable(_usingDefaultRepresentationOf: value)
+  // _dmu_ add store barrier here or all initialize
 }
 
 @_silgen_name("_swift_stdlib_makeAnyHashableUpcastingToHashableBaseType")
