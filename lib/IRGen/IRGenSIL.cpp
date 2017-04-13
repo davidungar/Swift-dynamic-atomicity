@@ -3252,7 +3252,7 @@ void IRGenSILFunction::visitLoadInst(swift::LoadInst *i) {
 // At this point, I'm foregoing that optimization, and just not going to use the StoreBarrier.
 //
 // Also, what about other store instructions, such as weak, etc.?
-// And maybe the real fix is to generate the store barrer from the AssignInst.
+// And maybe the real fix is to generate the store barrier from the AssignInst.
 //
 // Another optimization could be to reuse the ref count load for a direct store of a ref.
 
@@ -4966,6 +4966,7 @@ public:
         case ValueKind::InitEnumDataAddrInst:
         case ValueKind::IndexAddrInst:
         case ValueKind::ProjectBoxInst:
+        case ValueKind::InitExistentialAddrInst:
           v = firstOperand;
           break;
           
@@ -5011,7 +5012,6 @@ public:
           return OutermostAggregateResult_dmu_(vArg, Kind::outermostAggregateIsAccessedConcurrently, v);
 
 
-        case ValueKind::InitExistentialAddrInst:
         case ValueKind::SILFunctionArgument:
           return OutermostAggregateResult_dmu_(vArg, Kind::noOutermostAggregateExists, v);
           
