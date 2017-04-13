@@ -88,6 +88,7 @@ static UIdent KindDeclConstructor("source.lang.swift.decl.function.constructor")
 static UIdent KindRefConstructor("source.lang.swift.ref.function.constructor");
 static UIdent KindDeclDestructor("source.lang.swift.decl.function.destructor");
 static UIdent KindRefDestructor("source.lang.swift.ref.function.destructor");
+static UIdent KindRefVisitor("source.lang.swift.ref.function.visitor");
 static UIdent KindDeclFunctionPrefixOperator("source.lang.swift.decl.function.operator.prefix");
 static UIdent KindDeclFunctionPostfixOperator("source.lang.swift.decl.function.operator.postfix");
 static UIdent KindDeclFunctionInfixOperator("source.lang.swift.decl.function.operator.infix");
@@ -371,6 +372,7 @@ UIdent SwiftLangSupport::getUIDForCodeCompletionDeclKind(
     case CodeCompletionDeclKind::InstanceVar: return KindRefVarInstance;
     case CodeCompletionDeclKind::LocalVar: return KindRefVarLocal;
     case CodeCompletionDeclKind::GlobalVar: return KindRefVarGlobal;
+    case CodeCompletionDeclKind::VisitRefsInInstance_dmu_: return KindRefVisitor;
     }
   }
 
@@ -398,6 +400,7 @@ UIdent SwiftLangSupport::getUIDForCodeCompletionDeclKind(
   case CodeCompletionDeclKind::InstanceVar: return KindDeclVarInstance;
   case CodeCompletionDeclKind::LocalVar: return KindDeclVarLocal;
   case CodeCompletionDeclKind::GlobalVar: return KindDeclVarGlobal;
+  case CodeCompletionDeclKind::VisitRefsInInstance_dmu_: return KindRefVisitor;
   }
 }
 
