@@ -3257,9 +3257,9 @@ void IRGenSILFunction::visitLoadInst(swift::LoadInst *i) {
 // Another optimization could be to reuse the ref count load for a direct store of a ref.
 
 void IRGenSILFunction::visitStoreInst(swift::StoreInst *i) {
-  if (CurFn->getName().equals(StringRef("_TZFV4main2CD6checkEfGVs10DictionaryCS_1HS2__T_"))) {
-    //printf("hooha");
-  }
+//  if (CurFn->getName().equals(StringRef("_TZFV4main2CD6checkEfGVs10DictionaryCS_1HS2__T_"))) {
+//    //printf("hooha");
+//  }
   emitStoreBarrier_dmu_(i->getSrc(), i->getDest());
   
   Explosion source = getLoweredExplosion(i->getSrc());
@@ -3282,9 +3282,24 @@ void IRGenSILFunction::visitStoreInst(swift::StoreInst *i) {
 
 void IRGenSILFunction::emitVisitRefsInInitialValues_dmu_(SILValue const &srcSILValue) {
   SILType srcType = srcSILValue->getType().getObjectType();
-  const LoadableTypeInfo &srcTI = cast<LoadableTypeInfo>(getTypeInfo(srcType));
-  Explosion srcValues = getLoweredExplosion(srcSILValue);
-  srcTI.genIRToVisitRefsInInitialValues_dmu_( *this, srcValues);
+  const TypeInfo &srcTI = getTypeInfo(srcType);
+  const LoweredValue &loweredSrcValue = getLoweredValue(srcSILValue);
+  switch (loweredSrcValue.kind) {
+    case LoweredValue::Kind::ContainedAddress:
+    case LoweredValue::Kind::Address: {
+      const Address srcAddr = getLoweredAddress(srcSILValue);
+      srcTI.visitRefs_dmu_( *this, srcAddr, srcType );
+      return;
+    }
+      
+    default: {
+      assert(srcTI.isLoadable() && "emitVisitRefsInInitialValues_dmu_: how to deal with this?");
+      const LoadableTypeInfo &loadableSrcTI = cast<LoadableTypeInfo>(srcTI);
+      Explosion srcValues = getLoweredExplosion(srcSILValue);
+      loadableSrcTI.genIRToVisitRefsInInitialValues_dmu_( *this, srcValues);
+      return;
+    }
+  }
 }
 
 //#include <swift/Runtime/HeapObject.h> // blecch! TODO: (dmu) clean this up!
@@ -4747,6 +4762,8 @@ void IRGenSILFunction::setAllocatedAddressForBuffer(SILValue v,
 }
 
 void IRGenSILFunction::visitCopyAddrInst(swift::CopyAddrInst *i) {
+  emitStoreBarrier_dmu_(i->getSrc(), i->getDest());
+  
   SILType addrTy = i->getSrc()->getType();
   const TypeInfo &addrTI = getTypeInfo(addrTy);
   Address src = getLoweredAddress(i->getSrc());
