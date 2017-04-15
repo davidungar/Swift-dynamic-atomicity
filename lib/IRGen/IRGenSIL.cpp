@@ -4948,16 +4948,16 @@ public:
     }
   }
   
-  char const *kindString() const {
-    switch (kind) {
-      case foundOutermostAggregate: return "foundOutermostAggregate";
-      case noOutermostAggregateExists: return "noOutermostAggregateExists";
-      case outermostAggregateIsAccessedConcurrently: return "outermostAggregateIsAccessedConcurrently";
-      case dontKnowWhatThisInstDoes: return "dontKnowWhatThisInstDoes";
-      case dontKnowBecauseNoOperands: return "dontKnowBecauseNoOperands";
-      case dontKnowBecauseNotAnInstruction: return "dontKnowBecauseNotAnInstruction";
-      case dontKnowBecauseNotDefinitelyReferenceCounted: return "dontKnowBecauseNotDefinitelyReferenceCounted";
-    }
+    StringRef const kindStringRef() const {
+      switch (kind) {
+        case foundOutermostAggregate:                       return StringRef("foundOutermostAggregate");
+        case noOutermostAggregateExists:                    return StringRef("noOutermostAggregateExists";
+        case outermostAggregateIsAccessedConcurrently:      return StringRef("outermostAggregateIsAccessedConcurrently");
+        case dontKnowWhatThisInstDoes:                      return StringRef("dontKnowWhatThisInstDoes");
+        case dontKnowBecauseNoOperands:                     return StringRef("dontKnowBecauseNoOperands");
+        case dontKnowBecauseNotAnInstruction:               return StringRef("dontKnowBecauseNotAnInstruction");
+        case dontKnowBecauseNotDefinitelyReferenceCounted:  return StringRef("dontKnowBecauseNotDefinitelyReferenceCounted");
+      }
   }
 public:
   static OutermostAggregateResult_dmu_ get(IRGenSILFunction& IGF, SILValue vArg) {
@@ -4970,20 +4970,27 @@ public:
         break;
         
       default:
-        fprintf(stderr, "\n***** %s\n", oar.kindString());
-        oar.dump(IGF);
-        fprintf(stderr, "\n\n");
+        if (false) oar.kvetch(IGF);
         break;
     }
     return oar;
   }
   
-  void dump(IRGenSILFunction &IGF) const {
+  void kvetch(IRGenSILFunction &IGF) const {
     //IGF.IGM;
+    SILModule &M = IGF.IGM.getSILModule();
+    ASTContext &ctx = M.getASTContext();
     for (SILValue v = startingValue; ; ) {
-      if (v == value)
-        fprintf(stderr, "LAST -> ");
-      v->dump();
+      SourceLoc loc = IGF.CurSILFn->hasLocation()
+        ? IGF.CurSILFn->getLocation().getSourceLoc()
+        : SourceLoc();
+      if (v == value) {
+        ctx.Diags.diagnose(loc, diag::store_barrier_backtracking_dmu_, kindStringRef(), v);
+        // should be startingValue:
+      }
+      else {
+        ctx.Diags.diagnose(loc, diag::preceding_backtraced_instruction_dmu_, v);
+      }
       if (!isa<SILInstruction>(v))
         return;
       SILInstruction *I = cast<SILInstruction>(v);

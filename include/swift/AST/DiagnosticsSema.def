@@ -3481,6 +3481,12 @@ NOTE(conservative_for_indirect_argument_dmu_,none,
 NOTE(escaping_for_global_dmu_,none,
         "escaping global '%0'",(StringRef))
 
+NOTE(store_barrier_backtracking_dmu_,none,
+"store barrier backtracking %0: %1", (StringRef, SILValue))
+
+NOTE(preceding_backtraced_instruction_dmu_,nont,
+"using value %0", (SILValue))
+
 
 #ifndef DIAG_NO_UNDEF
 # if defined(DIAG)
