@@ -4990,8 +4990,10 @@ public:
         // should be startingValue:
       }
       else {
-        ctx.Diags.diagnose(loc, diag::preceding_backtraced_instruction_dmu_);
-        v->dump(); // fix sometime
+        if (false) {
+          ctx.Diags.diagnose(loc, diag::preceding_backtraced_instruction_dmu_);
+          v->dump(); // fix sometime
+        }
       }
       if (!isa<SILInstruction>(v))
         return;
