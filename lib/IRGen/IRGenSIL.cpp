@@ -72,7 +72,7 @@
 #include "WeakTypeInfo.h"
 
 #include "swift/Basic/DemangleWrappers.h" // dmu
-#include "swift/AST/DiagnosticsSema.h" // dmu
+#include "swift/AST/DiagnosticsIRGen.h" // dmu
 
 using namespace swift;
 using namespace irgen;
@@ -4951,7 +4951,7 @@ public:
     StringRef const kindStringRef() const {
       switch (kind) {
         case foundOutermostAggregate:                       return StringRef("foundOutermostAggregate");
-        case noOutermostAggregateExists:                    return StringRef("noOutermostAggregateExists";
+        case noOutermostAggregateExists:                    return StringRef("noOutermostAggregateExists");
         case outermostAggregateIsAccessedConcurrently:      return StringRef("outermostAggregateIsAccessedConcurrently");
         case dontKnowWhatThisInstDoes:                      return StringRef("dontKnowWhatThisInstDoes");
         case dontKnowBecauseNoOperands:                     return StringRef("dontKnowBecauseNoOperands");
@@ -4985,11 +4985,13 @@ public:
         ? IGF.CurSILFn->getLocation().getSourceLoc()
         : SourceLoc();
       if (v == value) {
-        ctx.Diags.diagnose(loc, diag::store_barrier_backtracking_dmu_, kindStringRef(), v);
+        ctx.Diags.diagnose(loc, diag::store_barrier_backtracking_dmu_, kindStringRef());
+        v->dump(); // fix me sometime
         // should be startingValue:
       }
       else {
-        ctx.Diags.diagnose(loc, diag::preceding_backtraced_instruction_dmu_, v);
+        ctx.Diags.diagnose(loc, diag::preceding_backtraced_instruction_dmu_);
+        v->dump(); // fix sometime
       }
       if (!isa<SILInstruction>(v))
         return;

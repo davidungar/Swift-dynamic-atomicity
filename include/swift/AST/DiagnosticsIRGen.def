@@ -64,6 +64,30 @@ ERROR(alignment_less_than_natural,none,
       "@_alignment cannot decrease alignment below natural alignment of %0",
       (unsigned))
 
+
+//------------------------------------------------------------------------------
+// Dynamic reference count diagnostics
+//------------------------------------------------------------------------------
+
+
+WARNING(not_handling_inout_to_non_Swift_dmu_,none,
+"not handling inout parameter passed to non-Swift callee '%0'",
+(StringRef))
+
+NOTE(conservative_for_indirect_argument_dmu_,none,
+"being conservative for indirect argument %0 of %1",
+(StringRef, StringRef))
+
+NOTE(escaping_for_global_dmu_,none,
+"escaping global '%0'",(StringRef))
+
+NOTE(store_barrier_backtracking_dmu_,none,
+"store barrier backtracking %0: %1", (StringRef))
+
+NOTE(preceding_backtraced_instruction_dmu_,none,
+"using value %0", ())
+
+
 #ifndef DIAG_NO_UNDEF
 # if defined(DIAG)
 #  undef DIAG
