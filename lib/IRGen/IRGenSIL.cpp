@@ -3324,6 +3324,8 @@ void IRGenSILFunction::emitVisitRefsInValuesAssignedTo_dmu_(SILValue const &srcS
   llvm::BasicBlock *isSafe = createBasicBlock("isSafe");
   llvm::BasicBlock *safeOrNot = createBasicBlock("safeOrNot");
   
+  ConditionalDominanceScope condition(*this); // a shot in the dark
+  
   llvm::Value *cond = Builder.CreateICmpNE(safeBit, llvm::ConstantInt::get(IGM.Int32Ty, 0));
   Builder.CreateCondBr(cond, isSafe, safeOrNot);
   Builder.emitBlock(isSafe);
