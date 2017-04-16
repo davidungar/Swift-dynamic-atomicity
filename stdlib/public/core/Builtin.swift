@@ -738,3 +738,37 @@ public func withoutActuallyEscaping<ClosureType, ResultType>(
   Builtin.unreachable()
 }
 
+
+
+// TODO: (dmu) move all the following into Builtin.swift or the compiler
+internal func ifIsSafeForConcurrentAccess_dmu_<D: AnyObject, S, S2>( dest: D, makeSafe src: S, andMakeSafe src2: S2) {
+  if  isSafeForConcurrentAccess_dmu_(dest) {
+    ugly_expensive_hack_to_set_escaped_bit_dmu_ = src
+    ugly_expensive_hack_to_set_escaped_bit_dmu_ = src2
+    // should be:
+    //    Builtins.visitRefsInInstance_dmu_(src)
+    //    Builtins.visitRefsInInstance_dmu_(src2)
+  }
+}
+
+internal func ifIsSafeForConcurrentAccess_dmu_<D: AnyObject, S>( dest: D, makeSafe src: S) {
+  if  isSafeForConcurrentAccess_dmu_(dest) {
+    ugly_expensive_hack_to_set_escaped_bit_dmu_ = src
+    // should be:
+    //    Builtins.visitRefsInInstance_dmu_(src)
+  }
+}
+
+internal var ugly_expensive_hack_to_set_escaped_bit_dmu_: Any = 0
+
+
+internal func isSafeForConcurrentAccess_dmu_<T: AnyObject>(_ reference: T) -> Bool {
+  var mutableReference = reference
+  return withUnsafePointer(to: &mutableReference) {
+    $0.withMemoryRebound(to: UnsafePointer<UInt32>.self, capacity: 1) {
+      0 != (($0.pointee+2).pointee & 4)
+    }
+  }
+}
+
+
