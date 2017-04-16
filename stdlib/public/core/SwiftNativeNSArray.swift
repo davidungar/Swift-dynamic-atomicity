@@ -168,6 +168,20 @@ extension _SwiftNativeNSArrayWithContiguousStorage : _NSArrayCore {
   deinit {
     _destroyBridgedStorage(_heapBufferBridged)
   }
+  
+  
+  internal func _visitRefsInBridgedStorage_dmu_(_ hb: HeapBufferStorage?) {
+    if let bridgedStorage = hb {
+      let heapBuffer = _HeapBuffer(bridgedStorage)
+      let count = heapBuffer.value
+      heapBuffer.baseAddress.visitRefs_dmu_(count: count)
+    }
+  }
+  
+  visitRefsInInstance_dmu_ {
+    _visitRefsInBridgedStorage_dmu_(_heapBufferBridged)
+  }
+
 
   internal override func withUnsafeBufferOfObjects<R>(
     _ body: (UnsafeBufferPointer<AnyObject>) throws -> R
