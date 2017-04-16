@@ -764,11 +764,13 @@ internal var ugly_expensive_hack_to_set_escaped_bit_dmu_: Any = 0
 
 internal func isSafeForConcurrentAccess_dmu_<T: AnyObject>(_ reference: T) -> Bool {
   var mutableReference = reference
-  return withUnsafePointer(to: &mutableReference) {
+  let r = withUnsafePointer(to: &mutableReference) {
     $0.withMemoryRebound(to: UnsafePointer<UInt32>.self, capacity: 1) {
       0 != (($0.pointee+2).pointee & 4)
     }
   }
+  _fixLifetime(reference);
+  return r;
 }
 
 
