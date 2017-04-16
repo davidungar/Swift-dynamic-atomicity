@@ -169,18 +169,19 @@ extension _SwiftNativeNSArrayWithContiguousStorage : _NSArrayCore {
     _destroyBridgedStorage(_heapBufferBridged)
   }
   
-  
-  internal func _visitRefsInBridgedStorage_dmu_(_ hb: HeapBufferStorage?) {
-    if let bridgedStorage = hb {
-      let heapBuffer = _HeapBuffer(bridgedStorage)
-      let count = heapBuffer.value
-      heapBuffer.baseAddress.visitRefs_dmu_(count: count)
-    }
-  }
-  
-  visitRefsInInstance_dmu_ {
-    _visitRefsInBridgedStorage_dmu_(_heapBufferBridged)
-  }
+//  Cannot include this because it is an ObjC class -- is this right?
+//
+//  internal func _visitRefsInBridgedStorage_dmu_(_ hb: HeapBufferStorage?) {
+//    if let bridgedStorage = hb {
+//      let heapBuffer = _HeapBuffer(bridgedStorage)
+//      let count = heapBuffer.value
+//      heapBuffer.baseAddress.visitRefs_dmu_(count: count)
+//    }
+//  }
+//  
+//  visitRefsInInstance_dmu_ {
+//    _visitRefsInBridgedStorage_dmu_(_heapBufferBridged)
+//  }
 
 
   internal override func withUnsafeBufferOfObjects<R>(
