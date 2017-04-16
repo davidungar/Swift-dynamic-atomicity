@@ -897,7 +897,7 @@ void swift::_swift_abortRetainUnowned(const void *object) {
 }
 
 
-const StrongRefCount *StrongRefCount::nonatomicallyCounting_dmu_ = nullptr;
-const StrongRefCount *StrongRefCount::atomicallyCounting_dmu_ = nullptr;
-const StrongRefCount *StrongRefCount::culprit_dmu = nullptr;
-const char           *StrongRefCount::message_dmu_ = nullptr;
+template<> const StrongRefCount *StrongRefCount::nonatomicallyCounting_dmu_ = nullptr;
+template<> const StrongRefCount *StrongRefCount::atomicallyCounting_dmu_ = nullptr;
+template<> const StrongRefCount *StrongRefCount::culprit_dmu_ = nullptr;
+template<> const char           *StrongRefCount::message_dmu_ = nullptr;

@@ -142,7 +142,7 @@ private:
       return;
     culprit_dmu_ = this;
     message_dmu_ = msg;
-    fprintf(stderr,"reference count atomicity error: %s", msg);
+    assert(false && "reference count atomicity error");
     abort();
   }
   
