@@ -166,6 +166,7 @@ private:
     atomicallyCounting_dmu_ = this;
   }
   void finishedAtomicCount_dmu_() const {
+    atomicallyCounting_dmu_ = nullptr; // object could get recycled
   }
 # endif
 
