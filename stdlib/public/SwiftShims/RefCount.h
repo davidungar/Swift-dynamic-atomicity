@@ -130,6 +130,45 @@ private:
       case nonatomicIfBitClear_dmu_: return 0;
     }
   }
+  
+  // for debugging
+  static const StrongRefCount_t_dmu_ *nonatomicallyCounting_dmu_;
+  static const StrongRefCount_t_dmu_ *atomicallyCounting_dmu_;
+  static const StrongRefCount_t_dmu_ *culprit_dmu_;
+  static const char                  *message_dmu_;
+  
+  void assertAndStoreThis(const StrongRefCount_t_dmu_ *shouldNotBeThis, const char *msg) {
+    if (shouldNotBeThis != this)
+      return;
+    culprit_dmu_ = this;
+    message_dmu_ = msg;
+    fprintf(stderr,"reference count atomicity error: %s", msg);
+    abort();
+  }
+  
+# define ALWAYS_CHECK_ATOMICITY 1
+# if -defined(NDEBUG)  &&  !ALWAYS_CHECK_ATOMICITY
+  void startingNonatomicCount_dmu_ () const {}
+  void finishedNonatomicCount_dmu_ () const {}
+  void    startingAtomicCount_dmu_ () const {}
+  void    finishedAtomicCount_dmu_ () const {}
+# else
+  void startingNonatomicCount_dmu_ () const {
+    assert(nonatomicallyCounting_dmu_ != this  &&  "noatomically overlapping ref counts");
+    assert(   atomicallyCounting_dmu_ != this  &&  "atomic/nonatomic overlapping ref counts");
+    nonatomicallyCounting_dmu_ = this;
+  }
+  void finishedNonatomicCount_dmu_ () const {
+    nonatomicallyCounting_dmu_ = nullptr;
+  }
+  void startingAtomicCount_dmu_ () const {
+    assert(nonatomicallyCounting_dmu_ != this  &&  "noatomic/atomic overlapping ref counts");
+    atomicallyCounting_dmu_ = this;
+  }
+  void finishedAtomicCount_dmu_() const {
+  }
+# endif
+
   // end dmu
 
  public:
@@ -154,13 +193,17 @@ private:
       incrementNonAtomic();
       return;
     }
+    startingAtomicCount_dmu_();
     __atomic_fetch_add(&refCount, RC_ONE, __ATOMIC_RELAXED);
+    finishedAtomicCount_dmu_();
   }
 
   void incrementNonAtomic() {
+    startingNonatomicCount_dmu_();
     uint32_t val = __atomic_load_n(&refCount, __ATOMIC_RELAXED);
     val += RC_ONE;
     __atomic_store_n(&refCount, val, __ATOMIC_RELAXED);
+    finishedNonatomicCount_dmu_();
   }
 
   // Increment the reference count by n.
@@ -169,13 +212,17 @@ private:
       incrementNonAtomic(n);
       return;
     }
+    startingAtomicCount_dmu_();
     __atomic_fetch_add(&refCount, n << RC_FLAGS_COUNT, __ATOMIC_RELAXED);
+    finishedAtomicCount_dmu_();
   }
 
   void incrementNonAtomic(uint32_t n) {
+    startingNonatomicCount_dmu_();
     uint32_t val = __atomic_load_n(&refCount, __ATOMIC_RELAXED);
     val += n << RC_FLAGS_COUNT;
     __atomic_store_n(&refCount, val, __ATOMIC_RELAXED);
+    finishedNonatomicCount_dmu_();
  }
 
   // Try to simultaneously set the pinned flag and increment the
@@ -191,10 +238,12 @@ private:
     if (isSafeToUseNonatomic_dmu_()) {
       return tryIncrementAndPinNonAtomic();
     }
+    startingAtomicCount_dmu_();
     uint32_t oldval = __atomic_load_n(&refCount, __ATOMIC_RELAXED);
     while (true) {
       // If the flag is already set, just fail.
       if (oldval & RC_PINNED_FLAG) {
+        finishedAtomicCount_dmu_();
         return false;
       }
 
@@ -202,6 +251,7 @@ private:
       uint32_t newval = oldval + (RC_PINNED_FLAG + RC_ONE);
       if (__atomic_compare_exchange(&refCount, &oldval, &newval, 0,
                                     __ATOMIC_RELAXED, __ATOMIC_RELAXED)) {
+        finishedAtomicCount_dmu_();
         return true;
       }
 
@@ -210,15 +260,18 @@ private:
   }
 
   bool tryIncrementAndPinNonAtomic() {
+    startingNonatomicCount_dmu_();
     uint32_t oldval = __atomic_load_n(&refCount, __ATOMIC_RELAXED);
     // If the flag is already set, just fail.
     if (oldval & RC_PINNED_FLAG) {
+      finishedNonatomicCount_dmu_();
       return false;
     }
 
     // Try to simultaneously set the flag and increment the reference count.
     uint32_t newval = oldval + (RC_PINNED_FLAG + RC_ONE);
     __atomic_store_n(&refCount, newval, __ATOMIC_RELAXED);
+    finishedNonatomicCount_dmu_();
     return true;
   }
 
@@ -227,26 +280,32 @@ private:
     if (isSafeToUseNonatomic_dmu_()) {
       return tryIncrementNonAtomic();
     }
+    startingAtomicCount_dmu_();
     // FIXME: this could be better on LL/SC architectures like arm64
     uint32_t oldval = __atomic_fetch_add(&refCount, RC_ONE, __ATOMIC_RELAXED);
     if (oldval & RC_DEALLOCATING_FLAG) {
       __atomic_fetch_sub(&refCount, RC_ONE, __ATOMIC_RELAXED);
+      finishedAtomicCount_dmu_();
       return false;
     } else {
+      finishedAtomicCount_dmu_();
       return true;
     }
   }
 
   // Increment the reference count, unless the object is deallocating.
   bool tryIncrementNonAtomic() {
+    startingNonatomicCount_dmu_();
     uint32_t oldval = __atomic_load_n(&refCount, __ATOMIC_RELAXED);
     if (oldval & RC_DEALLOCATING_FLAG) {
+      finishedNonatomicCount_dmu_();
       return false;
     }
     __atomic_store_n(&refCount, oldval + RC_ONE, __ATOMIC_RELAXED);
+    finishedNonatomicCount_dmu_();
     return true;
   }
-
+ 
   // Simultaneously clear the pinned flag and decrement the reference
   // count.
   //
@@ -283,8 +342,10 @@ private:
   //
   // Precondition: the reference count must be 1
   void decrementFromOneAndDeallocateNonAtomic() {
+    startingNonatomicCount_dmu_();
     assert(refCount == RC_ONE && "Expect a count of 1");
     __atomic_store_n(&refCount, RC_DEALLOCATING_FLAG, __ATOMIC_RELAXED);
+    finishedNonatomicCount_dmu_();
   }
 
   bool decrementShouldDeallocateNNonAtomic(uint32_t n) {
@@ -332,11 +393,13 @@ private:
   // When something in the heap can be accessed by >1 thread, the bit must be set
   // Need not be atomic because this must happen BEFORE the object gets shared by another thread
   void beSafeForConcurrentAccess() {
+    startingNonatomicCount_dmu_();
     assert(isSettingMightBeCurrentlyAccessedFlagImplemented_dmu_); // can modify this when start implementing
     uint32_t oldval = __atomic_load_n(&refCount, __ATOMIC_RELAXED);
     // Make sure that other threads see this:
     // I *think* release is needed -- dmu 12/16
     __atomic_store_n(&refCount, oldval |  RC_MIGHT_BE_CONCURRENTLY_ACCESSED_FLAG_dmu_, __ATOMIC_RELEASE);
+    finishedNonatomicCount_dmu_();
   }
 
 private:
@@ -345,7 +408,7 @@ private:
     if (isSafeToUseNonatomic_dmu_()) {
       return doDecrementShouldDeallocateNonAtomic<ClearPinnedFlag>();
     }
-
+    startingAtomicCount_dmu_();
     // If we're being asked to clear the pinned flag, we can assume
     // it's already set.
     constexpr uint32_t quantum =
@@ -365,6 +428,7 @@ private:
     if ((newval & (RC_COUNT_MASK | RC_PINNED_FLAG | RC_DEALLOCATING_FLAG))
           != 0) {
       // Refcount is not zero. We definitely do not need to deallocate.
+      finishedAtomicCount_dmu_();
       return false;
     }
 
@@ -377,12 +441,15 @@ private:
                   "fix decrementShouldDeallocate() if you add more flags");
     uint32_t oldval =  0 | expectedStateOfConcurrentlyAccessibleFlagWhenInAtomicVariant_dmu_();
     newval = RC_DEALLOCATING_FLAG;
-    return __atomic_compare_exchange(&refCount, &oldval, &newval, 0,
+    bool shouldDeallocate = __atomic_compare_exchange(&refCount, &oldval, &newval, 0,
                                      __ATOMIC_ACQUIRE, __ATOMIC_RELAXED);
+    finishedAtomicCount_dmu_();
+    return shouldDeallocate;
   }
 
   template <bool ClearPinnedFlag>
   bool doDecrementShouldDeallocateNonAtomic() {
+    startingNonatomicCount_dmu_();
     // If we're being asked to clear the pinned flag, we can assume
     // it's already set.
     constexpr uint32_t quantum =
@@ -394,48 +461,29 @@ private:
 
     assert(newval + quantum >= RC_ONE &&
            "releasing reference with a refcount of zero");
-    return finishDoDecrementShouldDeallocateNonAtomic_dmu_<ClearPinnedFlag>(newval);
+    bool shouldDeallocate = finishDoDecrementShouldDeallocateNonAtomic_dmu_<ClearPinnedFlag>(newval);
+    finishedNonatomicCount_dmu_();
+    return shouldDeallocate;
   }
 
   template <bool ClearPinnedFlag>
   bool doDecrementShouldDeallocateN(uint32_t n) {
+    startingAtomicCount_dmu_();
     // If we're being asked to clear the pinned flag, we can assume
     // it's already set.
     uint32_t delta = (n << RC_FLAGS_COUNT) + (ClearPinnedFlag ? RC_PINNED_FLAG : 0);
     uint32_t newval = __atomic_sub_fetch(&refCount, delta, __ATOMIC_RELEASE);
 
-    assert((!ClearPinnedFlag || !(newval & RC_PINNED_FLAG)) &&
-           "unpinning reference that was not pinned");
     assert(newval + delta >= RC_ONE &&
            "releasing reference with a refcount of zero");
-    return finishDoDecrementShouldDeallocateNonAtomic_dmu_<ClearPinnedFlag>(newval);
-
-    // If we didn't drop the reference count to zero, or if the
-    // deallocating flag is already set, we're done; don't start
-    // deallocation.  We can assume that the pinned flag isn't set
-    // unless the refcount is nonzero, and or'ing it in gives us a
-    // more efficient mask: the check just becomes "is newval nonzero".
-    if ((newval & (RC_COUNT_MASK | RC_PINNED_FLAG | RC_DEALLOCATING_FLAG))
-          != 0) {
-      // Refcount is not zero. We definitely do not need to deallocate.
-      return false;
-    }
-
-    // Refcount is now 0 and is not already deallocating.  Try to set
-    // the deallocating flag.  This must be atomic because it can race
-    // with weak retains.
-    //
-    // This also performs the before-deinit acquire barrier if we set the flag.
-    static_assert(RC_FLAGS_COUNT == 3,
-                  "fix finishDoDecrementShouldDeallocate_dmu_() if you add more flags");
-    uint32_t oldval = 0           | expectedStateOfConcurrentlyAccessibleFlagWhenInAtomicVariant_dmu_();
-    newval = RC_DEALLOCATING_FLAG | expectedStateOfConcurrentlyAccessibleFlagWhenInAtomicVariant_dmu_();
-    return __atomic_compare_exchange(&refCount, &oldval, &newval, 0,
-                                     __ATOMIC_ACQUIRE, __ATOMIC_RELAXED);
+    bool shouldDeallocate =  finishDoDecrementShouldDeallocateNonAtomic_dmu_<ClearPinnedFlag>(newval);
+    finishedAtomicCount_dmu_();
+    return shouldDeallocate;
   }
 
   template <bool ClearPinnedFlag>
   bool doDecrementShouldDeallocateNNonAtomic(uint32_t n) {
+    startingNonatomicCount_dmu_();
     // If we're being asked to clear the pinned flag, we can assume
     // it's already set.
     uint32_t delta = (n << RC_FLAGS_COUNT) + (ClearPinnedFlag ? RC_PINNED_FLAG : 0);
@@ -448,7 +496,9 @@ private:
            "unpinning reference that was not pinned");
     assert(newval + delta >= RC_ONE &&
            "releasing reference with a refcount of zero");
-    return finishDoDecrementShouldDeallocateNonAtomic_dmu_<ClearPinnedFlag>(newval);
+    bool shouldDeallocate = finishDoDecrementShouldDeallocateNonAtomic_dmu_<ClearPinnedFlag>(newval);
+    finishedNonatomicCount_dmu_();
+    return shouldDeallocate;
   }
 
   template <bool ClearPinnedFlag>

@@ -895,3 +895,9 @@ void swift::_swift_abortRetainUnowned(const void *object) {
   (void)object;
   swift::crash("attempted to retain deallocated object");
 }
+
+
+const StrongRefCount *StrongRefCount::nonatomicallyCounting_dmu_ = nullptr;
+const StrongRefCount *StrongRefCount::atomicallyCounting_dmu_ = nullptr;
+const StrongRefCount *StrongRefCount::culprit_dmu = nullptr;
+const char           *StrongRefCount::message_dmu_ = nullptr;
