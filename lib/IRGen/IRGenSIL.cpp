@@ -2103,6 +2103,7 @@ void IRGenSILFunction::visitFullApplySite(FullApplySite site) {
         // dmu TODO: dpg.  Actually hande this correctly. With new work extending emitStoreBarrier_dmu_ to more cases, should be easy.
         SILFunction *fn = site.getFunction();
         StringRef fnName = demangle_wrappers::demangleSymbolAsString(fn->getName());
+        if (false)
         IGM.getSwiftModule()->getASTContext().Diags.diagnose(site.getLoc().getSourceLoc(),
                                                              diag::not_handling_inout_to_non_Swift_dmu_,
                                                              fnName);
