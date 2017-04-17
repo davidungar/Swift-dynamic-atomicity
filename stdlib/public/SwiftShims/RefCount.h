@@ -137,7 +137,7 @@ private:
   static const StrongRefCount_t_dmu_ *culprit_dmu_;
   static const char                  *message_dmu_;
   
-  void assertAndStoreThis(const StrongRefCount_t_dmu_ *shouldNotBeThis, const char *msg) {
+  void assertAndStoreThis(const StrongRefCount_t_dmu_ *shouldNotBeThis, const char *msg) const {
     if (shouldNotBeThis != this)
       return;
     culprit_dmu_ = this;
