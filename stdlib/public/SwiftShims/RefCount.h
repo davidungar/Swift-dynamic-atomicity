@@ -154,15 +154,15 @@ private:
   void    finishedAtomicCount_dmu_ () const {}
 # else
   void startingNonatomicCount_dmu_ () const {
-    assert(nonatomicallyCounting_dmu_ != this  &&  "noatomically overlapping ref counts");
-    assert(   atomicallyCounting_dmu_ != this  &&  "atomic/nonatomic overlapping ref counts");
+    assertAndStoreThis(nonatomicallyCounting_dmu_, "noatomically overlapping ref counts");
+    assertAndStoreThis(   atomicallyCounting_dmu_, "atomic/nonatomic overlapping ref counts");
     nonatomicallyCounting_dmu_ = this;
   }
   void finishedNonatomicCount_dmu_ () const {
     nonatomicallyCounting_dmu_ = nullptr;
   }
   void startingAtomicCount_dmu_ () const {
-    assert(nonatomicallyCounting_dmu_ != this  &&  "noatomic/atomic overlapping ref counts");
+    assertAndStoreThis(nonatomicallyCounting_dmu_, "noatomic/atomic overlapping ref counts");
     atomicallyCounting_dmu_ = this;
   }
   void finishedAtomicCount_dmu_() const {
