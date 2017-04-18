@@ -78,7 +78,7 @@ NOTE(conservative_for_indirect_argument_dmu_,none,
 "being conservative for indirect argument %0 of %1",
 (StringRef, StringRef))
 
-NOTE(conservative_for_indirect_argument_of_nonSwift_dmu_,none,
+NOTE(conservative_for_argument_of_nonSwift_dmu_,none,
 "being conservative for indirect argument at call site of %0",
 (StringRef))
 
@@ -87,10 +87,10 @@ NOTE(escaping_for_global_dmu_,none,
 "escaping global '%0'",(StringRef))
 
 NOTE(store_barrier_backtracking_dmu_,none,
-"store barrier backtracking %0: %1", (StringRef))
+"store barrier backtracking %0", (StringRef))
 
 NOTE(preceding_backtraced_instruction_dmu_,none,
-"using value %0", ())
+"using value (FIX CODE TO PRINT OTHER INSTRUCTIONS)", ())
 
 
 #ifndef DIAG_NO_UNDEF
