@@ -774,3 +774,14 @@ internal func isSafeForConcurrentAccess_dmu_<T: AnyObject>(_ reference: T) -> Bo
 }
 
 
+
+//public var addStoreBarriers_dmu_ = Set<String>()
+@_versioned
+internal func addStoreBarrierHere_dmu_(file: String = #file, line: Int = #line, function: String = #function, orCallInitialize: Bool = false) {
+  // need a semaphore!
+//    if addStoreBarriers_dmu_.contains(function) {
+//        return
+//    }
+//    print("addStoreBarrierHere", function)
+//    addStoreBarriers_dmu_.insert(function)
+}

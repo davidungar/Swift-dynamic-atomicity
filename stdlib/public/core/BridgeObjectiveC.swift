@@ -390,8 +390,8 @@ public struct AutoreleasingUnsafeMutablePointer<Pointee /* TODO : class */>
       UnsafeMutablePointer<Pointee>(_rawValue).withMemoryRebound(
         to: OptionalUnmanaged.self, capacity: 1) {
         if let newAnyObject = newAnyObject {
+          // addStoreBarrierHere_dmu_()
           $0.pointee = Unmanaged.passUnretained(newAnyObject)
-          // _dmu_ add store barrier here or call initialize
         }
         else {
           $0.pointee = nil

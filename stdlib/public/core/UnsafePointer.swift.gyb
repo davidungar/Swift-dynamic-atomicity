@@ -492,9 +492,9 @@ public struct ${Self}<Pointee>
     // Must not use `initializeFrom` with a `Collection` as that will introduce
     // a cycle.
     for offset in 0..<count {
+      // addStoreBarrierHere_dmu_(orCallInitialize: false)
       Builtin.initialize(newValue, (self + offset)._rawValue)
     }
-    // _dmu_ add store barrier here
   }
 
   /// Retrieves and returns the referenced instance, returning the pointer's
@@ -611,13 +611,13 @@ public struct ${Self}<Pointee>
       UnsafePointer(self) + count <= source ||
       source + count <= UnsafePointer(self),
       "${Self}.initialize overlapping range")
+      // addStoreBarrierHere_dmu_(orCallInitialize: false)
     Builtin.copyArray(
       Pointee.self, self._rawValue, source._rawValue, count._builtinWordValue)
     // This builtin is equivalent to:
     // for i in 0..<count {
     //   (self + i).initialize(to: source[i])
     // }
-    // _dmu_ add store barrier here
   }
 
   /// Initializes memory starting at this pointer's address with the elements

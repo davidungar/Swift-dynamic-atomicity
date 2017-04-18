@@ -100,8 +100,8 @@ extension String {
   ) -> Result {
     var utf16Index: Int = 0
     let result = (index != nil ? body(&utf16Index) : body(nil))
+    // addStoreBarrierHere_dmu_()
     index?.pointee = self._index(utf16Index)
-    // _dmu_ add store barrier here or call initialize
     return result
   }
 
@@ -114,8 +114,8 @@ extension String {
   ) -> Result {
     var nsRange = NSRange(location: 0, length: 0)
     let result = (range != nil ? body(&nsRange) : body(nil))
+    // addStoreBarrierHere_dmu_()
     range?.pointee = self._range(nsRange)
-    // _dmu_ add store barrier here or call initialize
     return result
   }
 
@@ -378,13 +378,13 @@ extension String {
     if let matches = nsMatches {
       // Since this function is effectively a bridge thunk, use the
       // bridge thunk semantics for the NSArray conversion
+      // addStoreBarrierHere_dmu_()
       outputArray?.pointee = matches as! [String]
-      // _dmu_ add store barrier here or call initialize
     }
 
     if let n = nsOutputName {
+      // addStoreBarrierHere_dmu_()
       outputName?.pointee = n as String
-      // _dmu_ add store barrier here or call initialize
     }
     return result
   }
@@ -1034,10 +1034,10 @@ extension String {
     }
 
     if nsTokenRanges != nil {
+      // addStoreBarrierHere_dmu_()
       tokenRanges?.pointee = (nsTokenRanges! as [AnyObject]).map {
         self._range($0.rangeValue)
       }
-      // _dmu_ add store barrier here or call initialize
     }
 
     return result as! [String]

@@ -120,8 +120,8 @@ public struct _StringCore {
       var src = srcStart.assumingMemoryBound(to: UTF8.CodeUnit.self)
       let srcEnd = src + count
       while src != srcEnd {
+        // addStoreBarrierHere_dmu_()
         dest.pointee = UTF16.CodeUnit(src.pointee)
-        // _dmu_ add store barrier here or call initialize
         dest += 1
         src += 1
       }
@@ -132,8 +132,8 @@ public struct _StringCore {
       var src = srcStart.assumingMemoryBound(to: UTF16.CodeUnit.self)
       let srcEnd = src + count
       while src != srcEnd {
+        // addStoreBarrierHere_dmu_()
         dest.pointee = UTF8.CodeUnit(src.pointee)
-        // _dmu_ add store barrier here or call initialize
         dest += 1
         src += 1
       }
@@ -646,8 +646,8 @@ extension _StringCore : RangeReplaceableCollection {
       else {
         var dst = rangeStart.assumingMemoryBound(to: UTF16.CodeUnit.self)
         for u in newElements {
+          // addStoreBarrierHere_dmu_()
           dst.pointee = u
-          // _dmu_ add store barrier here or call initialize
           dst += 1
         }
       }
