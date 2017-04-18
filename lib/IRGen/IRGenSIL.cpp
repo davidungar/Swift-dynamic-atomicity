@@ -2098,16 +2098,21 @@ void IRGenSILFunction::visitFullApplySite(FullApplySite site) {
   }
 
   if (nonSwiftCallee) {
+    SILFunction *fn = site.getFunction();
+    StringRef fnName = demangle_wrappers::demangleSymbolAsString(fn->getName());
     for (auto index : indices(args)) {
       if (site.getArgumentConvention(index).isIndirectConvention()) {
         // dmu TODO: dpg.  Actually hande this correctly. With new work extending emitStoreBarrier_dmu_ to more cases, should be easy.
-        SILFunction *fn = site.getFunction();
-        StringRef fnName = demangle_wrappers::demangleSymbolAsString(fn->getName());
+        // NOTE: isIndirectConvention tests for more than just Out
         if (false)
         IGM.getSwiftModule()->getASTContext().Diags.diagnose(site.getLoc().getSourceLoc(),
                                                              diag::not_handling_inout_to_non_Swift_dmu_,
                                                              fnName);
       } else {
+        if (false)
+          IGM.getSwiftModule()->getASTContext().Diags.diagnose(site.getLoc().getSourceLoc(),
+                                                               diag::conservative_for_indirect_argument_of_nonSwift_dmu_,
+                                                               fnName);
         emitVisitRefsInInitialValues_dmu_(args[index]);
       }
     }

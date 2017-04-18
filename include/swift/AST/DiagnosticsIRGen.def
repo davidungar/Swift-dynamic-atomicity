@@ -78,6 +78,11 @@ NOTE(conservative_for_indirect_argument_dmu_,none,
 "being conservative for indirect argument %0 of %1",
 (StringRef, StringRef))
 
+NOTE(conservative_for_indirect_argument_of_nonSwift_dmu_,none,
+"being conservative for indirect argument at call site of %0",
+(StringRef))
+
+
 NOTE(escaping_for_global_dmu_,none,
 "escaping global '%0'",(StringRef))
 
