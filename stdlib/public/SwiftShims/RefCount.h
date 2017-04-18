@@ -58,6 +58,9 @@ enum NonatomicBenchmarkOptions_dmu_ {
 };
 
 
+#if defined(__linux__)
+extern "C" void abort(void); // avoid including stdlib.h in this headerfile
+#endif
 
 template <NonatomicBenchmarkOptions_dmu_ nonatomicOption_dmu_>
 class StrongRefCount_t_dmu_ {
@@ -136,7 +139,7 @@ private:
   static const StrongRefCount_t_dmu_ *atomicallyCounting_dmu_;
   static const StrongRefCount_t_dmu_ *culprit_dmu_;
   static const char                  *message_dmu_;
-  
+
   void assertAndStoreThis(const StrongRefCount_t_dmu_ *shouldNotBeThis, const char *msg) const {
     if (shouldNotBeThis != this)
       return;
