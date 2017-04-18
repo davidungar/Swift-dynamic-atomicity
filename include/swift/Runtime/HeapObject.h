@@ -846,7 +846,7 @@ SWIFT_CC(DefaultCC) {
   
 static inline void swift_unknownIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(void *dst, void *src)
 SWIFT_CC(DefaultCC) {
-  swift_IfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(static_cast<HeapObject *>(dst), static_cast<HeapObject *>(src));
+  swift_ifDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(static_cast<HeapObject *>(dst), static_cast<HeapObject *>(src));
 }
 
 
@@ -1028,8 +1028,8 @@ static inline void swift_unknownWeakDestroy(WeakReference *object) {
   
 #else
   
-  static inline void swift_unknownWeakIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_WeakReference *dst, WeakReference *src) {
-    swift_weakIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_WeakReference(dst, src);
+  static inline void swift_unknownWeakIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(WeakReference *dst, WeakReference *src) {
+	swift_weakIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(dst, src);
   }
   
 #endif /* SWIFT_OBJC_INTEROP */
@@ -1296,22 +1296,6 @@ static inline void swift_unknownUnownedTakeAssign(UnownedReference *dest,
   }
   
 #endif /* SWIFT_OBJC_INTEROP */
-  
-  
-#if SWIFT_OBJC_INTEROP
-  
-  /// TODO: (dmu) explain
-  SWIFT_RUNTIME_EXPORT
-  void swift_unknownUnownedIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(UnownedReference *dst, UnownedReference *src);
-  
-#else
-  
-  static inline void swift_unknownUnownedIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(UnownedReference *dst, UnownedReference *src) {
-    swift_unownedIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(dst, src);
-  }
-  
-#endif /* SWIFT_OBJC_INTEROP */
-  
   
   
 #if SWIFT_OBJC_INTEROP
