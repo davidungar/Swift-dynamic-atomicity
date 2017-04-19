@@ -118,7 +118,7 @@ public struct _StringBuffer {
       var p = result.start.assumingMemoryBound(to: UTF8.CodeUnit.self)
       let sink: (UTF32.CodeUnit) -> Void = {
         // addStoreBarrierHere_dmu_()
-        p.pointee = UTF8.CodeUnit($0)
+        p.pointee = conservative_make_safe_dmu_( UTF8.CodeUnit($0) )
         p += 1
       }
       let hadError = transcode(

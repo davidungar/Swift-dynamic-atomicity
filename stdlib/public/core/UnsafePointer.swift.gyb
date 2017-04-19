@@ -491,6 +491,7 @@ public struct ${Self}<Pointee>
       "${Self}.initialize(to:): negative count")
     // Must not use `initializeFrom` with a `Collection` as that will introduce
     // a cycle.
+    conservative_make_safe_dmu_(newValue)
     for offset in 0..<count {
       // addStoreBarrierHere_dmu_(orCallInitialize: false)
       Builtin.initialize(newValue, (self + offset)._rawValue)
@@ -612,6 +613,7 @@ public struct ${Self}<Pointee>
       source + count <= UnsafePointer(self),
       "${Self}.initialize overlapping range")
       // addStoreBarrierHere_dmu_(orCallInitialize: false)
+    for i in 0..<count { conservative_make_safe_dmu_((source + i).pointee) }
     Builtin.copyArray(
       Pointee.self, self._rawValue, source._rawValue, count._builtinWordValue)
     // This builtin is equivalent to:

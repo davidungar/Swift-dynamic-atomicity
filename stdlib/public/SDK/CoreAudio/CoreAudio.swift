@@ -158,7 +158,7 @@ extension UnsafeMutableAudioBufferListPointer
       _precondition(index >= 0 && index < self.count,
         "subscript index out of range")
       // addStoreBarrierHere_dmu_()
-      (_audioBuffersPointer + index).pointee = newValue
+      (_audioBuffersPointer + index).pointee = conservative_make_safe_dmu_( newValue )
     }
   }
 

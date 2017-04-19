@@ -43,7 +43,7 @@ extension TKSmartCard {
         return true
       } catch let error as NSError {
         // addStoreBarrierHere_dmu_()
-        errorPointer?.pointee = error
+        errorPointer?.pointee = conservative_make_safe_dmu_( error )
         return false
       }
     })
