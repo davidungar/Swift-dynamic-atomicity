@@ -2099,7 +2099,8 @@ void IRGenSILFunction::visitFullApplySite(FullApplySite site) {
 
   if (nonSwiftCallee) {
     SILFunction *fn = site.getFunction();
-    StringRef fnName = demangle_wrappers::demangleSymbolAsString(fn->getName());
+    SILModule &M = IGM.getSILModule();
+    StringRef fnName = StringRef(demangle_wrappers::demangleSymbolAsString(fn->getName())).copy(M.dynamicRCFunctionNames_dmu_);
     for (auto index : indices(args)) {
       if (site.getArgumentConvention(index).isIndirectConvention()) {
         // dmu TODO: dpg.  Actually hande this correctly. With new work extending emitStoreBarrier_dmu_ to more cases, should be easy.
@@ -4815,10 +4816,8 @@ public:
                  fa->getArgumentConvention().mayBeContainedInALargerInstance_dmu_()
                  ) {
           {
-            StringRef fnName = StringRef(demangle_wrappers::demangleSymbolAsString(IGF.CurSILFn->getName()));
-            StringRef argName = fa->isSelf() ? StringRef("self") :
-            fa->getDecl() == nullptr ? StringRef("<no decl>")
-            : StringRef(demangle_wrappers::demangleSymbolAsString(fa->getDecl()->getName().str()));
+            StringRef fnName = StringRef(demangle_wrappers::demangleSymbolAsString(IGF.CurSILFn->getName())).copy(M.dynamicRCFunctionNames_dmu_);
+            DeclName argName = fa->getDecl() != nullptr  ?  fa->getDecl()->getFullName()  :  DeclName();
             SourceLoc loc = IGF.CurSILFn->hasLocation()
             ? IGF.CurSILFn->getLocation().getSourceLoc()
             : SourceLoc();
@@ -4863,7 +4862,7 @@ public:
             {
               GlobalAddrInst *g = cast<GlobalAddrInst>(v);
               SILGlobalVariable *gv = g->getReferencedGlobal();
-              StringRef demangledName = StringRef(demangle_wrappers::demangleSymbolAsString(gv->getName()));
+              StringRef demangledName = StringRef(demangle_wrappers::demangleSymbolAsString(gv->getName())).copy(M.dynamicRCFunctionNames_dmu_);
               SourceLoc loc = gv->hasLocation() ? gv->getLocation().getSourceLoc() : SourceLoc();
 
               M.getASTContext().Diags.diagnose(
@@ -4989,7 +4988,7 @@ public:
       std::string result;
       llvm::raw_string_ostream out(result);
       v->print(out);
-      StringRef vString(result);
+      StringRef vString = StringRef(result).copy(M.dynamicRCFunctionNames_dmu_);
       
       if (v == value) {
         ctx.Diags.diagnose(loc, diag::store_barrier_backtracking_dmu_, kindStringRef(), vString);

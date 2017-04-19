@@ -76,7 +76,7 @@ WARNING(not_handling_inout_to_non_Swift_dmu_,none,
 
 NOTE(conservative_for_indirect_argument_dmu_,none,
 "being conservative for indirect argument %0 of %1",
-(StringRef, StringRef))
+(DeclName, StringRef))
 
 NOTE(conservative_for_argument_of_nonSwift_dmu_,none,
 "being conservative for indirect argument at call site of %0",

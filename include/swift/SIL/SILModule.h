@@ -128,6 +128,12 @@ private:
   /// Stores the names of zombie functions.
   llvm::BumpPtrAllocator zombieFunctionNames;
   
+public:
+  /// Stores the names of functions the new diagnostics complain about.
+  /// Shot in the dark!
+  llvm::BumpPtrAllocator dynamicRCFunctionNames_dmu_;
+  
+private:
   /// Lookup table for SIL vtables from class decls.
   llvm::DenseMap<const ClassDecl *, SILVTable *> VTableMap;
 
