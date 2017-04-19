@@ -2108,9 +2108,9 @@ void IRGenSILFunction::visitFullApplySite(FullApplySite site) {
                                                              diag::not_handling_inout_to_non_Swift_dmu_,
                                                              fnName);
       } else {
-          IGM.getSwiftModule()->getASTContext().Diags.diagnose(site.getLoc().getSourceLoc(),
-                                                               diag::conservative_for_argument_of_nonSwift_dmu_,
-                                                               fnName);
+        IGM.getSwiftModule()->getASTContext().Diags.diagnose(site.getLoc().getSourceLoc(),
+                                                             diag::conservative_for_argument_of_nonSwift_dmu_,
+                                                             fnName);
         emitVisitRefsInInitialValues_dmu_(args[index]);
       }
     }
