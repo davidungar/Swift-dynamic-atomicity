@@ -2104,14 +2104,12 @@ void IRGenSILFunction::visitFullApplySite(FullApplySite site) {
       if (site.getArgumentConvention(index).isIndirectConvention()) {
         // dmu TODO: dpg.  Actually hande this correctly. With new work extending emitStoreBarrier_dmu_ to more cases, should be easy.
         // NOTE: isIndirectConvention tests for more than just Out
-        if (false)
         IGM.getSwiftModule()->getASTContext().Diags.diagnose(site.getLoc().getSourceLoc(),
                                                              diag::not_handling_inout_to_non_Swift_dmu_,
                                                              fnName);
       } else {
-        if (false)
           IGM.getSwiftModule()->getASTContext().Diags.diagnose(site.getLoc().getSourceLoc(),
-                                                               diag::conservative_for_indirect_argument_of_nonSwift_dmu_,
+                                                               diag::conservative_for_argument_of_nonSwift_dmu_,
                                                                fnName);
         emitVisitRefsInInitialValues_dmu_(args[index]);
       }
@@ -4825,13 +4823,11 @@ public:
             ? IGF.CurSILFn->getLocation().getSourceLoc()
             : SourceLoc();
             
-            
-            if (false) //brdg
-              M.getASTContext().Diags.diagnose(
-                                               loc,
-                                               diag::conservative_for_indirect_argument_dmu_,
-                                               argName, fnName
-                                               );
+            M.getASTContext().Diags.diagnose(
+                                             loc,
+                                             diag::conservative_for_indirect_argument_dmu_,
+                                             argName, fnName
+                                             );
           }
           
           k = Kind::outermostAggregateIsAccessedConcurrently;
@@ -4868,14 +4864,12 @@ public:
               GlobalAddrInst *g = cast<GlobalAddrInst>(v);
               SILGlobalVariable *gv = g->getReferencedGlobal();
               StringRef demangledName = StringRef(demangle_wrappers::demangleSymbolAsString(gv->getName()));
-              SourceLoc loc = gv->hasLocation()
-              ? gv->getLocation().getSourceLoc()
-              : SourceLoc();
-              if (false) //brdg
-                M.getASTContext().Diags.diagnose(
-                                                 loc,
-                                                 diag::escaping_for_global_dmu_,
-                                                 demangledName);
+              SourceLoc loc = gv->hasLocation() ? gv->getLocation().getSourceLoc() : SourceLoc();
+
+              M.getASTContext().Diags.diagnose(
+                                               loc,
+                                               diag::escaping_for_global_dmu_,
+                                               demangledName);
             }
             return OutermostAggregateResult_dmu_(vArg, outermostAggregateIsAccessedConcurrently, v);
           }
@@ -4976,13 +4970,13 @@ public:
         break;
         
       default:
-        if (false) oar.kvetch(IGF);
+        oar.printUnbacktraceableInstructions(IGF);
         break;
     }
     return oar;
   }
   
-  void kvetch(IRGenSILFunction &IGF) const {
+  void printUnbacktraceableInstructions(IRGenSILFunction &IGF) const {
     //IGF.IGM;
     SILModule &M = IGF.IGM.getSILModule();
     ASTContext &ctx = M.getASTContext();
@@ -4990,16 +4984,19 @@ public:
       SourceLoc loc = IGF.CurSILFn->hasLocation()
         ? IGF.CurSILFn->getLocation().getSourceLoc()
         : SourceLoc();
+      
+      // TODO: (dmu) move next few lines into a getAsString() for SIL*
+      std::string result;
+      llvm::raw_string_ostream out(result);
+      v->print(out);
+      StringRef vString(result);
+      
       if (v == value) {
-        ctx.Diags.diagnose(loc, diag::store_barrier_backtracking_dmu_, kindStringRef());
-        v->dump(); // fix me sometime
-        // should be startingValue:
+        ctx.Diags.diagnose(loc, diag::store_barrier_backtracking_dmu_, kindStringRef(), vString);
       }
       else {
-        if (false) {
-          ctx.Diags.diagnose(loc, diag::preceding_backtraced_instruction_dmu_);
-          v->dump(); // fix sometime
-        }
+        ctx.Diags.diagnose(loc, diag::preceding_backtraced_instruction_dmu_, vString);
+
       }
       if (!isa<SILInstruction>(v))
         return;

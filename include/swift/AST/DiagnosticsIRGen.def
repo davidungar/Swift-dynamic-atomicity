@@ -87,10 +87,10 @@ NOTE(escaping_for_global_dmu_,none,
 "escaping global '%0'",(StringRef))
 
 NOTE(store_barrier_backtracking_dmu_,none,
-"store barrier backtracking %0", (StringRef))
+"store barrier backtracking from %0: %1", (StringRef, StringRef))
 
 NOTE(preceding_backtraced_instruction_dmu_,none,
-"using value (FIX CODE TO PRINT OTHER INSTRUCTIONS)", ())
+"using value %0", (StringRef))
 
 
 #ifndef DIAG_NO_UNDEF
