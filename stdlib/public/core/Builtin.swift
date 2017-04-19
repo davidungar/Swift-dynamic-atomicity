@@ -760,6 +760,7 @@ internal func ifIsSafeForConcurrentAccess_dmu_<D: AnyObject, S>( dest: D, makeSa
 }
 
 @_transparent
+@discardableResult
 public  func makeSafe_dmu_<T>(_ x: T) -> T {
   ugly_expensive_hack_to_set_escaped_bit_dmu_ = x as Any
   return x
@@ -768,6 +769,7 @@ public  func makeSafe_dmu_<T>(_ x: T) -> T {
 public   var ugly_expensive_hack_to_set_escaped_bit_dmu_: Any = 0
 
 @_transparent
+@discardableResult
 public func conservative_make_safe_dmu_<T>(_ x: T) -> T {
   return makeSafe_dmu_(x)
 }
