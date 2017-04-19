@@ -5026,7 +5026,13 @@ void IRGenSILFunction::emitStoreBarrier_dmu_( SILValue srcSILValue, SILValue des
       return;
       
     case OutermostAggregateResult_dmu_::Kind::foundOutermostAggregate:
-      if (oar.value->getKind() == ValueKind::GlobalAddrInst) { // TODO: (dmu) is this test accurate?
+      SILType destSILType = oar.value->getType();
+      NominalTypeDecl *tdOrNone = destSILType.getNominalOrBoundGenericNominal();
+
+      
+      if (oar.value->getKind() == ValueKind::GlobalAddrInst
+          ||  (tdOrNone != nullptr  &&  tdOrNone->isObjC())
+               ) { // TODO: (dmu) is this test accurate?
         emitVisitRefsInInitialValues_dmu_(srcSILValue);
         return;
       }
