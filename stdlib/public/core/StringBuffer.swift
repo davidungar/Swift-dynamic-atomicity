@@ -55,6 +55,14 @@ public struct _StringBuffer {
     = _HeapBufferStorage<_StringBufferIVars, UTF16.CodeUnit>
 
   init(_ storage: _Storage) {
+    // _StringBuffers are stored in struct _StringCore (or CoreString?)
+    // But _StringCore may either hold a natie _StringBuffer or an ObjC entity
+    // It knows which, but since the compiler cannot tell, we are not visiting
+    // the _StringBuffer. For now, just be ridiculously conservative.
+    // Later, fix the compiler to allow visitRefsInInstance_dmu_ declarations in structs,
+    // and put the right thing in _StringCore._StringCore
+    // TODO: (dmu) fix overly conservativeness
+    conservative_make_safe_dmu_(storage)
     _storage = storage
   }
 
