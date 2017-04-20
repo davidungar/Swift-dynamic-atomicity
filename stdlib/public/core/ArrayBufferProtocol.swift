@@ -165,6 +165,7 @@ extension _ArrayBufferProtocol {
       }
       // Initialize the hole left by sliding the tail forward
       for j in oldTailIndex..<newTailIndex {
+        conservative_make_safe_dmu_(newValues[i])
         (elements + j).initialize(to: newValues[i])
         newValues.formIndex(after: &i)
       }

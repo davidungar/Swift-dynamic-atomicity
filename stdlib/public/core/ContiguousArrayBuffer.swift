@@ -593,6 +593,7 @@ internal func _copyCollectionToContiguousArray<
   var i = source.startIndex
   for _ in 0..<count {
     // FIXME(performance): use _copyContents(initializing:).
+    conservative_make_safe_dmu_(source[i])
     p.initialize(to: source[i])
     source.formIndex(after: &i)
     p += 1
@@ -652,6 +653,7 @@ internal struct _UnsafePartiallyInitializedContiguousArrayBuffer<Element> {
       "_UnsafePartiallyInitializedContiguousArrayBuffer has no more capacity")
     remainingCapacity -= 1
 
+    conservative_make_safe_dmu_(element)
     p.initialize(to: element)
     p += 1
   }

@@ -84,6 +84,7 @@ internal struct _ConcreteHashableBox<Base : Hashable> : _AnyHashableBox {
   internal
   func _downCastConditional<T>(into result: UnsafeMutablePointer<T>) -> Bool {
     guard let value = _baseHashable as? T else { return false }
+    conservative_make_safe_dmu_(value)
     result.initialize(to: value)
     return true
   }
@@ -323,7 +324,7 @@ func _convertToAnyHashableIndirect<H : Hashable>(
   _ value: H,
   _ target: UnsafeMutablePointer<AnyHashable>
 ) {
-  target.initialize(to: AnyHashable(value))
+  target.initialize(to: conservative_make_safe_dmu_( AnyHashable(value)) )
 }
 
 @_silgen_name("_swift_anyHashableDownCastConditionalIndirect")

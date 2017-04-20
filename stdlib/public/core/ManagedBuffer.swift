@@ -39,6 +39,7 @@ open class ManagedBuffer<Header, Element> {
          minimumCapacity._builtinWordValue, Element.self)
 
     let initHeaderVal = try factory(p)
+    conservative_make_safe_dmu_( initHeaderVal )
     p.headerAddress.initialize(to: initHeaderVal)
     // The _fixLifetime is not really needed, because p is used afterwards.
     // But let's be conservative and fix the lifetime after we use the
@@ -183,12 +184,13 @@ public struct ManagedBufferPointer<Header, Element> : Equatable {
 
     // initialize the header field
     try withUnsafeMutablePointerToHeader {
-      $0.initialize(to: 
+      $0.initialize(to:
+        conservative_make_safe_dmu_(
         try factory(
           self.buffer,
           {
             ManagedBufferPointer(unsafeBufferObject: $0).capacity
-          }))
+          })) )
     }
     // FIXME: workaround for <rdar://problem/18619176>.  If we don't
     // access header somewhere, its addressor gets linked away

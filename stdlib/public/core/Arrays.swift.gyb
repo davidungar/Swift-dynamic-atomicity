@@ -1061,6 +1061,7 @@ extension ${Self} : RangeReplaceableCollection, _ArrayProtocol {
     var p: UnsafeMutablePointer<Element>
     (self, p) = ${Self}._allocateUninitialized(count)
     for _ in 0..<count {
+      conservative_make_safe_dmu_(repeatedValue)
       p.initialize(to: repeatedValue)
       p += 1
     }
@@ -1312,6 +1313,7 @@ extension ${Self} : RangeReplaceableCollection, _ArrayProtocol {
     _sanityCheck(_buffer.capacity >= _buffer.count + 1)
 
     _buffer.count = oldCount + 1
+    conservative_make_safe_dmu_(newElement)
     (_buffer.firstElementAddress + oldCount).initialize(to: newElement)
   }
 
@@ -1706,6 +1708,7 @@ extension ${Self} {
       _fixLifetime(self._owner)
     } else {
       for x in self {
+        conservative_make_safe_dmu_(x)
         p.initialize(to: x)
         p += 1
       }
@@ -1725,6 +1728,7 @@ internal struct _InitializeMemoryFromCollection<
     var p = rawMemory
     var q = newValues.startIndex
     for _ in 0..<count {
+      conservative_make_safe_dmu_(newValues[q])
       p.initialize(to: newValues[q])
       newValues.formIndex(after: &q)
       p += 1
@@ -2032,6 +2036,7 @@ extension _ArrayBufferProtocol {
 
       // fill while there is another item and spare capacity
       while let next = nextItem, newCount < currentCapacity {
+        conservative_make_safe_dmu_(next)
         (base + newCount).initialize(to: next)
         newCount += 1
         nextItem = stream.next()

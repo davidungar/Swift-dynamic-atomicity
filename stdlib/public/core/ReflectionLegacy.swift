@@ -71,6 +71,7 @@ public protocol _Mirror {
 @_silgen_name("swift_getSummary")
 public // COMPILER_INTRINSIC
 func _getSummary<T>(_ out: UnsafeMutablePointer<String>, x: T) {
+  conservative_make_safe_dmu_( x )
   out.initialize(to: String(reflecting: x))
 }
 

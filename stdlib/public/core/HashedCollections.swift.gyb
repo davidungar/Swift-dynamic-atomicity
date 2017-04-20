@@ -1337,6 +1337,7 @@ public func _setBridgeToObjectiveC<SwiftValue, ObjCValue>(
 public func _setDownCastIndirect<SourceValue, TargetValue>(
   _ source: UnsafePointer<Set<SourceValue>>,
   _ target: UnsafeMutablePointer<Set<TargetValue>>) {
+  conservative_make_safe_dmu_(source.pointee)
   target.initialize(to: _setDownCast(source.pointee))
 }
 
@@ -1370,6 +1371,7 @@ public func _setDownCastConditionalIndirect<SourceValue, TargetValue>(
   _ target: UnsafeMutablePointer<Set<TargetValue>>
 ) -> Bool {
   if let result: Set<TargetValue> = _setDownCastConditional(source.pointee) {
+    conservative_make_safe_dmu_(result)
     target.initialize(to: result)
     return true
   }
@@ -2278,6 +2280,7 @@ public func _dictionaryDownCastIndirect<SourceKey, SourceValue,
                                         TargetKey, TargetValue>(
   _ source: UnsafePointer<Dictionary<SourceKey, SourceValue>>,
   _ target: UnsafeMutablePointer<Dictionary<TargetKey, TargetValue>>) {
+  conservative_make_safe_dmu_(source.pointee)
   target.initialize(to: _dictionaryDownCast(source.pointee))
 }
 
@@ -2319,6 +2322,7 @@ public func _dictionaryDownCastConditionalIndirect<SourceKey, SourceValue,
 ) -> Bool {
   if let result: Dictionary<TargetKey, TargetValue>
        = _dictionaryDownCastConditional(source.pointee) {
+    conservative_make_safe_dmu_(result)
     target.initialize(to: result)
     return true
   }
@@ -3024,7 +3028,7 @@ internal struct _Native${Self}Buffer<${TypeParameters}> {
 
     defer { _fixLifetime(self) }
 
-    (keys + toEntryAt).initialize(to: (from.keys + at).move())
+    (keys + toEntryAt).initialize(to: conservative_make_safe_dmu_( (from.keys + at).move()) )
     from._storage.initializedEntries[at] = false
     _storage.initializedEntries[toEntryAt] = true
   }
@@ -3052,6 +3056,8 @@ internal struct _Native${Self}Buffer<${TypeParameters}> {
     defer { _fixLifetime(self) }
 
     ifIsSafeForConcurrentAccess_dmu_( dest: _storage, makeSafe: k, andMakeSafe: v)
+    conservative_make_safe_dmu_(k)
+    conservative_make_safe_dmu_(v)
     (keys + i).initialize(to: k)
     (values + i).initialize(to: v)
     _storage.initializedEntries[i] = true
@@ -3062,8 +3068,8 @@ internal struct _Native${Self}Buffer<${TypeParameters}> {
     _sanityCheck(!isInitializedEntry(at: toEntryAt))
     defer { _fixLifetime(self) }
 
-    (keys + toEntryAt).initialize(to: (from.keys + at).move())
-    (values + toEntryAt).initialize(to: (from.values + at).move())
+    (keys + toEntryAt).initialize(to: conservative_make_safe_dmu_( (from.keys + at).move()) )
+    (values + toEntryAt).initialize(to: conservative_make_safe_dmu_( (from.values + at).move()) )
     from._storage.initializedEntries[at] = false
     _storage.initializedEntries[toEntryAt] = true
   }

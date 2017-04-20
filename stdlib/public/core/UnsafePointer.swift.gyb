@@ -491,7 +491,6 @@ public struct ${Self}<Pointee>
       "${Self}.initialize(to:): negative count")
     // Must not use `initializeFrom` with a `Collection` as that will introduce
     // a cycle.
-    conservative_make_safe_dmu_(newValue)
     for offset in 0..<count {
       // addStoreBarrierHere_dmu_(orCallInitialize: false)
       Builtin.initialize(newValue, (self + offset)._rawValue)

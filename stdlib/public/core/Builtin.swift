@@ -767,12 +767,18 @@ public  func makeSafe_dmu_<T>(_ x: T) -> T {
 }
 
 public   var ugly_expensive_hack_to_set_escaped_bit_dmu_: Any = 0
+public var ugly_expensive_hack_last_escaped_file = ""
+public var ugly_expensive_hack_last_line = -1
 
 @_transparent
 @discardableResult
-public func conservative_make_safe_dmu_<T>(_ x: T) -> T {
-  return makeSafe_dmu_(x)
+public func conservative_make_safe_dmu_<T>(_ x: T, file: String = #file, line: Int = #line) -> T {
+  makeSafe_dmu_(x)
+  ugly_expensive_hack_last_escaped_file = file
+  ugly_expensive_hack_last_line = line
+  return x
 }
+
 
 
 internal func isSafeForConcurrentAccess_dmu_<T: AnyObject>(_ reference: T) -> Bool {
