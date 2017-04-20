@@ -55,14 +55,6 @@ public struct _StringBuffer {
     = _HeapBufferStorage<_StringBufferIVars, UTF16.CodeUnit>
 
   init(_ storage: _Storage) {
-    // _StringBuffers are stored in struct _StringCore (or CoreString?)
-    // But _StringCore may either hold a natie _StringBuffer or an ObjC entity
-    // It knows which, but since the compiler cannot tell, we are not visiting
-    // the _StringBuffer. For now, just be ridiculously conservative.
-    // Later, fix the compiler to allow visitRefsInInstance_dmu_ declarations in structs,
-    // and put the right thing in _StringCore._StringCore
-    // TODO: (dmu) fix overly conservativeness
-    conservative_make_safe_dmu_(storage)
     _storage = storage
   }
 
@@ -125,8 +117,7 @@ public struct _StringBuffer {
     if isAscii {
       var p = result.start.assumingMemoryBound(to: UTF8.CodeUnit.self)
       let sink: (UTF32.CodeUnit) -> Void = {
-        // addStoreBarrierHere_dmu_()
-        p.pointee = conservative_make_safe_dmu_( UTF8.CodeUnit($0) )
+        p.pointee = UTF8.CodeUnit($0)
         p += 1
       }
       let hadError = transcode(
