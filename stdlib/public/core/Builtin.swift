@@ -741,19 +741,19 @@ public func withoutActuallyEscaping<ClosureType, ResultType>(
 
 
 // TODO: (dmu) move all the following into Builtin.swift or the compiler
-internal func ifIsSafeForConcurrentAccess_dmu_<D: AnyObject, S, S2>( dest: D, makeSafe src: S, andMakeSafe src2: S2) {
+internal func ifIsSafeForConcurrentAccess_dmu_<D: AnyObject, S, S2>( dest: D, makeSafe src: S, andMakeSafe src2: S2, file: String = #file, line: Int = -1) {
   if  isSafeForConcurrentAccess_dmu_(dest) {
-    ugly_expensive_hack_to_set_escaped_bit_dmu_ = src
-    ugly_expensive_hack_to_set_escaped_bit_dmu_ = src2
+    makeSafe_dmu_(src, file: file, line: line)
+    makeSafe_dmu_(src2, file: file, line: line)
     // should be:
     //    Builtins.visitRefsInInstance_dmu_(src)
     //    Builtins.visitRefsInInstance_dmu_(src2)
   }
 }
 
-internal func ifIsSafeForConcurrentAccess_dmu_<D: AnyObject, S>( dest: D, makeSafe src: S) {
+internal func ifIsSafeForConcurrentAccess_dmu_<D: AnyObject, S>( dest: D, makeSafe src: S, file: String = #file, line: Int = -1) {
   if  isSafeForConcurrentAccess_dmu_(dest) {
-    makeSafe_dmu_(src)
+    makeSafe_dmu_(src, file: file, line: line)
     // should be:
     //    Builtins.visitRefsInInstance_dmu_(src)
   }
@@ -761,22 +761,25 @@ internal func ifIsSafeForConcurrentAccess_dmu_<D: AnyObject, S>( dest: D, makeSa
 
 @_transparent
 @discardableResult
-public  func makeSafe_dmu_<T>(_ x: T) -> T {
-  ugly_expensive_hack_to_set_escaped_bit_dmu_ = x as Any
+public  func makeSafe_dmu_<T>(_ x: T, file: String = #file, line: Int = -1) -> T {
+  if let ao = x as? AnyObject {
+    ugly_expensive_hack_to_set_escaped_bit_dmu_ = ao
+    ugly_expensive_hack_last_escaped_file = file
+    ugly_expensive_hack_last_line = line
+  }
   return x
 }
 
-public   var ugly_expensive_hack_to_set_escaped_bit_dmu_: Any = 0
+public class Dummy_dmu_ {}
+
+public var ugly_expensive_hack_to_set_escaped_bit_dmu_: AnyObject = Dummy_dmu_()
 public var ugly_expensive_hack_last_escaped_file = ""
 public var ugly_expensive_hack_last_line = -1
 
 @_transparent
 @discardableResult
 public func conservative_make_safe_dmu_<T>(_ x: T, file: String = #file, line: Int = #line) -> T {
-  makeSafe_dmu_(x)
-  ugly_expensive_hack_last_escaped_file = file
-  ugly_expensive_hack_last_line = line
-  return x
+  return makeSafe_dmu_(x, file: file, line: line)
 }
 
 

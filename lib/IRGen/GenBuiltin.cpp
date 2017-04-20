@@ -776,20 +776,39 @@ if (Builtin.ID == BuiltinValueKind::id) { \
   
   // TODO: (dmu) factor with above
   if (Builtin.ID == BuiltinValueKind::VisitRefsInArray_dmu_) {
-      // The input type is (T.Type, Builtin.RawPointer, Builtin.Word).
+    // The input type is (T.Type, Builtin.RawPointer, Builtin.Word).
+    /* metatype (which may be thin) */
+    if (args.size() == 3)
+      args.claimNext();
+    llvm::Value *ptr = args.claimNext();
+    llvm::Value *count = args.claimNext();
+    
+    auto valueTy = getLoweredTypeAndTypeInfo(IGF.IGM,
+                                             substitutions[0].getReplacement());
+    
+    ptr = IGF.Builder.CreateBitCast(ptr,
+                                    valueTy.second.getStorageType()->getPointerTo());
+    Address array = valueTy.second.getAddressForPointer(ptr);
+    valueTy.second.visitRefsInArray_dmu_(IGF, array, count, valueTy.first);
+    return;
+  }
+
+  
+  // TODO: (dmu) factor with something
+  if (Builtin.ID == BuiltinValueKind::VisitRefs_dmu_) {
+      // The input type is (T.Type, Builtin.RawPointer).
       /* metatype (which may be thin) */
-      if (args.size() == 3)
+      if (args.size() == 2)
           args.claimNext();
       llvm::Value *ptr = args.claimNext();
-      llvm::Value *count = args.claimNext();
-      
+    
       auto valueTy = getLoweredTypeAndTypeInfo(IGF.IGM,
                                                substitutions[0].getReplacement());
       
       ptr = IGF.Builder.CreateBitCast(ptr,
                                       valueTy.second.getStorageType()->getPointerTo());
-      Address array = valueTy.second.getAddressForPointer(ptr);
-      valueTy.second.visitRefsInArray_dmu_(IGF, array, count, valueTy.first);
+      Address ptrAddr = valueTy.second.getAddressForPointer(ptr);
+      valueTy.second.visitRefs_dmu_(IGF, ptrAddr, valueTy.first);
       return;
   }
   
