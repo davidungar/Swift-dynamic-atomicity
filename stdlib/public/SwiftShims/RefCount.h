@@ -177,6 +177,8 @@ private:
 
  public:
   enum Initialized_t { Initialized };
+  enum InitializedAtomic_t { InitializedAtomic };
+  enum UninitializedAtomic_t { UninitializedAtomic };
 
   // StrongRefCount must be trivially constructible to avoid ObjC++
   // destruction overhead at runtime. Use StrongRefCount(Initialized) to produce
@@ -186,6 +188,12 @@ private:
   // Refcount of a new object is 1.
   constexpr StrongRefCount_t_dmu_(Initialized_t)
     : refCount(RC_ONE) { }
+
+  constexpr StrongRefCount_t_dmu_(InitializedAtomic_t)
+    : refCount(RC_ONE | expectedStateOfConcurrentlyAccessibleFlagWhenInAtomicVariant_dmu_()) { }
+
+  constexpr StrongRefCount_t_dmu_(UninitializedAtomic_t)
+    : refCount(expectedStateOfConcurrentlyAccessibleFlagWhenInAtomicVariant_dmu_()) { }
 
   void init() {
     refCount = RC_ONE;

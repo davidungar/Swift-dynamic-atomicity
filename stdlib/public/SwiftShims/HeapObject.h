@@ -51,6 +51,14 @@ struct HeapObject {
     , refCount(StrongRefCount::Initialized)
     , weakRefCount(WeakRefCount::Initialized)
   { }
+
+  // _dmu_ add constructor for use by GlobalObjects.cpp
+  constexpr HeapObject(HeapMetadata const *newMetadata, StrongRefCount rc)
+    : metadata(newMetadata)
+    , refCount(rc)
+    , weakRefCount(WeakRefCount::Initialized)
+  { }
+  // end _dmu_
 #endif
 };
 
