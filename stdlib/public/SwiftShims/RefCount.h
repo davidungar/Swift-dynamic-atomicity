@@ -176,9 +176,9 @@ private:
   // end dmu
 
  public:
-  enum Initialized_t { Initialized };
-  enum InitializedAtomic_t { InitializedAtomic };
-  enum UninitializedAtomic_t { UninitializedAtomic };
+  enum Initialized_t             { Initialized              };
+  enum InitializedAtomic_dmu_t   { InitializedAtomic_dmu_   };
+  enum UninitializedAtomic_dmu_t { UninitializedAtomic_dmu_ };
 
   // StrongRefCount must be trivially constructible to avoid ObjC++
   // destruction overhead at runtime. Use StrongRefCount(Initialized) to produce
@@ -189,10 +189,10 @@ private:
   constexpr StrongRefCount_t_dmu_(Initialized_t)
     : refCount(RC_ONE) { }
 
-  constexpr StrongRefCount_t_dmu_(InitializedAtomic_t)
+  constexpr StrongRefCount_t_dmu_(InitializedAtomic_dmu_t)
     : refCount(RC_ONE | expectedStateOfConcurrentlyAccessibleFlagWhenInAtomicVariant_dmu_()) { }
 
-  constexpr StrongRefCount_t_dmu_(UninitializedAtomic_t)
+  constexpr StrongRefCount_t_dmu_(UninitializedAtomic_dmu_t)
     : refCount(expectedStateOfConcurrentlyAccessibleFlagWhenInAtomicVariant_dmu_()) { }
 
   void init() {
