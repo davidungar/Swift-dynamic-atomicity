@@ -743,7 +743,7 @@ public func withoutActuallyEscaping<ClosureType, ResultType>(
 // TODO: (dmu) move all the following into Builtin.swift or the compiler
 internal func ifIsSafeForConcurrentAccess_dmu_<D: AnyObject, S, S2>( dest: D, makeSafe src: S, andMakeSafe src2: S2, file: String = #file, line: Int = -1) {
   if  isSafeForConcurrentAccess_dmu_(dest) {
-    makeSafe_dmu_(src, file: file, line: line)
+    makeSafe_dmu_(src,  file: file, line: line)
     makeSafe_dmu_(src2, file: file, line: line)
     // should be:
     //    Builtins.visitRefsInInstance_dmu_(src)
@@ -762,19 +762,14 @@ internal func ifIsSafeForConcurrentAccess_dmu_<D: AnyObject, S>( dest: D, makeSa
 @_transparent
 @discardableResult
 public  func makeSafe_dmu_<T>(_ x: T, file: String = #file, line: Int = -1) -> T {
-  if let ao = x as? AnyObject {
-    ugly_expensive_hack_to_set_escaped_bit_dmu_ = ao
-    ugly_expensive_hack_last_escaped_file = file
-    ugly_expensive_hack_last_line = line
+  var mutableT = x
+  _ = withUnsafeMutablePointer(to: &mutableT) {
+    $0.visitRefsInArray_dmu_()
   }
   return x
 }
 
 public class Dummy_dmu_ {}
-
-public var ugly_expensive_hack_to_set_escaped_bit_dmu_: AnyObject = Dummy_dmu_()
-public var ugly_expensive_hack_last_escaped_file = ""
-public var ugly_expensive_hack_last_line = -1
 
 @_transparent
 @discardableResult

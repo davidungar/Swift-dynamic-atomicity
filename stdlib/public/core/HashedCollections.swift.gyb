@@ -2645,7 +2645,7 @@ internal class _TypedNative${Self}Storage<${TypeParameters}> :
     if !_isPOD(Key.self) {
       for i in 0 ..< capacity {
         if initializedEntries[i] {
-          (keys+i).visitRefs_dmu_()
+          (keys+i).visitRefsInArray_dmu_()
         }
       }
     }
@@ -2654,7 +2654,7 @@ internal class _TypedNative${Self}Storage<${TypeParameters}> :
     if !_isPOD(Value.self) {
       for i in 0 ..< capacity {
         if initializedEntries[i] {
-          (values+i).visitRefs_dmu_()
+          (values+i).visitRefsInArray_dmu_()
         }
       }
     }

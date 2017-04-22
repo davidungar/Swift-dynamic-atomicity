@@ -50,7 +50,7 @@ class _HeapBufferStorage<Value, Element> {
     Buffer(self)._value.deinitialize()
   }
   visitRefsInInstance_dmu_ {
-    Buffer(self)._value.visitRefs_dmu_()
+    Buffer(self)._value.visitRefsInArray_dmu_()
   }
 
   final func __getInstanceSizeAndAlignMask() -> (Int, Int) {

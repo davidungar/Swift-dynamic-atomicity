@@ -69,7 +69,7 @@ final class _ContiguousArrayStorage<Element> : _ContiguousArrayStorageBase {
   }
   
   visitRefsInInstance_dmu_ {
-    _elementPointer.visitRefs_dmu_(count: countAndCapacity.count)
+    _elementPointer.visitRefsInArray_dmu_(count: countAndCapacity.count)
   }
 
 #if _runtime(_ObjC)

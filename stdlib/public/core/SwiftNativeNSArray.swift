@@ -175,7 +175,7 @@ extension _SwiftNativeNSArrayWithContiguousStorage : _NSArrayCore {
 //    if let bridgedStorage = hb {
 //      let heapBuffer = _HeapBuffer(bridgedStorage)
 //      let count = heapBuffer.value
-//      heapBuffer.baseAddress.visitRefs_dmu_(count: count)
+//      heapBuffer.baseAddress.visitRefsInArray_dmu_(count: count)
 //    }
 //  }
 //  

@@ -712,7 +712,7 @@ public struct ${Self}<Pointee>
   ///
   /// The region of memory starting at this pointer and covering `count`
   /// instances of the pointer's `Pointee` type must be initialized. After
-  /// calling `visitRefs_dmu_(count:)`, each ref has been 'visited'.
+  /// calling `visitRefsInArray_dmu_(count:)`, each ref has been 'visited'.
   /// As of 3/2017 visiting means making its reference count safe for concurrent access.
   /// These must all be references to Swift classes, not ObjectiveC classes.
   ///
@@ -721,13 +721,19 @@ public struct ${Self}<Pointee>
   /// - Returns: A raw pointer to the same address as this pointer. The memory
   ///   referenced by the returned raw pointer is still bound to `Pointee`.
   @discardableResult
-  public func visitRefs_dmu_(count: Int = 1) -> UnsafeMutableRawPointer {
+  public func visitRefsInArray_dmu_(count: Int = 1) -> UnsafeMutableRawPointer {
     _debugPrecondition(count >= 0, "${Self}.visitRefsStartingAt_dmu_ with negative count")
     // FIXME: optimization should be implemented, where if the `count` value
-    // is 1, the `Builtin.visitRefsInArray_dmu_(Pointee.self, _rawValue)` gets called.
+    // is 1, the `Builtin.visitRefs_dmu_(Pointee.self, _rawValue)` gets called.
     Builtin.visitRefsInArray_dmu_(Pointee.self, _rawValue, count._builtinWordValue)
     return UnsafeMutableRawPointer(self)
   }
+
+  @discardableResult
+  public func visitRefs_dmu_() -> UnsafeMutableRawPointer {
+    Builtin.visitRefs_dmu_(Pointee.self, _rawValue)
+    return UnsafeMutableRawPointer(self)
+}
 
 
 %  end
