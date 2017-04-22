@@ -149,7 +149,7 @@ private:
     abort();
   }
   
-# define ALWAYS_CHECK_ATOMICITY 1
+# define ALWAYS_CHECK_ATOMICITY 0
 # if -defined(NDEBUG)  &&  !ALWAYS_CHECK_ATOMICITY
   void startingNonatomicCount_dmu_ () const {}
   void finishedNonatomicCount_dmu_ () const {}
