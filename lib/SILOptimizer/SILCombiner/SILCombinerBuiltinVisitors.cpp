@@ -495,6 +495,7 @@ SILInstruction *SILCombiner::visitBuiltinInst(BuiltinInst *I) {
       [](const APInt &i) -> bool { return i.isMinValue(); }  /* isNeutral */,
       [](const APInt &i) -> bool { return false; }           /* isZero */,
       Builder, this);
+  case BuiltinValueKind::VisitRefs_dmu_:
   case BuiltinValueKind::VisitRefsInArray_dmu_:
   case BuiltinValueKind::DestroyArray: {
     SubstitutionList Substs = I->getSubstitutions();
