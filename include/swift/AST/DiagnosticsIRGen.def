@@ -84,7 +84,7 @@ NOTE(conservative_for_argument_of_nonSwift_dmu_,none,
 
 
 NOTE(escaping_for_global_dmu_,none,
-"escaping global '%0'",(StringRef))
+"escaping global '%0'",(Identifier))
 
 NOTE(store_barrier_backtracking_dmu_,none,
 "store barrier backtracking from %0: %1", (StringRef, StringRef))

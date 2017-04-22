@@ -164,10 +164,10 @@ namespace irgen {
                             llvm::Value *count);
 
   /// Emit a call to do a 'destroyArray' operation.
-  void emitVisitRefsInArray_dmu_Call(IRGenFunction &IGF, // dmu xxxxxx
-                                                          SILType T,
-                                                          Address object,
-                                                          llvm::Value *count);
+  void emitVisitRefsInArray_dmu_Call(IRGenFunction &IGF,
+                                     SILType T,
+                                     Address object,
+                                     llvm::Value *count);
   
   /// Emit a call to do a 'destroyBuffer' operation.
   void emitDestroyBufferCall(IRGenFunction &IGF,

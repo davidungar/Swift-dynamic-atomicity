@@ -2100,24 +2100,25 @@ void IRGenSILFunction::visitFullApplySite(FullApplySite site) {
   if (nonSwiftCallee) {
     SILFunction *fn = site.getFunction();
     SILModule &M = IGM.getSILModule();
-    StringRef fnName = StringRef(demangle_wrappers::demangleSymbolAsString(fn->getName())).copy(M.dynamicRCFunctionNames_dmu_);
-    for (auto index : indices(args)) {
-      if (site.getArgumentConvention(index).isIndirectConvention()) {
-        // dmu TODO: dpg.  Actually hande this correctly. With new work extending emitStoreBarrier_dmu_ to more cases, should be easy.
+    if (M.dynamicRCFunctionsWithInOuts_dmu_.lookup(fn).empty()) {
+      StringRef fnName = StringRef(demangle_wrappers::demangleSymbolAsString(fn->getName())).copy(M.dynamicRCFunctionNames_dmu_);
+      M.dynamicRCFunctionsWithInOuts_dmu_.insert( std::make_pair( fn, fnName ));
+      const SourceLoc &sl = site.getLoc().getSourceLoc();
+      for (auto index : indices(args))
         // NOTE: isIndirectConvention tests for more than just Out
-        IGM.getSwiftModule()->getASTContext().Diags.diagnose(site.getLoc().getSourceLoc(),
-                                                             diag::not_handling_inout_to_non_Swift_dmu_,
-                                                             fnName);
-      } else {
-        IGM.getSwiftModule()->getASTContext().Diags.diagnose(site.getLoc().getSourceLoc(),
-                                                             diag::conservative_for_argument_of_nonSwift_dmu_,
-                                                             fnName);
-        emitVisitRefsInInitialValues_dmu_(args[index]);
-      }
+        if (site.getArgumentConvention(index).isIndirectConvention())
+          IGM.getSwiftModule()->getASTContext().Diags.diagnose(sl, diag::not_handling_inout_to_non_Swift_dmu_, fnName);
+        else
+          IGM.getSwiftModule()->getASTContext().Diags.diagnose(sl, diag::conservative_for_argument_of_nonSwift_dmu_, fnName);
     }
+    for (auto index : indices(args))
+      if (site.getArgumentConvention(index).isIndirectConvention())
+        ; // dmu TODO: dpg.  Actually hande this correctly. With new work extending emitStoreBarrier_dmu_ to more cases, should be easy
+      else
+        emitVisitRefsInInitialValues_dmu_(args[index]);
   }
 
-  Explosion llArgs;    
+  Explosion llArgs;
   WitnessMetadata witnessMetadata;
   CallEmission emission =
     getCallEmissionForLoweredValue(*this, origCalleeType, substCalleeType,
@@ -4813,27 +4814,28 @@ public:
         if (type.isReferenceCounted(M))
           k = Kind::foundOutermostAggregate;
         else if (fa != nullptr  &&
-                 fa->getArgumentConvention().mayBeContainedInALargerInstance_dmu_()
-                 ) {
-          {
-            StringRef fnName = StringRef(demangle_wrappers::demangleSymbolAsString(IGF.CurSILFn->getName())).copy(M.dynamicRCFunctionNames_dmu_);
+                 fa->getArgumentConvention().mayBeContainedInALargerInstance_dmu_()) {
+          k = Kind::outermostAggregateIsAccessedConcurrently;
+          auto p = std::make_pair(IGF.CurSILFn, fa);
+          if (M.conservativeForIndirectArgumentReports_dmu_.lookup(p).empty()) {
+            M.conservativeForIndirectArgumentReports_dmu_.insert( std::make_pair(p, StringRef("any non-empty string")));
+            StringRef fnName = StringRef(demangle_wrappers::demangleSymbolAsString(IGF.CurSILFn->getName()))
+                                .copy(M.dynamicRCFunctionNames_dmu_);
             DeclName argName = fa->getDecl() != nullptr  ?  fa->getDecl()->getFullName()  :  DeclName();
             SourceLoc loc = IGF.CurSILFn->hasLocation()
-            ? IGF.CurSILFn->getLocation().getSourceLoc()
-            : SourceLoc();
+              ? IGF.CurSILFn->getLocation().getSourceLoc()
+              : SourceLoc();
             
             M.getASTContext().Diags.diagnose(
                                              loc,
                                              diag::conservative_for_indirect_argument_dmu_,
                                              argName, fnName
                                              );
-          }
-          
-          k = Kind::outermostAggregateIsAccessedConcurrently;
         }
-        else
-          k = Kind::noOutermostAggregateExists;
-        return OutermostAggregateResult_dmu_(vArg, k, v);
+      }
+      else
+        k = Kind::noOutermostAggregateExists;
+      return OutermostAggregateResult_dmu_(vArg, k, v);
       }
       if (!isa<SILInstruction>(v)) {
         return OutermostAggregateResult_dmu_(vArg, Kind::dontKnowBecauseNotAnInstruction, v);
@@ -4862,13 +4864,13 @@ public:
             {
               GlobalAddrInst *g = cast<GlobalAddrInst>(v);
               SILGlobalVariable *gv = g->getReferencedGlobal();
-              StringRef demangledName = StringRef(demangle_wrappers::demangleSymbolAsString(gv->getName())).copy(M.dynamicRCFunctionNames_dmu_);
-              SourceLoc loc = gv->hasLocation() ? gv->getLocation().getSourceLoc() : SourceLoc();
-
-              M.getASTContext().Diags.diagnose(
-                                               loc,
-                                               diag::escaping_for_global_dmu_,
-                                               demangledName);
+              VarDecl *gvd = gv->getDecl();
+              if (M.escapingForGlobals_dmu_.lookup(gvd).empty()) {
+                Identifier gid = gvd->getName();
+                M.escapingForGlobals_dmu_.insert( std::make_pair(gvd, gid));
+                SourceLoc loc = gv->hasLocation() ? gv->getLocation().getSourceLoc() : g->getLoc().getSourceLoc();
+                M.getASTContext().Diags.diagnose( loc, diag::escaping_for_global_dmu_, gid );
+              }
             }
             return OutermostAggregateResult_dmu_(vArg, outermostAggregateIsAccessedConcurrently, v);
           }
