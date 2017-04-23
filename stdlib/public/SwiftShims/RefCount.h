@@ -49,6 +49,16 @@ typedef struct {
 // dealloc code. This ensures that the deinit code sees all modifications
 // of the object's contents that were made before the object was released.
 
+/* TODO: (dmu) FIXME: as of 4/23: this code:
+ constexpr StrongRefCount_t_dmu_(InitializedAtomic_dmu_t)
+ : refCount(RC_ONE | RC_MIGHT_BE_CONCURRENTLY_ACCESSED_FLAG_dmu_) { }
+ 
+ constexpr StrongRefCount_t_dmu_(UninitializedAtomic_dmu_t)
+ : refCount(RC_MIGHT_BE_CONCURRENTLY_ACCESSED_FLAG_dmu_) { }
+
+ will not work for nonatomicIfBitSet_dmu_
+ */
+
 // dmu
 enum NonatomicBenchmarkOptions_dmu_ {
   baseline_dmu,            // should introduce no overhead
@@ -190,10 +200,10 @@ private:
     : refCount(RC_ONE) { }
 
   constexpr StrongRefCount_t_dmu_(InitializedAtomic_dmu_t)
-    : refCount(RC_ONE | expectedStateOfConcurrentlyAccessibleFlagWhenInAtomicVariant_dmu_()) { }
+    : refCount(RC_ONE | RC_MIGHT_BE_CONCURRENTLY_ACCESSED_FLAG_dmu_) { }
 
   constexpr StrongRefCount_t_dmu_(UninitializedAtomic_dmu_t)
-    : refCount(expectedStateOfConcurrentlyAccessibleFlagWhenInAtomicVariant_dmu_()) { }
+    : refCount(RC_MIGHT_BE_CONCURRENTLY_ACCESSED_FLAG_dmu_) { }
 
   void init() {
     refCount = RC_ONE;
