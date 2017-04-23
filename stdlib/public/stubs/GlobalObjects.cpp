@@ -41,7 +41,7 @@ swift::_SwiftEmptyArrayStorage swift::_swiftEmptyArrayStorage = {
   // HeapObject header;
   {
     &CLASS_METADATA_SYM(s18_EmptyArrayStorage), // isa pointer
-    StrongRefCount(StrongRefCount::UninitializedAtomic_dmu_),
+    StrongRefCount(StrongRefCount::InitializedAtomic_dmu_),
   },
   
   // _SwiftArrayBodyStorage body;
@@ -57,7 +57,7 @@ swift::_SwiftEmptyDictionaryStorage swift::_swiftEmptyDictionaryStorage = {
   // HeapObject header;
   {
     &CLASS_METADATA_SYM(s27_RawNativeDictionaryStorage), // isa pointer
-    StrongRefCount(StrongRefCount::UninitializedAtomic_dmu_),
+    StrongRefCount(StrongRefCount::InitializedAtomic_dmu_),
   },
   
   // _SwiftDictionaryBodyStorage body;
@@ -86,7 +86,7 @@ swift::_SwiftEmptySetStorage swift::_swiftEmptySetStorage = {
   // HeapObject header;
   {
     &CLASS_METADATA_SYM(s20_RawNativeSetStorage), // isa pointer
-    StrongRefCount(StrongRefCount::UninitializedAtomic_dmu_),
+    StrongRefCount(StrongRefCount::InitializedAtomic_dmu_),
   },
   
   // _SwiftDictionaryBodyStorage body;

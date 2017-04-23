@@ -49,16 +49,6 @@ typedef struct {
 // dealloc code. This ensures that the deinit code sees all modifications
 // of the object's contents that were made before the object was released.
 
-/* TODO: (dmu) FIXME: as of 4/23: this code:
- constexpr StrongRefCount_t_dmu_(InitializedAtomic_dmu_t)
- : refCount(RC_ONE | RC_MIGHT_BE_CONCURRENTLY_ACCESSED_FLAG_dmu_) { }
- 
- constexpr StrongRefCount_t_dmu_(UninitializedAtomic_dmu_t)
- : refCount(RC_MIGHT_BE_CONCURRENTLY_ACCESSED_FLAG_dmu_) { }
-
- will not work for nonatomicIfBitSet_dmu_
- */
-
 // dmu
 enum NonatomicBenchmarkOptions_dmu_ {
   baseline_dmu,            // should introduce no overhead
@@ -121,25 +111,24 @@ private:
     }
   }
   
-  static const bool isSettingMightBeCurrentlyAccessedFlagImplemented_dmu_ = nonatomicOption_dmu_ == NonatomicBenchmarkOptions_dmu_::nonatomicIfBitClear_dmu_;
   
+  template<bool isCountAlreadyInitialized = true>
   uint32_t expectedStateOfConcurrentlyAccessibleFlagWhenInAtomicVariant_dmu_() {
-    if (!isSettingMightBeCurrentlyAccessedFlagImplemented_dmu_) { return 0; }
-    assert( !isSafeToUseNonatomic_dmu_() ); // because in atomic variant
+    assert( !isCountAlreadyInitialized || !isSafeToUseNonatomic_dmu_() ); // because in atomic variant
     switch (nonatomicOption_dmu_) {
-      case baseline_dmu: return 0;
-      case alwaysNonatomic_dmu_: return 0;
-      case nonatomicIfBitSet_dmu_: return 0;
+      case baseline_dmu:             return 0;
+      case alwaysNonatomic_dmu_:     return 0;
+      case nonatomicIfBitSet_dmu_:   return 0;
       case nonatomicIfBitClear_dmu_: return RC_MIGHT_BE_CONCURRENTLY_ACCESSED_FLAG_dmu_;
     }
   }
+  template<bool isCountAlreadyInitialized = true>
   uint32_t expectedStateOfConcurrentlyAccessibleFlagWhenInNonatomicVariant_dmu_() {
-    if (!isSettingMightBeCurrentlyAccessedFlagImplemented_dmu_) { return 0; }
-    assert( isSafeToUseNonatomic_dmu_() ); // because in nonatomic variant
+    assert( !isCountAlreadyInitialized || isSafeToUseNonatomic_dmu_() ); // because in nonatomic variant
     switch (nonatomicOption_dmu_) {
-      case baseline_dmu: return 0;
-      case alwaysNonatomic_dmu_: return 0;
-      case nonatomicIfBitSet_dmu_: return RC_MIGHT_BE_CONCURRENTLY_ACCESSED_FLAG_dmu_;
+      case baseline_dmu:             return 0;
+      case alwaysNonatomic_dmu_:     return 0;
+      case nonatomicIfBitSet_dmu_:   return RC_MIGHT_BE_CONCURRENTLY_ACCESSED_FLAG_dmu_;
       case nonatomicIfBitClear_dmu_: return 0;
     }
   }
@@ -197,13 +186,13 @@ private:
   
   // Refcount of a new object is 1.
   constexpr StrongRefCount_t_dmu_(Initialized_t)
-    : refCount(RC_ONE) { }
+    : refCount(RC_ONE | expectedStateOfConcurrentlyAccessibleFlagWhenInNonatomicVariant_dmu_<false>()) { }
 
   constexpr StrongRefCount_t_dmu_(InitializedAtomic_dmu_t)
-    : refCount(RC_ONE | RC_MIGHT_BE_CONCURRENTLY_ACCESSED_FLAG_dmu_) { }
+    : refCount(RC_ONE | expectedStateOfConcurrentlyAccessibleFlagWhenInAtomicVariant_dmu_<false>()) { }
 
   constexpr StrongRefCount_t_dmu_(UninitializedAtomic_dmu_t)
-    : refCount(RC_MIGHT_BE_CONCURRENTLY_ACCESSED_FLAG_dmu_) { }
+    : refCount(     0 | expectedStateOfConcurrentlyAccessibleFlagWhenInAtomicVariant_dmu_<false>()) { }
 
   void init() {
     refCount = RC_ONE;
@@ -409,18 +398,17 @@ private:
   }
 
   bool isSafeForConcurrentAccess_dmu_() {
-    assert(isSettingMightBeCurrentlyAccessedFlagImplemented_dmu_); // can modify this when start implementing
-    return 0 != (__atomic_load_n(&refCount, __ATOMIC_RELAXED)  &  RC_MIGHT_BE_CONCURRENTLY_ACCESSED_FLAG_dmu_);
+    return expectedStateOfConcurrentlyAccessibleFlagWhenInAtomicVariant_dmu_<false>()
+          ==   (__atomic_load_n(&refCount, __ATOMIC_RELAXED)  &  RC_MIGHT_BE_CONCURRENTLY_ACCESSED_FLAG_dmu_);
   }
   // When something in the heap can be accessed by >1 thread, the bit must be set
   // Need not be atomic because this must happen BEFORE the object gets shared by another thread
   void beSafeForConcurrentAccess() {
     startingNonatomicCount_dmu_();
-    assert(isSettingMightBeCurrentlyAccessedFlagImplemented_dmu_); // can modify this when start implementing
     uint32_t oldval = __atomic_load_n(&refCount, __ATOMIC_RELAXED);
     // Make sure that other threads see this:
     // I *think* release is needed -- dmu 12/16
-    __atomic_store_n(&refCount, oldval |  RC_MIGHT_BE_CONCURRENTLY_ACCESSED_FLAG_dmu_, __ATOMIC_RELEASE);
+    __atomic_store_n(&refCount, oldval |  expectedStateOfConcurrentlyAccessibleFlagWhenInAtomicVariant_dmu_<false>(), __ATOMIC_RELEASE);
     finishedNonatomicCount_dmu_();
   }
 
@@ -461,8 +449,8 @@ private:
     // This also performs the before-deinit acquire barrier if we set the flag.
     static_assert(RC_FLAGS_COUNT == 3, // dmu
                   "fix decrementShouldDeallocate() if you add more flags");
-    uint32_t oldval = 0           | expectedStateOfConcurrentlyAccessibleFlagWhenInNonatomicVariant_dmu_();
-    newval = RC_DEALLOCATING_FLAG | expectedStateOfConcurrentlyAccessibleFlagWhenInNonatomicVariant_dmu_();
+    uint32_t oldval = 0           | expectedStateOfConcurrentlyAccessibleFlagWhenInAtomicVariant_dmu_();
+    newval = RC_DEALLOCATING_FLAG | expectedStateOfConcurrentlyAccessibleFlagWhenInAtomicVariant_dmu_();
     bool shouldDeallocate = __atomic_compare_exchange(&refCount, &oldval, &newval, 0,
                                      __ATOMIC_ACQUIRE, __ATOMIC_RELAXED);
     finishedAtomicCount_dmu_();
