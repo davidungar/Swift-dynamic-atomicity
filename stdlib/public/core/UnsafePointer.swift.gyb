@@ -693,21 +693,6 @@ public struct ${Self}<Pointee>
   }
   
   
-  /// Visits the a values stored at this pointer.
-  ///
-  /// The region of memory starting at this pointer must be initialized. After
-  /// calling `visitRef_dmu_()`, each ref in this region has been 'visited'.
-  /// As of 3/2017 visiting means making its contained reference counts safe for concurrent access.
-  /// These must all be references to Swift classes, not ObjectiveC classes.
-  ///
-  /// - Returns: A raw pointer to the same address as this pointer. The memory
-  ///   referenced by the returned raw pointer is still bound to `Pointee`.
-  // @discardableResult
-  // public func visitRef_dmu_() -> UnsafeMutableRawPointer {
-  //   Builtin.visitRef_dmu_(Pointee.self, _rawValue)
-  //   return UnsafeMutableRawPointer(self)
-  // }
-  
   /// Visits the specified number of values starting at this pointer.
   ///
   /// The region of memory starting at this pointer and covering `count`
@@ -729,6 +714,7 @@ public struct ${Self}<Pointee>
     return UnsafeMutableRawPointer(self)
   }
 
+  // TODO: (dmu) Warning: WIP, not done yet!
   @discardableResult
   public func visitRefs_dmu_() -> UnsafeMutableRawPointer {
     Builtin.visitRefs_dmu_(Pointee.self, _rawValue)
