@@ -1312,8 +1312,8 @@ extension ${Self} : RangeReplaceableCollection, _ArrayProtocol {
     _sanityCheck(_buffer.capacity >= _buffer.count + 1)
 
     _buffer.count = oldCount + 1
-    conservative_make_safe_dmu_(newElement) // backing up
-// backing up    ifIsSafeForConcurrentAccess_dmu_(dest: _buffer.owner, makeSafe: newElement)
+   // conservative_make_safe_dmu_(newElement) // backing up
+   ifIsSafeForConcurrentAccess_dmu_(dest: _buffer.owner, makeSafe: newElement)
     (_buffer.firstElementAddress + oldCount).initialize(to: newElement)
   }
 
