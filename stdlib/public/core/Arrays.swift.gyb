@@ -1061,7 +1061,6 @@ extension ${Self} : RangeReplaceableCollection, _ArrayProtocol {
     var p: UnsafeMutablePointer<Element>
     (self, p) = ${Self}._allocateUninitialized(count)
     for _ in 0..<count {
-      conservative_make_safe_dmu_(repeatedValue) // backing up
       p.initialize(to: repeatedValue)
       p += 1
     }
@@ -2036,7 +2035,7 @@ extension _ArrayBufferProtocol {
       let base = self.firstElementAddress
 
       // fill while there is another item and spare capacity
-      // backing up let owner = self.owner
+      let owner = self.owner // restored
       while let next = nextItem, newCount < currentCapacity {
         conservative_make_safe_dmu_(next)
         // backing up ifIsSafeForConcurrentAccess_dmu_(dest: owner, makeSafe: next)
