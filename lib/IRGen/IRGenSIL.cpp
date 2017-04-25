@@ -4848,7 +4848,7 @@ private:
       return noOutermostAggregateExists;
     
     diagnoseIndirectArgument(IGF, fa);
-    return outermostAggregateIsAccessedConcurrently;;
+    return outermostAggregateIsAccessedConcurrently;
   }
   
   static Kind kindForNoOperands(IRGenSILFunction &IGF, SILValue v) {
@@ -4902,16 +4902,13 @@ private:
       }
         
       case ValueKind::ApplyInst:  {
-        auto k = cast<AllocValueBufferInst>(v)->getValueType().isReferenceCounted(M) // getObjectType after getValueType???
-        ? foundOutermostAggregate : noOutermostAggregateExists;
+        auto k = cast<ApplyInst>(v)->getType().getObjectType().isReferenceCounted(M) // getObjectType after getValueType???
+          ? foundOutermostAggregate : noOutermostAggregateExists;
         return OutermostAggregateResult_dmu_( vArg, k, v);
       }
         
       case ValueKind::ProjectBlockStorageInst: // going into an ObjC block--just visit the source
         return OutermostAggregateResult_dmu_(vArg, outermostAggregateIsAccessedConcurrently, v);
-        
-      case ValueKind::SILFunctionArgument:
-        return OutermostAggregateResult_dmu_(vArg, noOutermostAggregateExists, v);
         
       default:
         return OutermostAggregateResult_dmu_(vArg, dontKnowWhatThisInstDoes, v);
@@ -4946,7 +4943,6 @@ private:
   static void diagnoseIndirectArgument(IRGenSILFunction& IGF, SILFunctionArgument *fa) {
     SILModule &M = IGF.IGM.getSILModule();
     auto p = std::make_pair(IGF.CurSILFn, fa);
-    
     if (!M.conservativeForIndirectArgumentReports_dmu_.lookup(p).empty())
       return;
     M.conservativeForIndirectArgumentReports_dmu_.insert( std::make_pair(p, StringRef("any non-empty string")));
