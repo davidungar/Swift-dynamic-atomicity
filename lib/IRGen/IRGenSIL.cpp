@@ -4784,12 +4784,14 @@ struct OutermostAggregateResult_dmu_ {
   const Kind kind;
   const SILValue value; // last one examined
   
+  explicit operator bool() const { return bool(startingValue); }
+  
 private:
   OutermostAggregateResult_dmu_(SILValue start, Kind k, SILValue v) : startingValue(start), kind(k), value(v) {}
-  
+  OutermostAggregateResult_dmu_() : startingValue(SILValue()), kind(dontKnowWhatThisInstDoes), value(SILValue()) {}
+
   static OutermostAggregateResult_dmu_ _get(IRGenSILFunction& IGF, SILValue vArg) {
-    SILModule &M = IGF.IGM.getSILModule();
-    for (SILValue v = vArg; ; ) {
+    for ( SILValue v = vArg; ; ) {
       // Can these be useful?
       // unneeded LoweredValue& lv = IGF.getLoweredValue(v);
       // unneeded SILType destSILType = v->getType();
@@ -4802,59 +4804,25 @@ private:
       if (!isa<SILInstruction>(v)) {
         return OutermostAggregateResult_dmu_(vArg, dontKnowBecauseNotAnInstruction, v);
       }
-      auto ops = cast<SILInstruction>(v)->getAllOperands();
-      if (ops.size() == 0) {
+      switch (v->getKind()) {
+        case ValueKind::AllocStackInst:
+          //            auto k = cast<AllocStackInst>(v)->getElementType().isReferenceCounted(M)
+          //            ? foundOutermostAggregate : noOutermostAggregateExists;
+          // TODO: (dmu) is this too conservative? No if there is another use of this allocation in might not be
+          // YES, causes crash because newly allocated thing ref count is safe
+          // WHY?????
+          // Moving a ref to a garbage value on the stack: DON'T DO ANYTHING
+          return OutermostAggregateResult_dmu_(vArg, noOutermostAggregateExists, v);
+
+        default: break;
+      }
+      if (cast<SILInstruction>(v)->getAllOperands().size() == 0) {
         Kind k = kindForNoOperands(IGF, v);
         return OutermostAggregateResult_dmu_(vArg, k, v);
       }
-      SILValue firstOperand = ops.data()[0].get();
-      
-      switch (v->getKind()) {
-          
-        case ValueKind::TupleElementAddrInst:
-        case ValueKind::StructElementAddrInst:
-        case ValueKind::MarkDependenceInst:
-        case ValueKind::InitEnumDataAddrInst:
-        case ValueKind::IndexAddrInst:
-        case ValueKind::ProjectBoxInst:
-        case ValueKind::InitExistentialAddrInst:
-          v = firstOperand;
-          break;
-
-        case ValueKind::RefTailAddrInst:
-        case ValueKind::RefElementAddrInst:
-          return OutermostAggregateResult_dmu_(vArg, foundOutermostAggregate, firstOperand);
-          
-        case ValueKind::PointerToAddressInst:
-          return resultForPointerToAddress(IGF, v, vArg);
-          
-          
-        case ValueKind::AllocValueBufferInst:
-        case ValueKind::UncheckedTakeEnumDataAddrInst:
-        case ValueKind::ProjectExistentialBoxInst:
-        case ValueKind::UncheckedAddrCastInst:
-        {
-          auto k = v->getType().isReferenceCounted(M)
-          ? foundOutermostAggregate : noOutermostAggregateExists;
-          return OutermostAggregateResult_dmu_( vArg, k, v);
-        }
-          
-        case ValueKind::ApplyInst:  {
-          auto k = cast<AllocValueBufferInst>(v)->getValueType().isReferenceCounted(M) // getObjectType after getValueType???
-          ? foundOutermostAggregate : noOutermostAggregateExists;
-          return OutermostAggregateResult_dmu_( vArg, k, v);
-        }
-          
-        case ValueKind::ProjectBlockStorageInst: // going into an ObjC block--just visit the source
-          return OutermostAggregateResult_dmu_(vArg, outermostAggregateIsAccessedConcurrently, v);
-          
-          
-        case ValueKind::SILFunctionArgument:
-          return OutermostAggregateResult_dmu_(vArg, noOutermostAggregateExists, v);
-          
-        default:
-          return OutermostAggregateResult_dmu_(vArg, dontKnowWhatThisInstDoes, v);
-      }
+    OutermostAggregateResult_dmu_ result = resultForValueWithOperands(IGF, v, vArg);
+    if (bool(result))
+      return result;
     }
   }
   
@@ -4886,15 +4854,6 @@ private:
   static Kind kindForNoOperands(IRGenSILFunction &IGF, SILValue v) {
     SILModule &M = IGF.IGM.getSILModule();
     switch (v->getKind()) {
-      case ValueKind::AllocStackInst: {
-        //            auto k = cast<AllocStackInst>(v)->getElementType().isReferenceCounted(M)
-        //            ? foundOutermostAggregate : noOutermostAggregateExists;
-        // TODO: (dmu) is this too conservative? No if there is another use of this allocation in might not be
-        // YES, causes crash because newly allocated thing ref count is safe
-        // WHY?????
-        // Moving a ref to a garbage value on the stack: DON'T DO ANYTHING
-        return noOutermostAggregateExists;
-      }
       case ValueKind::AllocBoxInst:
         assert( cast<AllocBoxInst>(v)->getType().isReferenceCounted(M) && "boxes are reference-counted?!");
         return foundOutermostAggregate;
@@ -4907,6 +4866,59 @@ private:
     }
   }
   
+  static OutermostAggregateResult_dmu_ resultForValueWithOperands(IRGenSILFunction &IGF,
+                                   SILValue &v, SILValue &vArg) {
+    SILModule &M = IGF.IGM.getSILModule();
+    
+    SILValue firstOperand = cast<SILInstruction>(v)->getAllOperands().data()[0].get();
+    
+    switch (v->getKind()) {
+        
+      case ValueKind::TupleElementAddrInst:
+      case ValueKind::StructElementAddrInst:
+      case ValueKind::MarkDependenceInst:
+      case ValueKind::InitEnumDataAddrInst:
+      case ValueKind::IndexAddrInst:
+      case ValueKind::ProjectBoxInst:
+      case ValueKind::InitExistentialAddrInst:
+        v = firstOperand;
+        return OutermostAggregateResult_dmu_();
+        
+      case ValueKind::RefTailAddrInst:
+      case ValueKind::RefElementAddrInst:
+        return OutermostAggregateResult_dmu_(vArg, foundOutermostAggregate, firstOperand);
+        
+      case ValueKind::PointerToAddressInst:
+        return resultForPointerToAddress(IGF, v, vArg);
+        
+      case ValueKind::AllocValueBufferInst:
+      case ValueKind::UncheckedTakeEnumDataAddrInst:
+      case ValueKind::ProjectExistentialBoxInst:
+      case ValueKind::UncheckedAddrCastInst:
+      {
+        auto k = v->getType().isReferenceCounted(M)
+        ? foundOutermostAggregate : noOutermostAggregateExists;
+        return OutermostAggregateResult_dmu_( vArg, k, v);
+      }
+        
+      case ValueKind::ApplyInst:  {
+        auto k = cast<AllocValueBufferInst>(v)->getValueType().isReferenceCounted(M) // getObjectType after getValueType???
+        ? foundOutermostAggregate : noOutermostAggregateExists;
+        return OutermostAggregateResult_dmu_( vArg, k, v);
+      }
+        
+      case ValueKind::ProjectBlockStorageInst: // going into an ObjC block--just visit the source
+        return OutermostAggregateResult_dmu_(vArg, outermostAggregateIsAccessedConcurrently, v);
+        
+      case ValueKind::SILFunctionArgument:
+        return OutermostAggregateResult_dmu_(vArg, noOutermostAggregateExists, v);
+        
+      default:
+        return OutermostAggregateResult_dmu_(vArg, dontKnowWhatThisInstDoes, v);
+    }
+  }
+
+
   static OutermostAggregateResult_dmu_ resultForPointerToAddress(IRGenSILFunction &IGF, SILValue v, SILValue vArg) {
     SILModule &M = IGF.IGM.getSILModule();
     /*
