@@ -238,7 +238,7 @@ static llvm::Function *createDtorFn(IRGenModule &IGM,
 /// Create the VisitorOfRefsInHeapObj_dmu_ function for a layout. (dmu)
 /// Cloned from createDtorFn TODO: (dmu) combine this with createDtorFn
 static llvm::Constant *createVisitorOfRefsInHeapObj_dmu_Fn(IRGenModule &IGM,
-                                                                                  const HeapLayout &layout) {
+                                                           const HeapLayout &layout) {
   llvm::Function *fn =
   llvm::Function::Create(IGM.VisitorOfRefsInHeapObj_dmu_Ty,
                          llvm::Function::PrivateLinkage,
@@ -267,12 +267,12 @@ static llvm::Constant *createVisitorOfRefsInHeapObj_dmu_Fn(IRGenModule &IGM,
     auto &field = layout.getElement(i);
     auto fieldTy = layout.getElementTypes()[i];
     if (field.isPOD())
-      continue;
+    continue;
     // dmu entry into visitRefs_dmu_ urgent rename
     field.getType().visitRefs_dmu_(IGF,
-                                                                    field.project(IGF, structAddr, offsets),
-                                                                    fieldTy);
-    }
+                                   field.project(IGF, structAddr, offsets),
+                                   fieldTy);
+  }
   IGF.Builder.CreateRetVoid();
   return static_cast<llvm::Constant*>(fn);
 }

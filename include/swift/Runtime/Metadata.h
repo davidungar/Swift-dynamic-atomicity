@@ -1347,8 +1347,8 @@ struct HeapMetadataHeaderPrefix {
   
   void (*visitorOfRefsInHeapObj_dmu_)(HeapObject *);
   
-  constexpr HeapMetadataHeaderPrefix(void (*d)(HeapObject *), void (*bea)(HeapObject*)) :
-  destroy(d), visitorOfRefsInHeapObj_dmu_(bea) {}
+  constexpr HeapMetadataHeaderPrefix(void (*d)(HeapObject *), void (*v)(HeapObject*))
+  :  destroy(d), visitorOfRefsInHeapObj_dmu_(v) {}
 };
 
 /// The header present on all heap metadata.

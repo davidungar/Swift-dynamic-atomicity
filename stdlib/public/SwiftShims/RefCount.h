@@ -51,7 +51,7 @@ typedef struct {
 
 // dmu
 enum NonatomicBenchmarkOptions_dmu_ {
-  baseline_dmu,            // should introduce no overhead
+  baseline_dmu,             // should introduce no overhead
   alwaysNonatomic_dmu_,     // unsafe, but omits bit check
   nonatomicIfBitSet_dmu_,   // for benchmarking before bit is ever set;
   nonatomicIfBitClear_dmu_  // the eventual target scheme
