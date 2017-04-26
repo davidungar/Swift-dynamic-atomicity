@@ -217,7 +217,6 @@ extension _ArrayBuffer {
     // Make another pass to retain the copied objects
     var result = target
     for _ in CountableRange(bounds) {
-      conservative_make_safe_dmu_(result.pointee)
       result.initialize(to: result.pointee)
       result += 1
     }

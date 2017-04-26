@@ -1384,7 +1384,6 @@ extension Sequence {
         guard let x = it.next() else {
           return (it, idx)
         }
-        conservative_make_safe_dmu_(x)
         ptr.initialize(to: x)
         ptr += 1
       }

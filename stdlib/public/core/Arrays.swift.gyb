@@ -1707,7 +1707,6 @@ extension ${Self} {
       _fixLifetime(self._owner)
     } else {
       for x in self {
-        conservative_make_safe_dmu_(x)
         p.initialize(to: x)
         p += 1
       }
