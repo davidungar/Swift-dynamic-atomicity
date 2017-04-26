@@ -1719,6 +1719,7 @@ extension ${Self} {
 }
 %end
 
+// caller must provide store barrier
 internal struct _InitializeMemoryFromCollection<
   C: Collection
 > : _PointerFunction {
@@ -1726,7 +1727,6 @@ internal struct _InitializeMemoryFromCollection<
     var p = rawMemory
     var q = newValues.startIndex
     for _ in 0..<count {
-      conservative_make_safe_dmu_(newValues[q])
       p.initialize(to: newValues[q])
       newValues.formIndex(after: &q)
       p += 1
