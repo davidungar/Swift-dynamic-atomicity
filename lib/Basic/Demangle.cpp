@@ -291,7 +291,7 @@ static StringRef toString(ValueWitnessKind k) {
   case ValueWitnessKind::DestructiveInjectEnumTag:
     return "destructiveInjectEnumTag";
   case ValueWitnessKind::VisitRefs_dmu_:
-    return "VisitRefs_dmu_";
+    return "visitRefs_dmu_";
   case ValueWitnessKind::VisitRefsInBuffer_dmu_:
     return "visitRefsInBuffer_dmu_";
   case ValueWitnessKind::VisitRefsInArray_dmu_:

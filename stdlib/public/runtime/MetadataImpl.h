@@ -171,7 +171,7 @@ struct NativeBox {
     return dest;
   }
   
-  static void VisitRefs_dmu_(T *value) {}
+  static void visitRefs_dmu_(T *value) {}
   
   static void visitRefsInBuffer_dmu_(T *value) {}
   
@@ -199,7 +199,7 @@ template <class Impl, class T> struct RetainableBoxBase {
     Impl::release(*addr);
   }
   
-  static void VisitRefs_dmu_(T *addr) {
+  static void visitRefs_dmu_(T *addr) {
     Impl::visitRefsInScalar_dmu_(*addr);
   }
 
@@ -371,7 +371,7 @@ struct WeakRetainableBoxBase {
     
   static void visitRefsInArray_dmu_(T *arr, size_t n) {
     while (n--)
-      Impl::VisitRefs_dmu_(arr++);
+      Impl::visitRefs_dmu_(arr++);
   }
 };
 
@@ -401,7 +401,7 @@ struct SwiftWeakRetainableBox :
     swift_weakTakeAssign(dest, src);
     return dest;
   }
-  static void VisitRefs_dmu_(WeakReference *value) {
+  static void visitRefs_dmu_(WeakReference *value) {
     swift_weakVisitRefs_dmu_(value);
   }
 };
@@ -460,7 +460,7 @@ struct ObjCUnownedRetainableBox
     swift_unknownUnownedTakeAssign(dest, src);
     return dest;
   }
-  static void VisitRefs_dmu_(UnownedReference *ref) {
+  static void visitRefs_dmu_(UnownedReference *ref) {
     swift_unknownUnownedVisitRefs_dmu_(ref);
   }
 };
@@ -491,7 +491,7 @@ struct ObjCWeakRetainableBox :
     swift_unknownWeakTakeAssign(dest, src);
     return dest;
   }
-  static void VisitRefs_dmu_(WeakReference *ref) {
+  static void visitRefs_dmu_(WeakReference *ref) {
     swift_unknownBeSafeForConcurrentAccess_dmu_(ref); // Note: breaks the symmetry  // level-shift
   }
 };
@@ -636,7 +636,7 @@ public:
 
   static void destroy(char *addr) {}
   
-  static void VisitRefs_dmu_(char* addr) {}   // TODO: (dmu) implement
+  static void visitRefs_dmu_(char* addr) {}   // TODO: (dmu) implement
 };
 
 // Recursive case: add an element to the start.
@@ -686,10 +686,10 @@ public:
   }
   
   
-  static void VisitRefs_dmu_(char* addr) {
+  static void visitRefs_dmu_(char* addr) {
     addr += startToEltOffset;
-    EltBox::VisitRefs_dmu_((typename EltBox::type*) addr);
-    NextHelper::VisitRefs_dmu_(addr + eltToNextOffset);
+    EltBox::visitRefs_dmu_((typename EltBox::type*) addr);
+    NextHelper::visitRefs_dmu_(addr + eltToNextOffset);
   }
 
 };
@@ -783,16 +783,16 @@ struct AggregateBox {
     return r;
   }
 
-  static void VisitRefs_dmu_(char* value) {
+  static void visitRefs_dmu_(char* value) {
     if (isPOD)
       return;
-    Helper::VisitRefs_dmu_(value);
+    Helper::visitRefs_dmu_(value);
   }
   static void visitRefsInArray_dmu_(char *array, size_t n) {
     if (isPOD)
       return;
     while (n--) {
-      VisitRefs_dmu_(array);
+      visitRefs_dmu_(array);
       array += stride;
     }
   }
@@ -840,7 +840,7 @@ template <class Impl> struct BufferValueWitnessesBase {
   }
   
   static void visitRefsInBuffer_dmu_(ValueBuffer* buffer, const Metadata *self) {
-    Impl::VisitRefs_dmu_(Impl::projectBuffer(buffer, self), self);
+    Impl::visitRefs_dmu_(Impl::projectBuffer(buffer, self), self);
   }
 };
 
@@ -991,8 +991,8 @@ struct ValueWitnesses : BufferValueWitnesses<ValueWitnesses<Box>,
     return Box::destroy((typename Box::type*) value);
   }
 
-  static void VisitRefs_dmu_(OpaqueValue *value, const Metadata *self) {
-    Box::VisitRefs_dmu_((typename Box::type*) value);
+  static void visitRefs_dmu_(OpaqueValue *value, const Metadata *self) {
+    Box::visitRefs_dmu_((typename Box::type*) value);
   }
 
   static OpaqueValue *initializeWithCopy(OpaqueValue *dest, OpaqueValue *src,
@@ -1096,8 +1096,8 @@ struct NonFixedValueWitnesses :
     return Box::destroy((typename Box::type*) value, self);
   }
   
-  static void VisitRefs_dmu_(OpaqueValue *value, const Metadata *self) {
-    Box::VisitRefs_dmu_((typename Box::type*) value, self);
+  static void visitRefs_dmu_(OpaqueValue *value, const Metadata *self) {
+    Box::visitRefs_dmu_((typename Box::type*) value, self);
   }
   
   static void destroyArray(OpaqueValue *array, size_t n,

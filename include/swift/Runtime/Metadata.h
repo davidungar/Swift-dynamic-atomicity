@@ -611,7 +611,7 @@ typedef int getExtraInhabitantIndex(const OpaqueValue *src,
                                     const Metadata *self);
   
 /// Given a value, find all its references and (recursively) make them safe for concurrent access -- dmu
-typedef void VisitRefs_dmu_(OpaqueValue *object,
+typedef void visitRefs_dmu_(OpaqueValue *object,
                                    const Metadata *self);
 typedef void visitRefsInBuffer_dmu_(ValueBuffer* buffer,
                                     const Metadata *self);
@@ -671,9 +671,9 @@ OpaqueValue *swift_copyPOD(OpaqueValue *dest,
   MACRO(initializeArrayWithCopy) \
   MACRO(initializeArrayWithTakeFrontToBack) \
   MACRO(initializeArrayWithTakeBackToFront) \
-  MACRO(VisitRefs_dmu_) \
+  MACRO(visitRefs_dmu_) \
   MACRO(visitRefsInBuffer_dmu_) \
-  MACRO(visitRefsInArray_dmu_) /*dmu*/
+  MACRO(visitRefsInArray_dmu_)
   
 
 struct TypeLayout;

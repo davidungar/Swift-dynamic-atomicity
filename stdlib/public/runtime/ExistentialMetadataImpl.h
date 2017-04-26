@@ -41,7 +41,7 @@ struct LLVM_LIBRARY_VISIBILITY ExistentialBoxBase {
     size_t stride = Container::getContainerStride(args...);
     char *bytes = (char*)array;
     while (n--) {
-      Impl::VisitRefs_dmu_((Container*)bytes, args...);
+      Impl::visitRefs_dmu_((Container*)bytes, args...);
       bytes += stride;
     }
   }
@@ -103,7 +103,7 @@ struct LLVM_LIBRARY_VISIBILITY OpaqueExistentialBoxBase
       
       
   template <class Container, class... A>
-  static void VisitRefs_dmu_(Container *value, A... args) {
+  static void visitRefs_dmu_(Container *value, A... args) {
     value->getType()->vw_visitRefsInBuffer_dmu_(value->getBuffer(args...));
   }
 
@@ -261,7 +261,7 @@ struct LLVM_LIBRARY_VISIBILITY ClassExistentialBoxBase
   }
       
   template <class Container, class... A>
-  static void VisitRefs_dmu_(Container *value, A... args) {
+  static void visitRefs_dmu_(Container *value, A... args) {
     swift_unknownBeSafeForConcurrentAccess_dmu_(*value->getValueSlot());
   }
   
@@ -397,7 +397,7 @@ struct LLVM_LIBRARY_VISIBILITY ExistentialMetatypeBoxBase
   }
       
   template <class Container, class... A>
-    static void VisitRefs_dmu_(Container *value, A... args) {
+    static void visitRefs_dmu_(Container *value, A... args) {
   }
   
   template <class Container, class... A>

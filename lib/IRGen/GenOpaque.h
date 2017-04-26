@@ -152,10 +152,10 @@ namespace irgen {
                        SILType T,
                        Address object);
   
-  /// Emit a call to do a 'VisitRefs_dmu_' operation.
+  /// Emit a call to do a 'visitRefs_dmu_' operation.
   void emitVisitRefsCall_dmu_(IRGenFunction &IGF,
-                                                   SILType T,
-                                                   Address object);
+                              SILType T,
+                              Address object);
 
   /// Emit a call to do a 'destroyArray' operation.
   void emitDestroyArrayCall(IRGenFunction &IGF,
