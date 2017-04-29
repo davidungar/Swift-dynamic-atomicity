@@ -1337,9 +1337,8 @@ public func _setBridgeToObjectiveC<SwiftValue, ObjCValue>(
 public func _setDownCastIndirect<SourceValue, TargetValue>(
   _ source: UnsafePointer<Set<SourceValue>>,
   _ target: UnsafeMutablePointer<Set<TargetValue>>) {
-  let s:Set<TargetValue> = _setDownCast(source.pointee)
-  source.pointee._variantBuffer.ifIsSafeForConcurrentAccess_dmu_(makeSafe: s)
-  target.initialize(to: s)
+  target.pointee._variantBuffer.ifIsSafeForConcurrentAccess_dmu_(makeSafe: source.pointee)
+  target.initialize(to: _setDownCast(source.pointee))
 }
 
 /// Implements a forced downcast.  This operation should have O(1) complexity.
@@ -1372,7 +1371,7 @@ public func _setDownCastConditionalIndirect<SourceValue, TargetValue>(
   _ target: UnsafeMutablePointer<Set<TargetValue>>
 ) -> Bool {
   if let result: Set<TargetValue> = _setDownCastConditional(source.pointee) {
-    source.pointee._variantBuffer.ifIsSafeForConcurrentAccess_dmu_(makeSafe: result)
+    target.pointee._variantBuffer.ifIsSafeForConcurrentAccess_dmu_(makeSafe: result)
     target.initialize(to: result)
     return true
   }
@@ -2282,7 +2281,7 @@ public func _dictionaryDownCastIndirect<SourceKey, SourceValue,
   _ source: UnsafePointer<Dictionary<SourceKey, SourceValue>>,
   _ target: UnsafeMutablePointer<Dictionary<TargetKey, TargetValue>>) {
   let d: Dictionary<TargetKey, TargetValue> = _dictionaryDownCast(source.pointee)
-  source.pointee._variantBuffer.ifIsSafeForConcurrentAccess_dmu_(makeSafe: d)
+  target.pointee._variantBuffer.ifIsSafeForConcurrentAccess_dmu_(makeSafe: d)
   target.initialize(to: d)
 }
 
@@ -2324,7 +2323,7 @@ public func _dictionaryDownCastConditionalIndirect<SourceKey, SourceValue,
 ) -> Bool {
   if let result: Dictionary<TargetKey, TargetValue>
        = _dictionaryDownCastConditional(source.pointee) {
-    source.pointee._variantBuffer.ifIsSafeForConcurrentAccess_dmu_(makeSafe: result)
+    target.pointee._variantBuffer.ifIsSafeForConcurrentAccess_dmu_(makeSafe: result)
     target.initialize(to: result)
     return true
   }
