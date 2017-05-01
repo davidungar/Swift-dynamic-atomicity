@@ -2100,8 +2100,8 @@ void IRGenSILFunction::visitFullApplySite(FullApplySite site) {
   if (nonSwiftCallee) {
     SILFunction *fn = site.getCalleeFunction();
     SILModule &M = IGM.getSILModule();
-    if (M.dynamicRCFunctionsWithInOuts_dmu_.lookup(fn).empty()) {
-      StringRef fnName = StringRef(demangle_wrappers::demangleSymbolAsString(fn->getName())).copy(M.dynamicRCFunctionNames_dmu_);
+    if (fn && M.dynamicRCFunctionsWithInOuts_dmu_.lookup(fn).empty()) {
+      StringRef fnName = fn == nullptr ? StringRef("<anon>") : StringRef(demangle_wrappers::demangleSymbolAsString(fn->getName())).copy(M.dynamicRCFunctionNames_dmu_);
       M.dynamicRCFunctionsWithInOuts_dmu_.insert( std::make_pair( fn, fnName ));
       const SourceLoc &sl = site.getLoc().getSourceLoc();
       for (auto index : indices(args))

@@ -1054,7 +1054,10 @@ bool ApplySite::isNonSwift_dmu_() const {
     "_swift_stdlib_malloc_size",
     "abort"
   };
-  const char* calleeName = getCalleeFunction()->getName().str().c_str();
+  auto fn = getCalleeFunction();
+  if (fn == nullptr)
+    return true;
+  const char* calleeName = fn->getName().str().c_str();
   for (const char** p = &whiteList[0];  p < &whiteList[sizeof(whiteList) / sizeof(whiteList[0])];  ++p)
     if (strcmp(calleeName, *p) == 0)
       return false;
