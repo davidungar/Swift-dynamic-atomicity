@@ -4884,9 +4884,18 @@ private:
         v = firstOperand;
         return OutermostAggregateResult_dmu_();
         
-      case ValueKind::RefTailAddrInst:
-      case ValueKind::RefElementAddrInst:
-        return OutermostAggregateResult_dmu_(vArg, foundOutermostAggregate, firstOperand);
+      case ValueKind::RefTailAddrInst: {
+        auto I = cast<RefTailAddrInst>(v);
+        bool amIRefCounted = I->getType().getObjectType().isReferenceCounted(M);
+        return OutermostAggregateResult_dmu_( vArg, foundOutermostAggregate, amIRefCounted ? v : firstOperand);
+      }
+      case ValueKind::RefElementAddrInst: {
+        auto I = cast<RefElementAddrInst>(v);
+        auto t = I->getType();
+        auto ot = t.getObjectType();
+        bool amIRefCounted = ot.isReferenceCounted(M);
+        return OutermostAggregateResult_dmu_( vArg, foundOutermostAggregate, amIRefCounted ? v : firstOperand);
+      }
         
       case ValueKind::PointerToAddressInst:
         return resultForPointerToAddress(IGF, v, vArg);
