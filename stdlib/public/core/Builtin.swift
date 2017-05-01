@@ -739,19 +739,22 @@ public func withoutActuallyEscaping<ClosureType, ResultType>(
 }
 
 
-internal func ifIsSafeForConcurrentAccess_dmu_<D: AnyObject, S>( dest: D, makeSafe src: S, file: String = #file, line: Int = -1) {
+internal func ifIsSafeForConcurrentAccess_dmu_<S>( dest: AnyObject, makeSafe src: S
+  // , file: String = #file, line: Int = -1
+  ) {
   if  isSafeForConcurrentAccess_dmu_(dest) {
-    makeSafe_dmu_(src, file: file, line: line)
+    makeSafe_dmu_(src) // , file: file, line: line)
     // should be:
     //    Builtins.visitRefsInInstance_dmu_(src)
   }
 }
 
 // TODO: (dmu) move all the following into Builtin.swift or the compiler
-internal func ifIsSafeForConcurrentAccess_dmu_<D: AnyObject, S, S2>( dest: D, makeSafe src: S, andMakeSafe src2: S2, file: String = #file, line: Int = -1) {
+internal func ifIsSafeForConcurrentAccess_dmu_<S, S2>( dest: AnyObject, makeSafe src: S, andMakeSafe src2: S2 // , file: String = #file, line: Int = -1
+  ) {
   if  isSafeForConcurrentAccess_dmu_(dest) {
-    makeSafe_dmu_(src,  file: file, line: line)
-    makeSafe_dmu_(src2, file: file, line: line)
+    makeSafe_dmu_(src ) //,  file: file, line: line)
+    makeSafe_dmu_(src2) //, file: file, line: line)
     // should be:
     //    Builtins.visitRefsInInstance_dmu_(src)
     //    Builtins.visitRefsInInstance_dmu_(src2)
@@ -759,9 +762,9 @@ internal func ifIsSafeForConcurrentAccess_dmu_<D: AnyObject, S, S2>( dest: D, ma
 }
 
 
-@_transparent
 @discardableResult
-public  func makeSafe_dmu_<T>(_ x: T, file: String = #file, line: Int = -1) -> T {
+public  func makeSafe_dmu_<T>(_ x: T //, file: String = #file, line: Int = -1
+  ) -> T {
   var mutableT = x
   _ = withUnsafeMutablePointer(to: &mutableT) {
     $0.visitRefsInArray_dmu_()
@@ -769,25 +772,25 @@ public  func makeSafe_dmu_<T>(_ x: T, file: String = #file, line: Int = -1) -> T
   return x
 }
 
-@_transparent
 @discardableResult
-public  func experimental_makeSafe_dmu_<T>(_ x: T, file: String = #file, line: Int = -1) -> T {
+public  func experimental_makeSafe_dmu_<T>(_ x: T
+                                      //,  file: String = #file, line: Int = -1
+  ) -> T {
   // WIP Builtins.visitRefs_dmu_(x)
   return x
 }
 
 
-public class Dummy_dmu_ {}
-
-@_transparent
 @discardableResult
-public func conservative_make_safe_dmu_<T>(_ x: T, file: String = #file, line: Int = #line) -> T {
-  return makeSafe_dmu_(x, file: file, line: line)
+public func conservative_make_safe_dmu_<T>(_ x: T
+                                        //, file: String = #file, line: Int = #line
+  ) -> T {
+  return makeSafe_dmu_(x)// , file: file, line: line)
 }
 
 
 
-internal func isSafeForConcurrentAccess_dmu_<T: AnyObject>(_ reference: T) -> Bool {
+internal func isSafeForConcurrentAccess_dmu_(_ reference: AnyObject) -> Bool {
   var mutableReference = reference
   let r = withUnsafePointer(to: &mutableReference) {
     $0.withMemoryRebound(to: UnsafePointer<UInt32>.self, capacity: 1) {
@@ -803,6 +806,8 @@ internal func isSafeForConcurrentAccess_dmu_<T: AnyObject>(_ reference: T) -> Bo
 
 //public var addStoreBarriers_dmu_ = Set<String>()
 @_versioned
-internal func addStoreBarrierHere_dmu_(file: String = #file, line: Int = #line, function: String = #function, orCallInitialize: Bool = false) {
+internal func addStoreBarrierHere_dmu_(
+  //file: String = #file, line: Int = #line, function: String = #function,
+  orCallInitialize: Bool = false) {
 
 }
