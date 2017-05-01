@@ -1034,6 +1034,34 @@ bool SILInstruction::mayTrap() const {
   }
 }
 
+
+// true if the target function is non-Swift
+bool ApplySite::isNonSwift_dmu_() const {
+  switch (getSubstCalleeType()->getRepresentation()) {
+    case SILFunctionTypeRepresentation::CFunctionPointer:
+    case SILFunctionTypeRepresentation::Block:
+    case SILFunctionTypeRepresentation::ObjCMethod:
+      break;
+      
+    case SILFunctionTypeRepresentation::Thick:
+    case SILFunctionTypeRepresentation::WitnessMethod:
+    case SILFunctionTypeRepresentation::Closure:
+    case SILFunctionTypeRepresentation::Thin:
+    case SILFunctionTypeRepresentation::Method:
+      return false;
+  }
+  static const char* whiteList[] = {
+    "_swift_stdlib_malloc_size",
+    "abort"
+  };
+  const char* calleeName = getCalleeFunction()->getName().str().c_str();
+  for (const char** p = &whiteList[0];  p < &whiteList[sizeof(whiteList) / sizeof(whiteList[0])];  ++p)
+    if (strcmp(calleeName, *p) == 0)
+      return false;
+  return true;
+}
+
+
 //===----------------------------------------------------------------------===//
 //                                 Utilities
 //===----------------------------------------------------------------------===//

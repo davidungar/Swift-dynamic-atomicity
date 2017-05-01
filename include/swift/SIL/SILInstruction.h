@@ -5494,21 +5494,8 @@ public:
   }
 
   // true if the target function is non-Swift
-  bool isNonSwift_dmu_() const {
-    switch (getSubstCalleeType()->getRepresentation()) {
-      case SILFunctionTypeRepresentation::CFunctionPointer:
-      case SILFunctionTypeRepresentation::Block:
-      case SILFunctionTypeRepresentation::ObjCMethod:
-        return true;
-      case SILFunctionTypeRepresentation::Thick:
-      case SILFunctionTypeRepresentation::WitnessMethod:
-      case SILFunctionTypeRepresentation::Closure:
-      case SILFunctionTypeRepresentation::Thin:
-      case SILFunctionTypeRepresentation::Method:
-        return false;
-    }
-  }
-
+  bool isNonSwift_dmu_() const;
+  
   /// True if this application has generic substitutions.
   bool hasSubstitutions() const {
     FOREACH_IMPL_RETURN(hasSubstitutions());
