@@ -2098,7 +2098,7 @@ void IRGenSILFunction::visitFullApplySite(FullApplySite site) {
   }
 
   if (nonSwiftCallee) {
-    SILFunction *fn = site.getFunction();
+    SILFunction *fn = site.getCalleeFunction();
     SILModule &M = IGM.getSILModule();
     if (M.dynamicRCFunctionsWithInOuts_dmu_.lookup(fn).empty()) {
       StringRef fnName = StringRef(demangle_wrappers::demangleSymbolAsString(fn->getName())).copy(M.dynamicRCFunctionNames_dmu_);
