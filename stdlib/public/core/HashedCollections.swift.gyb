@@ -1337,7 +1337,7 @@ public func _setBridgeToObjectiveC<SwiftValue, ObjCValue>(
 public func _setDownCastIndirect<SourceValue, TargetValue>(
   _ source: UnsafePointer<Set<SourceValue>>,
   _ target: UnsafeMutablePointer<Set<TargetValue>>) {
-  target.pointee._variantBuffer.ifIsSafeForConcurrentAccess_dmu_(makeSafe: source.pointee)
+  // target is uninitialized, so do nothing (_dmu_)
   target.initialize(to: _setDownCast(source.pointee))
 }
 
@@ -2323,7 +2323,7 @@ public func _dictionaryDownCastConditionalIndirect<SourceKey, SourceValue,
 ) -> Bool {
   if let result: Dictionary<TargetKey, TargetValue>
        = _dictionaryDownCastConditional(source.pointee) {
-    target.pointee._variantBuffer.ifIsSafeForConcurrentAccess_dmu_(makeSafe: result)
+    // target is uninitialized, so do nothing (_dmu_)
     target.initialize(to: result)
     return true
   }

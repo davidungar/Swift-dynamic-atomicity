@@ -20,7 +20,7 @@
 public func _arrayDownCastIndirect<SourceValue, TargetValue>(
   _ source: UnsafePointer<Array<SourceValue>>,
   _ target: UnsafeMutablePointer<Array<TargetValue>>) {
-  conservative_make_safe_dmu_(source.pointee)
+  // target is uninitialized, so do nothing (_dmu_)
   target.initialize(to: _arrayForceCast(source.pointee))
 }
 
@@ -66,7 +66,7 @@ public func _arrayDownCastConditionalIndirect<SourceValue, TargetValue>(
   _ target: UnsafeMutablePointer<Array<TargetValue>>
 ) -> Bool {
   if let result: Array<TargetValue> = _arrayConditionalCast(source.pointee) {
-    conservative_make_safe_dmu_(source.pointee)
+    // target is uninitialized, so do nothing (_dmu_)
     target.initialize(to: result)
     return true
   }
