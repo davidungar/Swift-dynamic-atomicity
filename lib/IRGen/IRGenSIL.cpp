@@ -4870,7 +4870,7 @@ private:
     auto fa = dyn_cast<SILFunctionArgument>(sa);
     if (     fa == nullptr
         ||  !fa->getArgumentConvention().mayBeContainedInALargerInstance_dmu_()
-        || true // for experiments, try this XXXXXXXXXXXXXX
+        || true // for experiments, try this XXXXXXXXXXXXXX YYYYYYYYYY
         ) {
       if (trace) fprintf(stderr, "arg w/o agg\n");
       return noOutermostAggregateExists;
@@ -4922,7 +4922,6 @@ private:
         return OutermostAggregateResult_dmu_();
         
       case ValueKind::RefTailAddrInst: {
-        auto I = cast<RefTailAddrInst>(v);
         if (trace) {
           fprintf(stderr, "reftail\n");
           firstOperand->print(llvm::errs());
@@ -4930,7 +4929,6 @@ private:
         return OutermostAggregateResult_dmu_( vArg, foundOutermostAggregate, firstOperand);
       }
       case ValueKind::RefElementAddrInst: {
-        auto I = cast<RefElementAddrInst>(v);
          if (trace) {
           fprintf(stderr, "RefElementAddrInst counted\n");
           firstOperand->print(llvm::errs());
