@@ -5113,5 +5113,8 @@ bool ClassDecl::isReallyObjCDespiteCoreLibrary_dmu_() const {
   if (!isObjC()) return false;
   if (getAttrs().hasAttribute<SwiftNativeObjCRuntimeBaseAttr>())
     return false;
-  return true;
+  ClassDecl* sc = getSuperclassDecl();
+  if (!sc)
+    return true;
+  return sc->isReallyObjCDespiteCoreLibrary_dmu_();
 }
