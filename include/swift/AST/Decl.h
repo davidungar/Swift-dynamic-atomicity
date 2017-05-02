@@ -3362,6 +3362,8 @@ public:
       ?  "ObjC class should not have any VisitRefsInInstance_dmu_"
       :  "Swift class should have 1 VisitRefsInInstance_dmu_";
   }
+  
+  bool isReallyObjCDespiteCoreLibrary_dmu_() const;
 };
 
 

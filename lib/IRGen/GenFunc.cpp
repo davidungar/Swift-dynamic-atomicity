@@ -391,8 +391,11 @@ namespace {
 
     void visitRefs_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
       auto data = IGF.Builder.CreateLoad(projectData(IGF, addr));
-      if (!isPOD(ResilienceExpansion::Maximal)) // dmu blind clone
+      if (!isPOD(ResilienceExpansion::Maximal)) { // dmu blind clone
+        if (IGF.CurFn->getName().contains("createtask"))
+          fprintf(stderr, "visitRefs_dmu_ createtask 396 XXXXXXXX\n");
         IGF.emitNativeVisitRefInScalar_dmu_(data);
+      }
     }
 
     void packIntoEnumPayload(IRGenFunction &IGF,

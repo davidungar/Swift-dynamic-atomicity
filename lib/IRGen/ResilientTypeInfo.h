@@ -142,6 +142,10 @@ public:
   }
 
   void visitRefs_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
+    // fprintf(stderr, "visitRefs_dmu_ %s XXXXXXXXX\n", IGF.CurFn->getName().str().c_str());
+    if (IGF.CurFn->getName().contains(StringRef("createtask"))) {
+      fprintf(stderr, "visitRefs_dmu_ createtask 147 XXXXXXXXXX\n");
+    }
     emitVisitRefsCall_dmu_(IGF, T, addr);
   }
   

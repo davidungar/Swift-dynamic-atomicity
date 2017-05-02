@@ -1429,7 +1429,7 @@ void IRGenSILFunction::emitSILFunction() {
         CurSILFn->print(llvm::dbgs()));
   
   assert(!CurSILFn->empty() && "function has no basic blocks?!");
-
+  
   // Configure the dominance resolver.
   // TODO: consider re-using a dom analysis from the PassManager
   // TODO: consider using a cheaper analysis at -O0
@@ -2087,6 +2087,8 @@ void IRGenSILFunction::visitFullApplySite(FullApplySite site) {
     args = args.drop_back();
 
     if (nonSwiftCallee) {
+      if (CurSILFn->getName().contains("createtask"))
+        fprintf(stderr, "visitFullApplySite createtask 2091 XXXXXXXX\n");
       emitVisitRefsInInitialValues_dmu_(selfArg);
     }
 
@@ -2114,8 +2116,11 @@ void IRGenSILFunction::visitFullApplySite(FullApplySite site) {
     for (auto index : indices(args))
       if (site.getArgumentConvention(index).isIndirectConvention())
         ; // dmu TODO: dpg.  Actually hande this correctly. With new work extending emitStoreBarrier_dmu_ to more cases, should be easy
-      else
+      else {
+        if (CurSILFn->getName().contains("createtask"))
+          fprintf(stderr, "visitFullApplySite createtask 2121 XXXXXXXX\n");
         emitVisitRefsInInitialValues_dmu_(args[index]);
+      }
   }
 
   Explosion llArgs;
@@ -3263,10 +3268,11 @@ void IRGenSILFunction::visitLoadInst(swift::LoadInst *i) {
 // Another optimization could be to reuse the ref count load for a direct store of a ref.
 
 void IRGenSILFunction::visitStoreInst(swift::StoreInst *i) {
-//  if (CurFn->getName().equals(StringRef("_TZFV4main2CD6checkEfGVs10DictionaryCS_1HS2__T_"))) {
-//    //printf("hooha");
-//  }
   // before now, stores have been processed to that we don't know for sure what is init, and what is assignment
+  if (CurSILFn->getName().contains("createtask")) {
+    fprintf(stderr, "visitStoreInst createtask %d XXXXXXXX\n", __LINE__);
+    i->dump();
+  }
   emitStoreBarrier_dmu_(i->getSrc(), i->getDest(), false);
   
   Explosion source = getLoweredExplosion(i->getSrc());
@@ -3288,6 +3294,9 @@ void IRGenSILFunction::visitStoreInst(swift::StoreInst *i) {
 
 
 void IRGenSILFunction::emitVisitRefsInInitialValues_dmu_(SILValue const &srcSILValue) {
+  // fprintf(stderr, "emitVisitRefsInInitialValues_dmu_ %s XXXXXXXXXXXX\n", CurSILFn->getName().str().c_str());
+  if (CurSILFn->getName().contains("createtask"))
+    fprintf(stderr, "emitVisitRefsInInitialValues_dmu_ createtask 3289 XXXXXXXX\n");
   SILType srcType = srcSILValue->getType().getObjectType();
   const TypeInfo &srcTI = getTypeInfo(srcType);
   const LoweredValue &loweredSrcValue = getLoweredValue(srcSILValue);
@@ -3295,6 +3304,8 @@ void IRGenSILFunction::emitVisitRefsInInitialValues_dmu_(SILValue const &srcSILV
     case LoweredValue::Kind::ContainedAddress:
     case LoweredValue::Kind::Address: {
       const Address srcAddr = getLoweredAddress(srcSILValue);
+      if (CurSILFn->getName().contains("createtask"))
+        fprintf(stderr, "emitVisitRefsInInitialValues_dmu_ createtask 3304 XXXXXXXX\n");
       srcTI.visitRefs_dmu_( *this, srcAddr, srcType );
       return;
     }
@@ -3303,6 +3314,8 @@ void IRGenSILFunction::emitVisitRefsInInitialValues_dmu_(SILValue const &srcSILV
       assert(srcTI.isLoadable() && "emitVisitRefsInInitialValues_dmu_: how to deal with this?");
       const LoadableTypeInfo &loadableSrcTI = cast<LoadableTypeInfo>(srcTI);
       Explosion srcValues = getLoweredExplosion(srcSILValue);
+      if (CurSILFn->getName().contains("createtask"))
+        fprintf(stderr, "emitVisitRefsInInitialValues_dmu_ createtask 3314 XXXXXXXX\n");
       loadableSrcTI.genIRToVisitRefsInInitialValues_dmu_( *this, srcValues);
       return;
     }
@@ -3336,6 +3349,8 @@ void IRGenSILFunction::emitVisitRefsInValuesAssignedTo_dmu_(SILValue const &srcS
   Builder.CreateCondBr(cond, isSafe, safeOrNot);
   Builder.emitBlock(isSafe);
   
+  if (CurSILFn->getName().contains("createtask"))
+    fprintf(stderr, "emitVisitRefsInValuesAssignedTo_dmu_ createtask 3345 XXXXXXXX\n");
   emitVisitRefsInInitialValues_dmu_(srcSILValue);
   
   Builder.CreateBr(safeOrNot);
@@ -4790,18 +4805,25 @@ private:
   OutermostAggregateResult_dmu_(SILValue start, Kind k, SILValue v) : startingValue(start), kind(k), value(v) {}
   OutermostAggregateResult_dmu_() : startingValue(SILValue()), kind(dontKnowWhatThisInstDoes), value(SILValue()) {}
 
-  static OutermostAggregateResult_dmu_ _get(IRGenSILFunction& IGF, SILValue vArg) {
+  static OutermostAggregateResult_dmu_ _get(IRGenSILFunction& IGF, SILValue vArg, bool trace) {
     for ( SILValue v = vArg; ; ) {
       // Can these be useful?
       // unneeded LoweredValue& lv = IGF.getLoweredValue(v);
       // unneeded SILType destSILType = v->getType();
       // unneeded CanType destSwiftType = destSILType.getSwiftType();
       
+      if (trace) {
+        fprintf(stderr, "%s: %d v: ", __FILE__, __LINE__);
+        v->print(llvm::errs());
+      }
+      
       if (auto sa = dyn_cast<SILArgument>(v)) {
-        Kind k = kindForSILArgument(IGF, sa);
+        Kind k = kindForSILArgument(IGF, sa, trace);
         return OutermostAggregateResult_dmu_(vArg, k, v);
       }
       if (!isa<SILInstruction>(v)) {
+        if (trace)
+          fprintf(stderr, "not an instruction  XXXX\n");
         return OutermostAggregateResult_dmu_(vArg, dontKnowBecauseNotAnInstruction, v);
       }
       switch (v->getKind()) {
@@ -4812,21 +4834,22 @@ private:
           // YES, causes crash because newly allocated thing ref count is safe
           // WHY?????
           // Moving a ref to a garbage value on the stack: DON'T DO ANYTHING
+          if (trace) fprintf(stderr, "allocStackInst\n");
           return OutermostAggregateResult_dmu_(vArg, noOutermostAggregateExists, v);
 
         default: break;
       }
       if (cast<SILInstruction>(v)->getAllOperands().size() == 0) {
-        Kind k = kindForNoOperands(IGF, v);
+        Kind k = kindForNoOperands(IGF, v, trace);
         return OutermostAggregateResult_dmu_(vArg, k, v);
       }
-    OutermostAggregateResult_dmu_ result = resultForValueWithOperands(IGF, v, vArg);
+    OutermostAggregateResult_dmu_ result = resultForValueWithOperands(IGF, v, vArg, trace);
     if (bool(result))
       return result;
     }
   }
   
-  static Kind kindForSILArgument(IRGenSILFunction &IGF, SILArgument *sa) {
+  static Kind kindForSILArgument(IRGenSILFunction &IGF, SILArgument *sa, bool trace) {
     SILModule &M = IGF.IGM.getSILModule();
     // TODO: (dmu) urgent fix uses of isReferenceCounted below
     // As I read instantiates using IsReferenceCounted in TypeLowering.cpp,
@@ -4840,34 +4863,47 @@ private:
     //
     //
     SILType type = sa->getType();
-    if (type.isReferenceCounted(M))
+    if (type.isReferenceCounted(M)) {
+      if (trace) fprintf(stderr,"ref counted arg\n");
       return foundOutermostAggregate;
+    }
     auto fa = dyn_cast<SILFunctionArgument>(sa);
     if (     fa == nullptr
-        ||  !fa->getArgumentConvention().mayBeContainedInALargerInstance_dmu_())
+        ||  !fa->getArgumentConvention().mayBeContainedInALargerInstance_dmu_()
+        || true // for experiments, try this XXXXXXXXXXXXXX
+        ) {
+      if (trace) fprintf(stderr, "arg w/o agg\n");
       return noOutermostAggregateExists;
+    }
     
     diagnoseIndirectArgument(IGF, fa);
+    if (trace) fprintf(stderr, "arg with conservative agg\n");
     return outermostAggregateIsAccessedConcurrently;
   }
   
-  static Kind kindForNoOperands(IRGenSILFunction &IGF, SILValue v) {
+  static Kind kindForNoOperands(IRGenSILFunction &IGF, SILValue v, bool trace) {
     SILModule &M = IGF.IGM.getSILModule();
     switch (v->getKind()) {
       case ValueKind::AllocBoxInst:
         assert( cast<AllocBoxInst>(v)->getType().isReferenceCounted(M) && "boxes are reference-counted?!");
+        if (trace) fprintf(stderr, "no operands: allocBox found\n");
         return foundOutermostAggregate;
         
       case ValueKind::GlobalAddrInst:
         diagnoseGlobal(IGF, cast<GlobalAddrInst>(v));
+        if (trace) fprintf(stderr, "no operands: allocBox global\n");
         return outermostAggregateIsAccessedConcurrently;
         
-      default: return dontKnowBecauseNoOperands;
+      default:
+        if (trace) fprintf(stderr, "no operands: conservative\n");
+        return dontKnowBecauseNoOperands;
     }
   }
   
   static OutermostAggregateResult_dmu_ resultForValueWithOperands(IRGenSILFunction &IGF,
-                                   SILValue &v, SILValue &vArg) {
+                                                                  SILValue &v,
+                                                                  SILValue &vArg,
+                                                                  bool trace) {
     SILModule &M = IGF.IGM.getSILModule();
     
     SILValue firstOperand = cast<SILInstruction>(v)->getAllOperands().data()[0].get();
@@ -4882,23 +4918,28 @@ private:
       case ValueKind::ProjectBoxInst:
       case ValueKind::InitExistentialAddrInst:
         v = firstOperand;
+        if (trace) fprintf(stderr, "following first operand\n");
         return OutermostAggregateResult_dmu_();
         
       case ValueKind::RefTailAddrInst: {
         auto I = cast<RefTailAddrInst>(v);
-        bool amIRefCounted = I->getType().getObjectType().isReferenceCounted(M);
-        return OutermostAggregateResult_dmu_( vArg, foundOutermostAggregate, amIRefCounted ? v : firstOperand);
+        if (trace) {
+          fprintf(stderr, "reftail\n");
+          firstOperand->print(llvm::errs());
+        }
+        return OutermostAggregateResult_dmu_( vArg, foundOutermostAggregate, firstOperand);
       }
       case ValueKind::RefElementAddrInst: {
         auto I = cast<RefElementAddrInst>(v);
-        auto t = I->getType();
-        auto ot = t.getObjectType();
-        bool amIRefCounted = ot.isReferenceCounted(M);
-        return OutermostAggregateResult_dmu_( vArg, foundOutermostAggregate, amIRefCounted ? v : firstOperand);
+         if (trace) {
+          fprintf(stderr, "RefElementAddrInst counted\n");
+          firstOperand->print(llvm::errs());
+        }
+        return OutermostAggregateResult_dmu_( vArg, foundOutermostAggregate, firstOperand);
       }
         
       case ValueKind::PointerToAddressInst:
-        return resultForPointerToAddress(IGF, v, vArg);
+        return resultForPointerToAddress(IGF, v, vArg, trace);
         
       case ValueKind::AllocValueBufferInst:
       case ValueKind::UncheckedTakeEnumDataAddrInst:
@@ -4907,25 +4948,38 @@ private:
       {
         auto k = v->getType().isReferenceCounted(M)
         ? foundOutermostAggregate : noOutermostAggregateExists;
+        if (trace) {
+          fprintf(stderr, "my value %d\n", v->getType().isReferenceCounted(M));
+          v->getType().print(llvm::errs());
+        }
         return OutermostAggregateResult_dmu_( vArg, k, v);
       }
         
       case ValueKind::ApplyInst:  {
         auto k = cast<ApplyInst>(v)->getType().getObjectType().isReferenceCounted(M) // getObjectType after getValueType???
           ? foundOutermostAggregate : noOutermostAggregateExists;
+        if (trace) {
+          fprintf(stderr, "ApplyInst %d\n", k == foundOutermostAggregate);
+          cast<ApplyInst>(v)->getType().getObjectType().print(llvm::errs());
+        }
         return OutermostAggregateResult_dmu_( vArg, k, v);
       }
         
       case ValueKind::ProjectBlockStorageInst: // going into an ObjC block--just visit the source
+        if (trace) fprintf(stderr, "ProjectBlockStorageInst\n");
         return OutermostAggregateResult_dmu_(vArg, outermostAggregateIsAccessedConcurrently, v);
         
       default:
+        if (trace) fprintf(stderr, "dontKnowWhatThisInstDoes\n");
         return OutermostAggregateResult_dmu_(vArg, dontKnowWhatThisInstDoes, v);
     }
   }
 
 
-  static OutermostAggregateResult_dmu_ resultForPointerToAddress(IRGenSILFunction &IGF, SILValue v, SILValue vArg) {
+  static OutermostAggregateResult_dmu_ resultForPointerToAddress(IRGenSILFunction &IGF,
+                                                                 SILValue v,
+                                                                 SILValue vArg,
+                                                                 bool trace) {
     SILModule &M = IGF.IGM.getSILModule();
     /*
      Could be global:
@@ -4934,18 +4988,29 @@ private:
      %5 = apply %4() : $@convention(thin) () -> Builtin.RawPointer, scope 16 // user: %6
      %6 = pointer_to_address %5 : $Builtin.RawPointer to [strict] $*Int, scope 16 // user: %7
      store %0 to %6 : $*Int, scope 16                // id: %7           */
-    if (v->getType().isReferenceCounted(M))
+    if (v->getType().isReferenceCounted(M)) {
+      if (trace) fprintf(stderr, "PTA is counted\n");
       return OutermostAggregateResult_dmu_( vArg, foundOutermostAggregate, v);
+    }
     
     PointerToAddressInst *PTAI = cast<PointerToAddressInst>(v);
     SILValue ptaiOp = PTAI->getOperand();
-    if (ptaiOp->getKind() != ValueKind::ApplyInst)
+    if (ptaiOp->getKind() != ValueKind::ApplyInst) {
+      if (trace) {
+        fprintf(stderr, "PTA is not apply\n");
+        ptaiOp->print(llvm::errs());
+      }
       return OutermostAggregateResult_dmu_(vArg, noOutermostAggregateExists, ptaiOp); // right?
+    }
     
     ApplyInst *AI = cast<ApplyInst>(ptaiOp);
     SILValue callee = AI->getCallee();
     const SILFunction *cf = AI->getCalleeFunction();
     auto k = cf->isGlobalInit() ? outermostAggregateIsAccessedConcurrently : noOutermostAggregateExists;
+    if (trace) {
+      fprintf(stderr, "PTA isGlobal %d\n", cf->isGlobalInit());
+      cf->print(llvm::errs());
+    }
     return OutermostAggregateResult_dmu_(vArg, k, callee);
   }
 
@@ -4996,22 +5061,28 @@ private:
   }
 public:
   static OutermostAggregateResult_dmu_ get(IRGenSILFunction& IGF, SILValue vArg) {
-    OutermostAggregateResult_dmu_ oar = _get(IGF, vArg);
-    //TRACING
-    switch (oar.kind) {
-      case foundOutermostAggregate:
-      case noOutermostAggregateExists:
-      case outermostAggregateIsAccessedConcurrently:
-        break;
-        
-      default:
-        oar.printUnbacktraceableInstructions(IGF);
-        break;
+    bool traceForDebugging = IGF.CurFn->getName().contains(StringRef("createtask"));
+    OutermostAggregateResult_dmu_ oar = _get(IGF, vArg, traceForDebugging);
+    if (traceForDebugging) {
+      fprintf(stderr, "OutermostAggregateResult_dmu_::get %d XXXXXXXXXX\n", __LINE__);
+      IGF.CurSILFn->print(llvm::errs());
     }
+    //TRACING
+    else
+      switch (oar.kind) {
+        case foundOutermostAggregate:
+        case noOutermostAggregateExists:
+        case outermostAggregateIsAccessedConcurrently:
+          break;
+          
+        default:
+          oar.printBacktrace(IGF);
+          break;
+      }
     return oar;
   }
   
-  void printUnbacktraceableInstructions(IRGenSILFunction &IGF) const {
+  void printBacktrace(IRGenSILFunction &IGF) const {
     //IGF.IGM;
     SILModule &M = IGF.IGM.getSILModule();
     ASTContext &ctx = M.getASTContext();
@@ -5047,6 +5118,10 @@ public:
 
 void IRGenSILFunction::emitStoreBarrier_dmu_( SILValue srcSILValue, SILValue dest,  bool isKnownToBeInitialization) {
   
+  // fprintf(stderr, "emitStoreBarrier_dmu_ %s XXXXXXXXXX\n", CurSILFn->getName().str().c_str());
+  if (CurFn->getName().contains(StringRef("createtask"))) {
+    fprintf(stderr, "emitStoreBarrier_dmu_ createtask %d %d XXXXXXXXXX\n", __LINE__, isKnownToBeInitialization);
+  }
   OutermostAggregateResult_dmu_ oar = OutermostAggregateResult_dmu_::get(*this, dest);
   switch (oar.kind) {
     case OutermostAggregateResult_dmu_::Kind::noOutermostAggregateExists:
@@ -5057,23 +5132,39 @@ void IRGenSILFunction::emitStoreBarrier_dmu_( SILValue srcSILValue, SILValue des
     case OutermostAggregateResult_dmu_::Kind::dontKnowBecauseNotDefinitelyReferenceCounted:
     case OutermostAggregateResult_dmu_::Kind::dontKnowWhatThisInstDoes:
     case OutermostAggregateResult_dmu_::Kind::outermostAggregateIsAccessedConcurrently:
+      if (CurSILFn->getName().contains("createtask"))
+        fprintf(stderr, "emitStoreBarrier_dmu_ createtask %d XXXXXXXX\n", __LINE__);
       emitVisitRefsInInitialValues_dmu_(srcSILValue);
       return;
       
     case OutermostAggregateResult_dmu_::Kind::foundOutermostAggregate:
-      SILType destSILType = oar.value->getType();
-      NominalTypeDecl *tdOrNone = destSILType.getNominalOrBoundGenericNominal();
-
-      
-      if (oar.value->getKind() == ValueKind::GlobalAddrInst
-          ||  (tdOrNone != nullptr  &&  tdOrNone->isObjC())
-               ) { // TODO: (dmu) is this test accurate?
+      auto k = oar.value->getKind();
+      if (k == ValueKind::GlobalAddrInst) {
+        if (CurSILFn->getName().contains("createtask")) {
+          fprintf(stderr, "emitStoreBarrier_dmu_ createtask %d XXXXXXXX\n", __LINE__);
+        }
         emitVisitRefsInInitialValues_dmu_(srcSILValue);
         return;
+      }
+      SILType destSILType = oar.value->getType();
+      NominalTypeDecl *tdOrNone = destSILType.getNominalOrBoundGenericNominal();
+      if (tdOrNone) {
+        ClassDecl* cdOrNone = dyn_cast<ClassDecl>(tdOrNone);
+        if (cdOrNone != nullptr  &&  cdOrNone->isReallyObjCDespiteCoreLibrary_dmu_()) { // TODO: (dmu) is this test accurate?
+          if (CurSILFn->getName().contains("createtask")) {
+            fprintf(stderr, "emitStoreBarrier_dmu_ createtask %d XXXXXXXX\n", __LINE__);
+            destSILType.print(llvm::errs());
+            tdOrNone->print(llvm::errs());
+          }
+          emitVisitRefsInInitialValues_dmu_(srcSILValue);
+          return;
+        }
       }
       if (isKnownToBeInitialization)
         return;
       Address destAddress = getLoweredValue(oar.value).getAddressOfOutermostAggregate_dmu_(*this);
+      if (CurSILFn->getName().contains("createtask"))
+        fprintf(stderr, "emitStoreBarrier_dmu_ createtask 5094 XXXXXXXX\n");
       emitVisitRefsInValuesAssignedTo_dmu_( srcSILValue, destAddress);
       return;
   }
@@ -5089,6 +5180,10 @@ void IRGenSILFunction::visitCopyAddrInst(swift::CopyAddrInst *i) {
   
   // duplicating logic below
   bool isInitialization = loweredDest.isUnallocatedAddressInBuffer() || i->isInitializationOfDest();
+  if (CurSILFn->getName().contains("createtask")) {
+    fprintf(stderr, "visitCopyAddrInst createtask 3273 %d XXXXXXXX\n", isInitialization);
+    i->dump();
+  }
   emitStoreBarrier_dmu_(i->getSrc(), i->getDest(), isInitialization);
 
   
@@ -5159,6 +5254,8 @@ void IRGenSILFunction::visitVisitRefAtAddr_dmu_Inst(swift::VisitRefAtAddr_dmu_In
         assert(false && "come back and fix this");
         return; // TODO: (dmu) I think there's nothing to be done here, but come back and verify this
       }
+      if (CurSILFn->getName().contains("createtask"))
+        fprintf(stderr, "visitVisitRefAtAddr_dmu_Inst createtask 5178 XXXXXXXX\n");
       emitVisitRefsInInitialValues_dmu_(i->getOperand());
       return;
     }

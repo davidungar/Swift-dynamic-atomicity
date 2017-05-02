@@ -691,7 +691,7 @@ public struct ${Self}<Element>
     mutableAddressWithPinnedNativeOwner {
       _makeMutableAndUniqueOrPinned() // makes the array native, too
       _checkSubscript_native(index)
-      return (_getElementAddress(index), Builtin.tryPin(_getOwner_native()))
+      return (_getElementAddress(index), Builtin.tryPin(_getOwner_native())) // oy veh
     }
   }
 

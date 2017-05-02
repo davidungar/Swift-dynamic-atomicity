@@ -515,6 +515,8 @@ namespace {
     void visitRefs_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
       if (getSingleton() &&
           !getSingleton()->isPOD(ResilienceExpansion::Maximal)) {
+        if (IGF.CurFn->getName().contains(StringRef("createtask")))
+          fprintf(stderr, "visitRefs_dmu_ createtask 519 XXXXXXXXXX\n");
         getSingleton()->visitRefs_dmu_(
                                        IGF, getSingletonAddress(IGF, addr),
                                        getSingletonType(IGF.IGM, T));
@@ -2349,6 +2351,10 @@ namespace {
     
     // inspired by copy method
     void genIRToVisitRefsInInitialValuesOfPayload_dmu_(IRGenFunction &IGF, Explosion &src) const override {
+      //fprintf(stderr, "genIRToVisitRefsInInitialValuesOfPayload_dmu_ %s XXXXXXXXXX\n", IGF.CurFn->getName().str().c_str());
+      if (IGF.CurFn->getName().contains(StringRef("createtask"))) {
+        fprintf(stderr, "genIRToVisitRefsInInitialValuesOfPayload_dmu_ 2354 createtask XXXXXXXXX\n");
+      }
       assert(TIK >= Loadable);
       
       switch (CopyDestroyKind) {
@@ -2551,6 +2557,8 @@ namespace {
           
           // If there is, project and fix it.
           Address payloadAddr = projectPayloadData(IGF, addr);
+          if (IGF.CurFn->getName().contains(StringRef("createtask")))
+            fprintf(stderr, "visitRefs_dmu_ createtask 2559 XXXXXXXXXX\n");
           getPayloadTypeInfo().visitRefs_dmu_(IGF, payloadAddr,
                                               getPayloadType(IGF.IGM, T));
           
@@ -2564,6 +2572,8 @@ namespace {
           addr = IGF.Builder.CreateBitCast(addr,
                                            getRefcountedPtrType(IGF.IGM)->getPointerTo());
           llvm::Value *ptr = IGF.Builder.CreateLoad(addr);
+          if (IGF.CurFn->getName().contains(StringRef("createtask")))
+            fprintf(stderr, "visitRefs_dmu_ createtask 2573 XXXXXXXXXX\n");
           IGF.emitVisitRefInScalar_dmu_(ptr, Refcounting);
           return;
         }
@@ -4574,6 +4584,8 @@ namespace {
       if (TI->isLoadable()) {
         Explosion tmp;
         loadAsTake(IGF, addr, tmp);
+        if (IGF.CurFn->getName().contains(StringRef("createtask")))
+          fprintf(stderr, "visitRefs_dmu_ createtask 4582 XXXXXXXXXX\n");
         genIRToVisitRefsInInitialValuesOfPayload_dmu_(IGF, tmp);
         return;
       }
@@ -5139,6 +5151,10 @@ namespace {
     }
 
     void visitRefs_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
+      // fprintf(stderr, "visitRefs_dmu_ %s XXXXXXXXXX\n", IGF.CurFn->getName().str().c_str());
+      if (IGF.CurFn->getName().contains(StringRef("createtask"))) {
+        fprintf(stderr, "visitRefs_dmu_ createtask 5148 XXXXXXXXXX\n");
+      }
       emitVisitRefsCall_dmu_(IGF, T, addr);
     }
 

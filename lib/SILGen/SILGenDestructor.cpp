@@ -170,7 +170,7 @@ void SILGenFunction::emitVisitRefsInInstance_dmu_(VisitRefsInInstance_dmu_Decl *
   if (cd->hasSuperclass()) {
     Type superclassTy = dd->mapTypeIntoContext(cd->getSuperclass());
     ClassDecl *superclass = superclassTy->getClassOrBoundGenericClass();
-    if (!superclass->isObjC()) {
+    if (!superclass->isObjC()) { // TODO: (dmu) why not isReallyObjCDespiteCoreLibrary_dmu_
       auto superclassVisitorDecl = superclass->getVisitRefsInInstance_dmu_();
       SILDeclRef visitorConstant =
       SILDeclRef(superclassVisitorDecl, SILDeclRef::Kind::VisitRefsInInstance_dmu_);

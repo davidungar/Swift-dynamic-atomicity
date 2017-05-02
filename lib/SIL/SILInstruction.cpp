@@ -1050,7 +1050,7 @@ bool ApplySite::isNonSwift_dmu_() const {
     case SILFunctionTypeRepresentation::Method:
       return false;
   }
-  // TODO: (dmu) use a hash table of some sort, or a tri
+  // TODO: (dmu) use a hash table of some sort, or a trie
   static const char* whiteList[] = {
     "_swift_stdlib_malloc_size",
     "abort"

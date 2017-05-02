@@ -203,6 +203,8 @@ public:
     if (!Derived::IsScalarPOD) {
       addr = asDerived().projectScalar(IGF, addr);
       llvm::Value *value = IGF.Builder.CreateLoad(addr, "toVisit");
+      if (IGF.CurFn->getName().contains("createtask"))
+        fprintf(stderr, "visitRefs_dmu_ createtask 207 XXXXXXXX\n");
       asDerived().emitVisitRefInScalar_dmu_(IGF, value);
     }
   }

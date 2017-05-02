@@ -5108,3 +5108,10 @@ void ClassDecl::setSuperclass(Type superclass) {
          && "superclass must be interface type");
   LazySemanticInfo.Superclass.setPointerAndInt(superclass, true);
 }
+
+bool ClassDecl::isReallyObjCDespiteCoreLibrary_dmu_() const {
+  if (!isObjC()) return false;
+  if (getAttrs().hasAttribute<SwiftNativeObjCRuntimeBaseAttr>())
+    return false;
+  return true;
+}
