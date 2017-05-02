@@ -1050,9 +1050,36 @@ bool ApplySite::isNonSwift_dmu_() const {
     case SILFunctionTypeRepresentation::Method:
       return false;
   }
+  // TODO: (dmu) use a hash table of some sort, or a tri
   static const char* whiteList[] = {
     "_swift_stdlib_malloc_size",
     "abort"
+    "_swift_stdlib_strtof_clocale",
+    "_swift_stdlib_strtod_clocale",
+    "_swift_stdlib_strtold_clocale",
+    "_swift_stdlib_remainder",
+    "_swift_stdlib_squareRoot",
+    "_swift_stdlib_remainderl",
+    "_swift_stdlib_squareRootl",
+    "_swift_stdlib_remainderf",
+    "_swift_stdlib_squareRootf",
+    "_swift_stdlib_reportFatalErrorInFile",
+    "_swift_stdlib_reportFatalError",
+    "_swift_stdlib_reportUnimplementedInitializerInFile",
+    "_swift_stdlib_reportUnimplementedInitializer",
+    "_swift_stdlib_getUnsafeArgvArgc",
+    "_swift_stdlib_free",
+    "_swift_stdlib_putchar_unlocked",
+//    "_swift_stdlib_CFStringCreateWithSubstring",
+//    "_swift_stdlib_CFStringGetCharacterAtIndex",
+//    "_swift_stdlib_CFStringGetCStringPtr",
+//    "_swift_stdlib_CFStringCreateCopy",
+//    "_swift_stdlib_CFStringGetLength",
+//    "_swift_stdlib_CFStringGetCharactersPtr",
+//    "_swift_stdlib_CFStringGetCharacters",
+    "_swift_stdlib_memcmp",
+    "_swift_stdlib_strlen_unsigned",
+    "_swift_stdlib_strlen"
   };
   auto fn = getCalleeFunction();
   if (fn == nullptr)
