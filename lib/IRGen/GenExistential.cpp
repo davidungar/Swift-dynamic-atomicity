@@ -366,8 +366,10 @@ public:
   }
                
   void visitRefs_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
+# if DO_TRACE_DMU
     if (IGF.CurFn->getName().contains("createtask"))
-      fprintf(stderr, "visitRefs_dmu_ createtask 370 XXXXXXXX\n");
+      fprintf(stderr, "TRACE visitRefs_dmu_ createtask %d\n", __LINE__);
+# endif
     emitVisitRefsInExistentialValue_dmu_(IGF, addr, getLayout());
   }
 
@@ -451,8 +453,10 @@ public:
 
   void visitRefs_dmu_(IRGenFunction &IGF, Address existential, SILType T) const override {
     Address valueAddr = projectValue(IGF, existential);
+# if DO_TRACE_DMU
     if (IGF.CurFn->getName().contains(StringRef("createtask")))
-      fprintf(stderr, "visitRefs_dmu_ createtask 455 XXXXXXXXXX\n");
+      fprintf(stderr, "TRACE visitRefs_dmu_ createtask %d\n", __LINE__);
+# endif
     asDerived().emitValueVisitRef_dmu_(IGF, valueAddr);
   }
 
@@ -876,8 +880,10 @@ public:
 // TODO: dmu (cleanup) identical to genIRToVisitRefsInInitialValues_dmu_ -- merge?
   void visitRefs_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
     llvm::Value *value = asDerived().loadValue(IGF, addr);
+# if DO_TRACE_DMU
     if (IGF.CurFn->getName().contains(StringRef("createtask")))
-      fprintf(stderr, "visitRefs_dmu_ createtask 878 XXXXXXXXXX\n");
+      fprintf(stderr, "TRACE visitRefs_dmu_ createtask %d\n", __LINE__);
+# endif
     asDerived().emitValueVisitRefInScalar_dmu_(IGF, value);
   }
 

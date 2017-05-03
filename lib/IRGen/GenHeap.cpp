@@ -560,8 +560,10 @@ namespace {
     }
 
     void visitRefs_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
+# if DO_TRACE_DMU
       if (IGF.CurFn->getName().contains("createtask"))
-        fprintf(stderr, "visitRefs_dmu_ createtask 564 XXXXXXXX\n");
+        fprintf(stderr, "TRACE visitRefs_dmu_ createtask %d\n", __LINE__);
+# endif
       IGF.emitNativeWeakVisitRef_dmu_(addr);
     }
 
@@ -723,9 +725,11 @@ namespace {
     }
 
     void visitRefs_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
+# if DO_TRACE_DMU
       if (IGF.CurFn->getName().contains(StringRef("createtask"))) {
-        fprintf(stderr, "visitRefs_dmu_ createtask 727 XXXXXXXXXX\n");
+        fprintf(stderr, "TRACE visitRefs_dmu_ createtask %d\n", __LINE__);
       }
+# endif
       IGF.emitUnknownUnownedVisitRef_dmu_(addr);
     }
 
@@ -801,8 +805,10 @@ namespace {
     }
                                 
     void visitRefs_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
+# if DO_TRACE_DMU
       if (IGF.CurFn->getName().contains(StringRef("createtask")))
-        fprintf(stderr, "visitRefs_dmu_ createtask 802 XXXXXXXXXX\n");
+        fprintf(stderr, "TRACE visitRefs_dmu_ createtask %d\n", __LINE__);
+# endif
       IGF.emitUnknownWeakVisitRef_dmu_(addr);
     }
                                 
@@ -1284,13 +1290,11 @@ void IRGenFunction::emitNativeVisitRefInScalar_dmu_(llvm::Value *objToSet) {
 }
 
 void IRGenFunction::emitNativeBeSafeForConcurrentAccess_dmu_(llvm::Value *objToSet) {
-  // fprintf(stderr, "emitNativeBeSafeForConcurrentAccess_dmu_ %s XXXXXXXXXX\n", CurFn->getName().str().c_str());
+# if DO_TRACE_DMU
   if (CurFn->getName().contains(StringRef("createtask"))) {
-    fprintf(stderr, "emitNativeBeSafeForConcurrentAccess_dmu_ createtask 1282 XXXXXXXXXX\n");
+    fprintf(stderr, "TRACE emitNativeBeSafeForConcurrentAccess_dmu_ createtask %d\n", __LINE__);
   }
-//  if (CurFn->getName().contains(StringRef("visitRefsInHeapObj_dmu_"))) {
-//    fprintf(stderr, "emitNativeBeSafeForConcurrentAccess_dmu_ visitRefsInHeapObj_dmu_ XXXXXXXXXX\n");
-//  }
+# endif
   if (doesNotRequireRefCounting(objToSet)) {
     return;
   }

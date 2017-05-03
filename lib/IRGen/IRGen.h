@@ -374,5 +374,9 @@ inline Size Alignment::asSize() const {
 
 } // end namespace irgen
 } // end namespace swift
+  
+  
+#define DO_TRACE_DMU 0
+
 
 #endif
