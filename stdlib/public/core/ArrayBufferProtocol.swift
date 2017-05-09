@@ -164,9 +164,11 @@ extension _ArrayBufferProtocol {
         newValues.formIndex(after: &i)
       }
       // Initialize the hole left by sliding the tail forward
+      let destIsSafe = isSafeForConcurrentAccess_dmu_(owner)
       for j in oldTailIndex..<newTailIndex {
-        conservative_make_safe_dmu_(newValues[i])
-        (elements + j).initialize(to: newValues[i])
+        let newValue = newValues[i]
+        if destIsSafe { makeSafe_dmu_(newValue) }
+        (elements + j).initialize(to: newValue)
         newValues.formIndex(after: &i)
       }
       _expectEnd(of: newValues, is: i)

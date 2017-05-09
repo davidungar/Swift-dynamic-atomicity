@@ -101,7 +101,7 @@ extension String {
     var utf16Index: Int = 0
     let result = (index != nil ? body(&utf16Index) : body(nil))
     // addStoreBarrierHere_dmu_()
-    index?.pointee = conservative_make_safe_dmu_( self._index(utf16Index) )
+    index?.pointee = self._index(utf16Index)
     return result
   }
 

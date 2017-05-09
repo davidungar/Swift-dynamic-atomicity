@@ -176,7 +176,6 @@ struct _HeapBuffer<Value, Element> : Equatable {
       size: totalSize,
       alignmentMask: alignMask)
     self._storage = Builtin.castToNativeObject(object)
-    conservative_make_safe_dmu_(initializer)
     self._value.initialize(to: initializer)
   }
 

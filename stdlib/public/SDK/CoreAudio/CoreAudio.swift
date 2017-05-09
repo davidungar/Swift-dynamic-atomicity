@@ -157,8 +157,8 @@ extension UnsafeMutableAudioBufferListPointer
     nonmutating set(newValue) {
       _precondition(index >= 0 && index < self.count,
         "subscript index out of range")
-      // addStoreBarrierHere_dmu_()
-      (_audioBuffersPointer + index).pointee = conservative_make_safe_dmu_( newValue )
+      // No outermost aggregate to test, AFAICT _dmu_
+      (_audioBuffersPointer + index).pointee = makeSafe_dmu_( newValue )
     }
   }
 

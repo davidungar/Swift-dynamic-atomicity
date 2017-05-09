@@ -761,6 +761,12 @@ internal func ifIsSafeForConcurrentAccess_dmu_<S, S2>( dest: AnyObject, makeSafe
   }
 }
 
+internal func ifIsSafeForConcurrentAccess_dmu_<S>( dest: AnyObject, makePointeesSafeAt p: UnsafeMutablePointer<S>, count: Int) {
+  if isSafeForConcurrentAccess_dmu_(dest) {
+    p.visitRefsInArray_dmu_(count: count)
+  }
+}
+
 
 @discardableResult
 public  func makeSafe_dmu_<T>(_ x: T //, file: String = #file, line: Int = -1
@@ -800,8 +806,6 @@ internal func isSafeForConcurrentAccess_dmu_(_ reference: AnyObject) -> Bool {
   _fixLifetime(reference);
   return r;
 }
-
-
 
 
 //public var addStoreBarriers_dmu_ = Set<String>()
