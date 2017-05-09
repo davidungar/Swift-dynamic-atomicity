@@ -786,10 +786,19 @@ public  func experimental_makeSafe_dmu_<T>(_ x: T
   return x
 }
 
-
+// Inserted these but maybe could do better
 @discardableResult
-public func conservative_make_safe_dmu_<T>(_ x: T
+public func quickHackConservativeMakeSafe_dmu_<T>(_ x: T
                                         //, file: String = #file, line: Int = #line
+  ) -> T {
+  return makeSafe_dmu_(x)// , file: file, line: line)
+}
+
+
+// API prevents us from doing better
+@discardableResult
+public func mustBeConservativeMakeSafe_dmu_<T>(_ x: T
+  //, file: String = #file, line: Int = #line
   ) -> T {
   return makeSafe_dmu_(x)// , file: file, line: line)
 }

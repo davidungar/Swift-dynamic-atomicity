@@ -390,8 +390,8 @@ public struct AutoreleasingUnsafeMutablePointer<Pointee /* TODO : class */>
       UnsafeMutablePointer<Pointee>(_rawValue).withMemoryRebound(
         to: OptionalUnmanaged.self, capacity: 1) {
         if let newAnyObject = newAnyObject {
-          // could be passed out of Swift, so make_safe_dmu_
-          $0.pointee = Unmanaged.passUnretained( makeSafe_dmu_( newAnyObject ) )
+          // could be passed out of Swift, so mustBeConservativeMakeSafe_dmu_
+          $0.pointee = Unmanaged.passUnretained( mustBeConservativeMakeSafe_dmu_( newAnyObject ) )
         }
         else {
           $0.pointee = nil

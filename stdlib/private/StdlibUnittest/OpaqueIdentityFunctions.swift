@@ -15,7 +15,7 @@ func _stdlib_getPointer(_ x: OpaquePointer) -> OpaquePointer
 
 public func _opaqueIdentity<T>(_ x: T) -> T {
   let ptr = UnsafeMutablePointer<T>.allocate(capacity: 1)
-  conservative_make_safe_dmu_( x )
+  quickHackConservativeMakeSafe_dmu_( x )
   ptr.initialize(to: x)
   let result =
     UnsafeMutablePointer<T>(_stdlib_getPointer(OpaquePointer(ptr))).pointee

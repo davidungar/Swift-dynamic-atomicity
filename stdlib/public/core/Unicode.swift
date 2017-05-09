@@ -1035,7 +1035,7 @@ extension UTF16 {
       for i in 0..<count {
         let u16 = T._toUTF16CodeUnit((source + i).pointee)
         // addStoreBarrierHere_dmu_()
-        (destination + i).pointee = conservative_make_safe_dmu_(U._fromUTF16CodeUnit(u16))
+        (destination + i).pointee = quickHackConservativeMakeSafe_dmu_(U._fromUTF16CodeUnit(u16))
       }
     }
   }

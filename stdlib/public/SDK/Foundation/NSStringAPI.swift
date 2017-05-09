@@ -100,7 +100,6 @@ extension String {
   ) -> Result {
     var utf16Index: Int = 0
     let result = (index != nil ? body(&utf16Index) : body(nil))
-    // addStoreBarrierHere_dmu_()
     index?.pointee = self._index(utf16Index)
     return result
   }
@@ -114,8 +113,7 @@ extension String {
   ) -> Result {
     var nsRange = NSRange(location: 0, length: 0)
     let result = (range != nil ? body(&nsRange) : body(nil))
-    // addStoreBarrierHere_dmu_()
-    range?.pointee = conservative_make_safe_dmu_( self._range(nsRange) )
+    range?.pointee = self._range(nsRange)
     return result
   }
 
@@ -375,16 +373,15 @@ extension String {
       }
     }
 
+    // Giving up on not being conservative below. _dmu_
     if let matches = nsMatches {
       // Since this function is effectively a bridge thunk, use the
       // bridge thunk semantics for the NSArray conversion
-      // addStoreBarrierHere_dmu_()
-      outputArray?.pointee = conservative_make_safe_dmu_( matches as! [String] )
+      outputArray?.pointee = mustBeConservativeMakeSafe_dmu_( matches as! [String] )
     }
 
     if let n = nsOutputName {
-      // addStoreBarrierHere_dmu_()
-      outputName?.pointee = conservative_make_safe_dmu_( n as String )
+      outputName?.pointee = mustBeConservativeMakeSafe_dmu_( n as String )
     }
     return result
   }
@@ -1034,8 +1031,7 @@ extension String {
     }
 
     if nsTokenRanges != nil {
-      // addStoreBarrierHere_dmu_()
-      tokenRanges?.pointee = conservative_make_safe_dmu_( (nsTokenRanges! as [AnyObject]).map {
+      tokenRanges?.pointee = mustBeConservativeMakeSafe_dmu_( (nsTokenRanges! as [AnyObject]).map {
         self._range($0.rangeValue)
       }
       )

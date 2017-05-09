@@ -68,7 +68,7 @@ public func _stdlib_pthread_barrier_init(
   _ count: CUnsignedInt
 ) -> CInt {
   // addStoreBarrierHere_dmu_()
-  barrier.pointee = conservative_make_safe_dmu_(_stdlib_pthread_barrier_t())
+  barrier.pointee = quickHackConservativeMakeSafe_dmu_(_stdlib_pthread_barrier_t())
   if count == 0 {
     errno = EINVAL
     return -1

@@ -33,7 +33,7 @@ func _stdlib_atomicCompareExchangeStrongPtr(
     UInt(bitPattern: expected.pointee)._builtinWordValue,
     UInt(bitPattern: desired)._builtinWordValue)
   // addStoreBarrierHere_dmu_()
-  expected.pointee = UnsafeRawPointer(bitPattern: Int(conservative_make_safe_dmu_(oldValue)))
+  expected.pointee = UnsafeRawPointer(bitPattern: Int(quickHackConservativeMakeSafe_dmu_(oldValue)))
   return Bool(won)
 }
 

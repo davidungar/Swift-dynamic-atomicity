@@ -158,7 +158,7 @@ extension UnsafeMutableAudioBufferListPointer
       _precondition(index >= 0 && index < self.count,
         "subscript index out of range")
       // No outermost aggregate to test, AFAICT _dmu_
-      (_audioBuffersPointer + index).pointee = makeSafe_dmu_( newValue )
+      (_audioBuffersPointer + index).pointee = mustBeConservativeMakeSafe_dmu_( newValue )
     }
   }
 

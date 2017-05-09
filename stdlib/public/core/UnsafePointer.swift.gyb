@@ -612,7 +612,7 @@ public struct ${Self}<Pointee>
       source + count <= UnsafePointer(self),
       "${Self}.initialize overlapping range")
       // addStoreBarrierHere_dmu_(orCallInitialize: false)
-    for i in 0..<count { conservative_make_safe_dmu_((source + i).pointee) }
+    for i in 0..<count { quickHackConservativeMakeSafe_dmu_((source + i).pointee) }
     Builtin.copyArray(
       Pointee.self, self._rawValue, source._rawValue, count._builtinWordValue)
     // This builtin is equivalent to:
