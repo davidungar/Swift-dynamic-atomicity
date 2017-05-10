@@ -447,8 +447,7 @@ private:
       (ClearPinnedFlag ? RC_ONE + RC_PINNED_FLAG : RC_ONE);
     uint32_t val = __atomic_load_n(&refCount, __ATOMIC_RELAXED);
     val -= quantum;
-    __atomic_store_n(&refCount, val, __ATOMIC_RELEASE);
-    uint32_t newval = refCount;
+    uint32_t newval = val;
 
     assert(newval + quantum >= RC_ONE &&
            "releasing reference with a refcount of zero");
