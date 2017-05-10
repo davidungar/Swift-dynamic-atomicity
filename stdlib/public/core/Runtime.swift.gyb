@@ -32,8 +32,7 @@ func _stdlib_atomicCompareExchangeStrongPtr(
     target._rawValue,
     UInt(bitPattern: expected.pointee)._builtinWordValue,
     UInt(bitPattern: desired)._builtinWordValue)
-  // addStoreBarrierHere_dmu_()
-  expected.pointee = UnsafeRawPointer(bitPattern: Int(quickHackConservativeMakeSafe_dmu_(oldValue)))
+  expected.pointee = UnsafeRawPointer(bitPattern: Int(oldValue))
   return Bool(won)
 }
 
@@ -65,6 +64,8 @@ func _stdlib_atomicCompareExchangeStrongPtr(
 /// If the conditions above are not met, the code will still compile, but the
 /// compare-and-exchange instruction will operate on the writeback buffer, and
 /// you will get a *race* while doing writeback into shared memory.
+///
+/// Also, the caller is responsible for making the reference count safe for concurrent access. (_dmu_)
 @_transparent
 public // @testable
 func _stdlib_atomicCompareExchangeStrongPtr<T>(

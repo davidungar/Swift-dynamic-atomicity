@@ -109,7 +109,7 @@ extension _SwiftNativeNSArrayWithContiguousStorage : _NSArrayCore {
         AutoreleasingUnsafeMutablePointer(objects.baseAddress)
       enumerationState.state = 1
       // addStoreBarrierHere_dmu_()
-      state.pointee = quickHackConservativeMakeSafe_dmu_( enumerationState )
+      state.pointee = mustBeConservativeMakeSafe_dmu_( enumerationState )
       return objects.count
     }
   }

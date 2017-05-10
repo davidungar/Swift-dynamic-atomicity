@@ -67,8 +67,7 @@ public func _stdlib_pthread_barrier_init(
   _ attr: UnsafeMutablePointer<_stdlib_pthread_barrierattr_t>?,
   _ count: CUnsignedInt
 ) -> CInt {
-  // addStoreBarrierHere_dmu_()
-  barrier.pointee = quickHackConservativeMakeSafe_dmu_(_stdlib_pthread_barrier_t())
+  barrier.pointee = _stdlib_pthread_barrier_t()
   if count == 0 {
     errno = EINVAL
     return -1

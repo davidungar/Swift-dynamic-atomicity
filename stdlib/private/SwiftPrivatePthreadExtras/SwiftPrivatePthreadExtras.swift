@@ -42,7 +42,7 @@ internal class PthreadBlockContextImpl<Argument, Result>: PthreadBlockContext {
 
   override func run() -> UnsafeMutableRawPointer {
     let result = UnsafeMutablePointer<Result>.allocate(capacity: 1)
-    result.initialize(to: quickHackConservativeMakeSafe_dmu_( block(arg)) )
+    result.initialize(to: mustBeConservativeMakeSafe_dmu_( block(arg)) )
     return UnsafeMutableRawPointer(result)
   }
 }
