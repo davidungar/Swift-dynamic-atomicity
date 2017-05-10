@@ -11,6 +11,7 @@
 //===----------------------------------------------------------------------===//
 
 import Darwin
+import Foundation
 
 struct BenchResults {
   var delim: String  = ","
@@ -101,10 +102,13 @@ struct TestConfig {
   /// The list of tests to run.
   var tests = [Test]()
 
+  /// Should we track memory footprint?
+  var trackMemory: Bool = false
+
   mutating func processArguments() -> TestAction {
     let validOptions = [
       "--iter-scale", "--num-samples", "--num-iters",
-      "--verbose", "--delim", "--run-all", "--list", "--sleep"
+      "--verbose", "--delim", "--run-all", "--list", "--sleep", "--track-mem"
     ]
     let maybeBenchArgs: Arguments? = parseArgs(validOptions)
     if maybeBenchArgs == nil {
@@ -134,6 +138,11 @@ struct TestConfig {
     if let _ = benchArgs.optionalArgsMap["--verbose"] {
       verbose = true
       print("Verbose")
+    }
+
+    if let _ = benchArgs.optionalArgsMap["--track-mem"] {
+      trackMemory = true
+      print("Track Memory")
     }
 
     if let x = benchArgs.optionalArgsMap["--delim"] {
@@ -320,6 +329,44 @@ func printRunInfo(_ c: TestConfig) {
   }
 }
 
+func get_task_info() throws -> task_basic_info {
+  var info = task_basic_info()
+  var count = mach_msg_type_number_t(MemoryLayout<task_basic_info>.size / 4)
+
+  let kerr = withUnsafeMutablePointer(to: &info) {
+    $0.withMemoryRebound(to: integer_t.self, capacity: Int(count)) {
+      task_info(mach_task_self_,
+        task_flavor_t(TASK_BASIC_INFO),
+        $0,
+        &count)
+    }
+  }
+
+  guard kerr == KERN_SUCCESS   else {
+    let errString = String(cString: mach_error_string(kerr))
+    throw NSError(domain: "mach", code: Int(kerr), userInfo: [NSLocalizedDescriptionKey: errString])
+  }
+  return info
+}
+
+func getMemInfo(rs: inout Double, vm: inout Double) {
+  do {
+    let tbi = try get_task_info()
+    rs = Double(tbi.resident_size) / Double(1024*1024)
+    vm = Double(tbi.virtual_size) / Double(1024*1024)
+  } catch {
+    rs = -1
+    vm = -1
+  }
+}
+
+func memReport(prefix:String = "") {
+  var rs:Double = 0
+  var vm:Double = 0
+  getMemInfo(rs: &rs, vm: &vm)
+  print(prefix, "rs =", String(format: "%.3f", rs), "MB, vm =", String(format: "%.3f", vm), "MB")
+}
+
 func runBenchmarks(_ c: TestConfig) {
   let units = "us"
   print("#\(c.delim)TEST\(c.delim)SAMPLES\(c.delim)MIN(\(units))\(c.delim)MAX(\(units))\(c.delim)MEAN(\(units))\(c.delim)SD(\(units))\(c.delim)MEDIAN(\(units))")
@@ -335,6 +382,9 @@ func runBenchmarks(_ c: TestConfig) {
     let BenchFunc = t.f
     let results = runBench(BenchName, BenchFunc, c)
     print("\(BenchIndex)\(c.delim)\(BenchName)\(c.delim)\(results.description)")
+    if (c.trackMemory) {
+      memReport(prefix: "\tMEM: ")
+    }
     fflush(stdout)
 
     SumBenchResults.min += results.min
