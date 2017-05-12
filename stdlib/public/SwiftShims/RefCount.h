@@ -519,12 +519,12 @@ private:
     // unless the refcount is nonzero, and or'ing it in gives us a
     // more efficient mask: the check just becomes "is newval nonzero".
     if ((newval & (RC_COUNT_MASK | RC_PINNED_FLAG | RC_DEALLOCATING_FLAG))
-        != 0) {
+          != 0) {
       // Refcount is not zero. We definitely do not need to deallocate.
       finishedNonatomicCount_dmu_();
       return false;
     }
-    
+
     // Refcount is now 0 and is not already deallocating.  Try to set
     // the deallocating flag.  This must be atomic because it can race
     // with weak retains.
