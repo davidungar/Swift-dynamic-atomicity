@@ -505,14 +505,14 @@ private:
     uint32_t delta = (n << RC_FLAGS_COUNT) + (ClearPinnedFlag ? RC_PINNED_FLAG : 0);
     uint32_t val = __atomic_load_n(&refCount, __ATOMIC_RELAXED);
     val -= delta;
-    
+    __atomic_store_n(&refCount, val, __ATOMIC_RELEASE);
     uint32_t newval = val;
 
     assert((!ClearPinnedFlag || !(newval & RC_PINNED_FLAG)) &&
            "unpinning reference that was not pinned");
     assert(newval + delta >= RC_ONE &&
            "releasing reference with a refcount of zero");
-    
+
     // If we didn't drop the reference count to zero, or if the
     // deallocating flag is already set, we're done; don't start
     // deallocation.  We can assume that the pinned flag isn't set
