@@ -303,7 +303,7 @@ extension UnsafeMutableBufferPointer {
   ///
   /// - Postcondition: The `Pointee`s at `self[startIndex..<returned index]` are
   ///   initialized.
-  public func initialize<S: Sequence>(from source: S, newOwner newOwner: AnyObject? = nil) -> (S.Iterator, Index)
+  public func initialize<S: Sequence>(from source: S, newOwner: AnyObject? = nil) -> (S.Iterator, Index)
     where S.Iterator.Element == Iterator.Element {
     return source._copyContents(initializing: self, ownedBy: newOwner)
   }

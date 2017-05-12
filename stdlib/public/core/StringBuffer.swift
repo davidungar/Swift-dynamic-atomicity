@@ -244,6 +244,7 @@ public struct _StringBuffer {
     let usedEndPhysicalPtr = UnsafeMutableRawPointer(_storage._value)
       .assumingMemoryBound(to: Optional<UnsafeRawPointer>.self)
     // Create a temp var to hold the exchanged `expected` value.
+    // No need for a store barrier (_dmu_)
     var expected : UnsafeRawPointer? = bounds.upperBound
     if _stdlib_atomicCompareExchangeStrongPtr(
       object: usedEndPhysicalPtr, expected: &expected,

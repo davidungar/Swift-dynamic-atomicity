@@ -739,6 +739,7 @@ public func withoutActuallyEscaping<ClosureType, ResultType>(
 }
 
 
+@_versioned
 internal func ifIsSafeForConcurrentAccess_dmu_<S>( dest: AnyObject, makeSafe src: S
   // , file: String = #file, line: Int = -1
   ) {
@@ -750,6 +751,7 @@ internal func ifIsSafeForConcurrentAccess_dmu_<S>( dest: AnyObject, makeSafe src
 }
 
 // TODO: (dmu) move all the following into Builtin.swift or the compiler
+@_versioned
 internal func ifIsSafeForConcurrentAccess_dmu_<S, S2>( dest: AnyObject, makeSafe src: S, andMakeSafe src2: S2 // , file: String = #file, line: Int = -1
   ) {
   if  isSafeForConcurrentAccess_dmu_(dest) {
@@ -761,6 +763,7 @@ internal func ifIsSafeForConcurrentAccess_dmu_<S, S2>( dest: AnyObject, makeSafe
   }
 }
 
+@_versioned
 internal func ifIsSafeForConcurrentAccess_dmu_<S>( dest: AnyObject, makePointeesSafeAt p: UnsafeMutablePointer<S>, count: Int) {
   if isSafeForConcurrentAccess_dmu_(dest) {
     p.visitRefsInArray_dmu_(count: count)
@@ -769,6 +772,7 @@ internal func ifIsSafeForConcurrentAccess_dmu_<S>( dest: AnyObject, makePointees
 
 
 @discardableResult
+@_transparent // So it can be called from Runtime.swift.gyb
 public  func makeSafe_dmu_<T>(_ x: T //, file: String = #file, line: Int = -1
   ) -> T {
   var mutableT = x

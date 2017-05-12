@@ -492,7 +492,7 @@ public struct ${Self}<Pointee>
     // Must not use `initializeFrom` with a `Collection` as that will introduce
     // a cycle.
     for offset in 0..<count {
-      // addStoreBarrierHere_dmu_(orCallInitialize: false)
+      // addStoreBarrierHere_dmu_(orCallInitialize: false); nope, handled by callers (_dmu_)
       Builtin.initialize(newValue, (self + offset)._rawValue)
     }
   }

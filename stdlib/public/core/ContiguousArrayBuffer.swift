@@ -125,6 +125,7 @@ final class _ContiguousArrayStorage<Element> : _ContiguousArrayStorageBase {
     let resultPtr = result.baseAddress
     let p = _elementPointer
     for i in 0..<count {
+      // No store barrier needed; result is new (_dmu_)
       (resultPtr + i).initialize(to: _bridgeAnythingToObjectiveC(p[i]))
     }
     _fixLifetime(self)

@@ -90,6 +90,9 @@ public // @testable
 func _stdlib_atomicInitializeARCRef(
   object target: UnsafeMutablePointer<AnyObject?>,
   desired: AnyObject) -> Bool {
+  if let replacement = target.pointee {
+    ifIsSafeForConcurrentAccess_dmu_( dest: replacement, makeSafe: desired )
+  }
   var expected: UnsafeRawPointer?
   let desiredPtr = Unmanaged.passRetained(desired).toOpaque()
   let rawTarget = UnsafeMutableRawPointer(target).assumingMemoryBound(
