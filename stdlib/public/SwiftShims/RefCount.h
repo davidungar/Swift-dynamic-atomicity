@@ -433,7 +433,7 @@ private:
     assert(newval + quantum >= RC_ONE &&
            "releasing reference with a refcount of zero");
     
-    bool shouldDeallocate = finishDoDecrementShouldDeallocateAtomicOrNot_dmu_<ClearPinnedFlag, true>(newval);
+    bool shouldDeallocate = finishDoDecrementShouldDeallocateAtomic_dmu_<ClearPinnedFlag>(newval);
     finishedAtomicCount_dmu_();
     return shouldDeallocate;
   }
@@ -447,13 +447,39 @@ private:
       (ClearPinnedFlag ? RC_ONE + RC_PINNED_FLAG : RC_ONE);
     uint32_t val = __atomic_load_n(&refCount, __ATOMIC_RELAXED);
     val -= quantum;
+    __atomic_store_n(&refCount, val, __ATOMIC_RELEASE);
     uint32_t newval = val;
 
+    assert((!ClearPinnedFlag || !(newval & RC_PINNED_FLAG)) &&
+           "unpinning reference that was not pinned");
     assert(newval + quantum >= RC_ONE &&
            "releasing reference with a refcount of zero");
-    bool shouldDeallocate = finishDoDecrementShouldDeallocateAtomicOrNot_dmu_<ClearPinnedFlag, false>(newval);
+
+    // If we didn't drop the reference count to zero, or if the
+    // deallocating flag is already set, we're done; don't start
+    // deallocation.  We can assume that the pinned flag isn't set
+    // unless the refcount is nonzero, and or'ing it in gives us a
+    // more efficient mask: the check just becomes "is newval nonzero".
+    if ((newval & (RC_COUNT_MASK | RC_PINNED_FLAG | RC_DEALLOCATING_FLAG))
+          != 0) {
+      // Refcount is not zero. We definitely do not need to deallocate.
+      finishedNonatomicCount_dmu_();
+      return false;
+    }
+
+    // Refcount is now 0 and is not already deallocating.  Try to set
+    // the deallocating flag.  This must be atomic because it can race
+    // with weak retains.
+    //
+    // This also performs the before-deinit acquire barrier if we set the flag.
+    static_assert(RC_FLAGS_COUNT == 3,
+                  "fix decrementShouldDeallocate() if you add more flags");
+    uint32_t oldval = 0;
+    newval = RC_DEALLOCATING_FLAG;
+    bool r =  __atomic_compare_exchange(&refCount, &oldval, &newval, 0,
+                                     __ATOMIC_ACQUIRE, __ATOMIC_RELAXED);
     finishedNonatomicCount_dmu_();
-    return shouldDeallocate;
+    return r;
   }
 
   template <bool ClearPinnedFlag>
@@ -466,7 +492,7 @@ private:
 
     assert(newval + delta >= RC_ONE &&
            "releasing reference with a refcount of zero");
-    bool shouldDeallocate =  finishDoDecrementShouldDeallocateAtomicOrNot_dmu_<ClearPinnedFlag, true>(newval);
+    bool shouldDeallocate =  finishDoDecrementShouldDeallocateAtomic_dmu_<ClearPinnedFlag>(newval);
     finishedAtomicCount_dmu_();
     return shouldDeallocate;
   }
@@ -486,14 +512,37 @@ private:
            "unpinning reference that was not pinned");
     assert(newval + delta >= RC_ONE &&
            "releasing reference with a refcount of zero");
-    bool shouldDeallocate = finishDoDecrementShouldDeallocateAtomicOrNot_dmu_<ClearPinnedFlag, false>(newval);
+    
+    // If we didn't drop the reference count to zero, or if the
+    // deallocating flag is already set, we're done; don't start
+    // deallocation.  We can assume that the pinned flag isn't set
+    // unless the refcount is nonzero, and or'ing it in gives us a
+    // more efficient mask: the check just becomes "is newval nonzero".
+    if ((newval & (RC_COUNT_MASK | RC_PINNED_FLAG | RC_DEALLOCATING_FLAG))
+        != 0) {
+      // Refcount is not zero. We definitely do not need to deallocate.
+      finishedNonatomicCount_dmu_();
+      return false;
+    }
+    
+    // Refcount is now 0 and is not already deallocating.  Try to set
+    // the deallocating flag.  This must be atomic because it can race
+    // with weak retains.
+    //
+    // This also performs the before-deinit acquire barrier if we set the flag.
+    static_assert(RC_FLAGS_COUNT == 3,
+                  "fix decrementShouldDeallocate() if you add more flags");
+    uint32_t oldval = 0;
+    newval = RC_DEALLOCATING_FLAG;
+    bool r =  __atomic_compare_exchange(&refCount, &oldval, &newval, 0,
+                                     __ATOMIC_ACQUIRE, __ATOMIC_RELAXED);
     finishedNonatomicCount_dmu_();
-    return shouldDeallocate;
+    return r;
   }
   
   
-  template <bool ClearPinnedFlag, bool isAtomic>
-  bool finishDoDecrementShouldDeallocateAtomicOrNot_dmu_(uint32_t newval) {
+  template <bool ClearPinnedFlag>
+  bool finishDoDecrementShouldDeallocateAtomic_dmu_(uint32_t newval) {
     assert((!ClearPinnedFlag || !(newval & RC_PINNED_FLAG)) &&
            "unpinning reference that was not pinned");
     
@@ -516,16 +565,12 @@ private:
     static_assert(RC_FLAGS_COUNT == 3,
                   "fix finishDoDecrementShouldDeallocateAtomicOrNot_dmu_() if you add more flags");
     uint32_t expectedStateOfConcurrentlyAccessibleFlag =
-      isAtomic ? expectedStateOfConcurrentlyAccessibleFlagWhenInAtomicVariant_dmu_()
-               : expectedStateOfConcurrentlyAccessibleFlagWhenInNonatomicVariant_dmu_();
+      expectedStateOfConcurrentlyAccessibleFlagWhenInAtomicVariant_dmu_();
     uint32_t oldval = 0           | expectedStateOfConcurrentlyAccessibleFlag;
+
     newval = RC_DEALLOCATING_FLAG | expectedStateOfConcurrentlyAccessibleFlag;
-    if (isAtomic)
-      return __atomic_compare_exchange(&refCount, &oldval, &newval, 0,
-                                       __ATOMIC_ACQUIRE, __ATOMIC_RELAXED);
-    assert( __atomic_load_n(&refCount, __ATOMIC_RELAXED) == oldval  &&  "non-atomic, should not as expected");
-    __atomic_store_n(&refCount, newval, __ATOMIC_RELEASE);
-    return true;
+    return __atomic_compare_exchange(&refCount, &oldval, &newval, 0,
+                                     __ATOMIC_ACQUIRE, __ATOMIC_RELAXED);
   }
 };
 
