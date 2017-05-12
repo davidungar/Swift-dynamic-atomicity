@@ -614,7 +614,7 @@ public struct ${Self}<Pointee>
       // addStoreBarrierHere_dmu_(orCallInitialize: false)
     let ownerIsSafe = newOwner.map(isSafeForConcurrentAccess_dmu_) ?? true
     if ownerIsSafe {
-      for i in 0..<count { makeSafe_dmu_((source + i).pointee) }
+      UnsafeMutablePointer(mutating: source).visitRefsInArray_dmu_(count: count)
     }
     Builtin.copyArray(
       Pointee.self, self._rawValue, source._rawValue, count._builtinWordValue)
