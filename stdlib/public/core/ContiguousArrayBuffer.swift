@@ -361,7 +361,8 @@ internal struct _ContiguousArrayBuffer<Element> : _ArrayBufferProtocol {
   @discardableResult
   internal func _copyContents(
     subRange bounds: Range<Int>,
-    initializing target: UnsafeMutablePointer<Element>
+    initializing target: UnsafeMutablePointer<Element>,
+    ownedBy newOwner: AnyObject?
   ) -> UnsafeMutablePointer<Element> {
     _sanityCheck(bounds.lowerBound >= 0)
     _sanityCheck(bounds.upperBound >= bounds.lowerBound)
@@ -369,7 +370,7 @@ internal struct _ContiguousArrayBuffer<Element> : _ArrayBufferProtocol {
 
     let initializedCount = bounds.upperBound - bounds.lowerBound
     target.initialize(
-      from: firstElementAddress + bounds.lowerBound, count: initializedCount)
+      from: firstElementAddress + bounds.lowerBound, count: initializedCount, newOwner: newOwner)
     _fixLifetime(owner)
     return target + initializedCount
   }
@@ -499,8 +500,7 @@ internal func += <Element, C : Collection>(
     swap(&lhs, &newLHS)
     buf = UnsafeMutableBufferPointer(start: lhs.firstElementAddress + oldCount, count: numericCast(rhs.count))
   }
-
-  var (remainders,writtenUpTo) = buf.initialize(from: rhs)
+  var (remainders,writtenUpTo) = buf.initialize(from: rhs, newOwner: lhs.owner)
 
   // ensure that exactly rhs.count elements were written
   _precondition(remainders.next() == nil, "rhs underreported its count")

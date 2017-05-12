@@ -39,7 +39,8 @@ public protocol MySequence {
     -> ContiguousArray<Iterator.Element>
 
   func _copyContents(
-    initializing ptr: UnsafeMutablePointer<Iterator.Element>
+    initializing ptr: UnsafeMutablePointer<Iterator.Element>,
+    ownedBy newOwner: AnyObject?
   ) -> UnsafeMutablePointer<Iterator.Element>
 }
 extension MySequence {
@@ -77,7 +78,8 @@ extension MySequence {
   }
 
   public func _copyContents(
-    initializing ptr: UnsafeMutablePointer<Iterator.Element>
+    initializing ptr: UnsafeMutablePointer<Iterator.Element>,
+    ownedBy newOwner: AnyObject?
   ) -> UnsafeMutablePointer<Iterator.Element> {
     fatalError()
   }
@@ -289,10 +291,11 @@ extension LoggingSequenceType
 
   /// Copy a Sequence into an array.
   public func _copyContents(
-    initializing ptr: UnsafeMutablePointer<Base.Iterator.Element>
+    initializing ptr: UnsafeMutablePointer<Base.Iterator.Element>,
+    ownedBy newOwner: AnyObject?
   ) -> UnsafeMutablePointer<Base.Iterator.Element> {
     Log._copyContents[selfType] += 1
-    return base._copyContents(initializing: ptr)
+    return base._copyContents(initializing: ptr, ownedBy: newOwner)
   }
 }
 

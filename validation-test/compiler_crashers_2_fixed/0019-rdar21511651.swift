@@ -39,9 +39,10 @@ extension Sequence
 
   /// Copy a Sequence into an array.
   public func _copyContents(
-    initializing ptr: UnsafeMutablePointer<Base.Iterator.Element>
+    initializing ptr: UnsafeMutablePointer<Base.Iterator.Element>,
+    ownedBy newOwner: AnyObject?
   ) {
-    return _base._copyContents(initializing: ptr)
+    return _base._copyContents(initializing: ptr, ownedBy: newOwner)
   }
 }
 

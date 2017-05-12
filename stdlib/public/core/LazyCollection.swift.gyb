@@ -97,9 +97,10 @@ extension ${Self} : Sequence {
   }
 
   public func _copyContents(
-    initializing buf: UnsafeMutableBufferPointer<Iterator.Element>
+    initializing buf: UnsafeMutableBufferPointer<Iterator.Element>,
+    ownedBy newOwner: AnyObject?
   ) -> (Iterator,UnsafeMutableBufferPointer<Iterator.Element>.Index) {
-    return _base._copyContents(initializing: buf)
+    return _base._copyContents(initializing: buf, ownedBy: newOwner)
   }
 
   public func _customContainsEquatableElement(

@@ -622,7 +622,8 @@ public protocol Sequence {
   /// Copy `self` into an unsafe buffer, returning a partially-consumed 
   /// iterator with any elements that didn't fit remaining.
   func _copyContents(
-    initializing ptr: UnsafeMutableBufferPointer<Iterator.Element>
+    initializing ptr: UnsafeMutableBufferPointer<Iterator.Element>,
+    ownedBy newOwner: AnyObject?
   ) -> (Iterator,UnsafeMutableBufferPointer<Iterator.Element>.Index)
 }
 
@@ -1376,14 +1377,17 @@ extension Sequence {
   /// - Postcondition: The `Pointee`s at `buffer[startIndex..<returned index]` are
   ///   initialized.
   public func _copyContents(
-    initializing buffer: UnsafeMutableBufferPointer<Iterator.Element>
+    initializing buffer: UnsafeMutableBufferPointer<Iterator.Element>,
+    ownedBy newOwner: AnyObject?
   ) -> (Iterator,UnsafeMutableBufferPointer<Iterator.Element>.Index) {
       var it = self.makeIterator()
       guard var ptr = buffer.baseAddress else { return (it,buffer.startIndex) }
+      let isSafe = newOwner.map(isSafeForConcurrentAccess_dmu_) ?? true
       for idx in buffer.startIndex..<buffer.count {
         guard let x = it.next() else {
           return (it, idx)
         }
+        if isSafe { makeSafe_dmu_(x) }
         ptr.initialize(to: x)
         ptr += 1
       }

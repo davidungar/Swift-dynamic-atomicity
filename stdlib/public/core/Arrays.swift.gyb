@@ -790,7 +790,8 @@ public struct ${Self}<Element>
       _uninitializedCount: buffer.count, minimumCapacity: buffer.count)
     buffer._copyContents(
       subRange: Range(buffer.indices),
-      initializing: newBuffer.firstElementAddress)
+      initializing: newBuffer.firstElementAddress,
+      ownedBy: newBuffer.owner)
     buffer = _Buffer(
       _buffer: newBuffer, shiftedToStartIndex: buffer.startIndex)
   }
@@ -1268,7 +1269,8 @@ extension ${Self} : RangeReplaceableCollection, _ArrayProtocol {
 
       _buffer._copyContents(
         subRange: Range(_buffer.indices),
-        initializing: newBuffer.firstElementAddress)
+        initializing: newBuffer.firstElementAddress,
+        ownedBy: newBuffer.owner)
       _buffer = _Buffer(
         _buffer: newBuffer, shiftedToStartIndex: _buffer.startIndex)
     }
@@ -1379,9 +1381,9 @@ extension ${Self} : RangeReplaceableCollection, _ArrayProtocol {
     let buf = UnsafeMutableBufferPointer(
                 start: startNewElements, 
                 count: self.capacity - oldCount)
+    // TODO: (dmu) is the following needed?
+    let (remainder,writtenUpTo) = buf.initialize(from: newElements, newOwner: _buffer.owner)
 
-    let (remainder,writtenUpTo) = buf.initialize(from: newElements)
-    
     // trap on underflow from the sequence's underestimate:
     let writtenCount = buf.distance(from: buf.startIndex, to: writtenUpTo)
     _precondition(newElementsCount <= writtenCount, 
@@ -1688,7 +1690,8 @@ extension ${Self} {
   }
 
   public func _copyContents(
-    initializing buffer: UnsafeMutableBufferPointer<Iterator.Element>
+    initializing buffer: UnsafeMutableBufferPointer<Iterator.Element>,
+    ownedBy newOwner: AnyObject?
   ) -> (Iterator,UnsafeMutableBufferPointer<Iterator.Element>.Index) {
 
     guard !self.isEmpty else { return (makeIterator(),buffer.startIndex) }
@@ -1701,7 +1704,7 @@ extension ${Self} {
       "Insufficient space allocated to copy array contents")
 
     if let s = _baseAddressIfContiguous {
-      p.initialize(from: s, count: self.count)
+      p.initialize(from: s, count: self.count, newOwner: newOwner)
       // Need a _fixLifetime bracketing the _baseAddressIfContiguous getter
       // and all uses of the pointer it returns:
       _fixLifetime(self._owner)
@@ -1972,11 +1975,12 @@ extension _ArrayBufferProtocol {
       let headEnd = headStart + headCount
       let newStart = _copyContents(
         subRange: headStart..<headEnd,
-        initializing: destStart)
+        initializing: destStart,
+        ownedBy: dest.owner)
       initializeNewElements.call(newStart, count: newCount)
       let tailStart = headEnd + oldCount
       let tailEnd = endIndex
-      _copyContents(subRange: tailStart..<tailEnd, initializing: newEnd)
+      _copyContents(subRange: tailStart..<tailEnd, initializing: newEnd, ownedBy: dest.owner)
     }
     self = Self(_buffer: dest, shiftedToStartIndex: startIndex)
   }
@@ -2033,9 +2037,10 @@ extension _ArrayBufferProtocol {
       let base = self.firstElementAddress
 
       // fill while there is another item and spare capacity
-      let owner = self.owner // restored
+      // (dmu) _arrayOutOfPlaceUpdate will have set the safe bit in the new buffer if necessary
+      let destIsSafe = isSafeForConcurrentAccess_dmu_(owner)
       while let next = nextItem, newCount < currentCapacity {
-        ifIsSafeForConcurrentAccess_dmu_(dest: owner, makeSafe: next)
+        if destIsSafe { makeSafe_dmu_(next) }
         (base + newCount).initialize(to: next)
         newCount += 1
         nextItem = stream.next()

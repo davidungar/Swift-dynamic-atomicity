@@ -195,11 +195,12 @@ extension _ArrayBuffer {
   @discardableResult
   internal func _copyContents(
     subRange bounds: Range<Int>,
-    initializing target: UnsafeMutablePointer<Element>
-  ) -> UnsafeMutablePointer<Element> {
+    initializing target: UnsafeMutablePointer<Element>,
+    ownedBy newOwner: AnyObject?
+   ) -> UnsafeMutablePointer<Element> {
     _typeCheck(bounds)
     if _fastPath(_isNative) {
-      return _native._copyContents(subRange: bounds, initializing: target)
+      return _native._copyContents(subRange: bounds, initializing: target, ownedBy: newOwner)
     }
 
     let nonNative = _nonNative

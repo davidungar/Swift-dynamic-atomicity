@@ -604,7 +604,7 @@ public struct ${Self}<Pointee>
   ///     referenced by `source` and this pointer must not overlap.
   ///   - count: The number of instances to move from `source` to this
   ///     pointer's memory. `count` must not be negative.
-  public func initialize(from source: UnsafePointer<Pointee>, count: Int) {
+  public func initialize(from source: UnsafePointer<Pointee>, count: Int, newOwner: AnyObject? = nil) {
     _debugPrecondition(
       count >= 0, "${Self}.initialize with negative count")
     _debugPrecondition(
@@ -612,7 +612,10 @@ public struct ${Self}<Pointee>
       source + count <= UnsafePointer(self),
       "${Self}.initialize overlapping range")
       // addStoreBarrierHere_dmu_(orCallInitialize: false)
-    for i in 0..<count { quickHackConservativeMakeSafe_dmu_((source + i).pointee) }
+    let ownerIsSafe = newOwner.map(isSafeForConcurrentAccess_dmu_) ?? true
+    if ownerIsSafe {
+      for i in 0..<count { makeSafe_dmu_((source + i).pointee) }
+    }
     Builtin.copyArray(
       Pointee.self, self._rawValue, source._rawValue, count._builtinWordValue)
     // This builtin is equivalent to:
@@ -636,7 +639,7 @@ public struct ${Self}<Pointee>
   public func initialize<C : Collection>(from source: C)
     where C.Iterator.Element == Pointee {
     let buf = UnsafeMutableBufferPointer(start: self, count: numericCast(source.count))
-    var (remainders,writtenUpTo) = source._copyContents(initializing: buf)
+    var (remainders,writtenUpTo) = source._copyContents(initializing: buf, ownedBy: nil)
     // ensure that exactly rhs.count elements were written
     _precondition(remainders.next() == nil, "rhs underreported its count")
     _precondition(writtenUpTo == buf.endIndex, "rhs overreported its count")

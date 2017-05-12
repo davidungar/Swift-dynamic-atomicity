@@ -187,14 +187,15 @@ internal struct _SliceBuffer<Element>
   @discardableResult
   internal func _copyContents(
     subRange bounds: Range<Int>,
-    initializing target: UnsafeMutablePointer<Element>
+    initializing target: UnsafeMutablePointer<Element>,
+    ownedBy newOwner: AnyObject?
   ) -> UnsafeMutablePointer<Element> {
     _invariantCheck()
     _sanityCheck(bounds.lowerBound >= startIndex)
     _sanityCheck(bounds.upperBound >= bounds.lowerBound)
     _sanityCheck(bounds.upperBound <= endIndex)
     let c = bounds.count
-    target.initialize(from: subscriptBaseAddress + bounds.lowerBound, count: c)
+    target.initialize(from: subscriptBaseAddress + bounds.lowerBound, count: c, newOwner: newOwner)
     return target + c
   }
 

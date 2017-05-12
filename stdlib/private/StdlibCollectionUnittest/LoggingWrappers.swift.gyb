@@ -321,10 +321,11 @@ public struct ${Self}<
 
   /// Copy a Sequence into an array.
   public func _copyContents(
-    initializing buffer: UnsafeMutableBufferPointer<Iterator.Element>
+    initializing buffer: UnsafeMutableBufferPointer<Iterator.Element>,
+    ownedBy newOwner: AnyObject?
   ) -> (Iterator,UnsafeMutableBufferPointer<Iterator.Element>.Index) {
     Log._copyContents[selfType] += 1
-    let (it,idx) = base._copyContents(initializing: buffer)
+    let (it,idx) = base._copyContents(initializing: buffer, ownedBy: newOwner)
     return (Iterator(wrapping: it),idx)
   }
 

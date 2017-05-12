@@ -33,8 +33,9 @@ internal protocol _ArrayBufferProtocol
   @discardableResult
   func _copyContents(
     subRange bounds: Range<Int>,
-    initializing target: UnsafeMutablePointer<Element>
-  ) -> UnsafeMutablePointer<Element>
+    initializing target: UnsafeMutablePointer<Element>,
+    ownedBy newOwner: AnyObject?
+   ) -> UnsafeMutablePointer<Element>
 
   /// Get or set the index'th element.
   subscript(index: Int) -> Element { get nonmutating set }

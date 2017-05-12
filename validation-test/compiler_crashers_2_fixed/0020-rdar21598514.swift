@@ -149,10 +149,11 @@ extension LoggingSequenceType {
 
   /// Copy a Sequence into an array.
   public func _copyContents(
-    initializing ptr: UnsafeMutablePointer<Base.Iterator.Element>
+    initializing ptr: UnsafeMutablePointer<Base.Iterator.Element>,
+    ownedBy newOwner: AnyObject?
   ) {
     ++SequenceLog._copyContents[selfType]
-    return base._copyContents(initializing: ptr)
+    return base._copyContents(initializing: ptr, ownedBy: newOwner)
   }
 }
 
