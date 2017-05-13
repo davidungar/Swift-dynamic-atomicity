@@ -5186,8 +5186,8 @@ public:
 
 void IRGenSILFunction::emitStoreBarrier_dmu_( SILValue srcSILValue, SILValue dest,  bool isKnownToBeInitialization) {
   
-  # if DO_TRACE_DMU || 1
-  if (CurFn->getName().contains(StringRef("gazorp"))) {
+  # if DO_TRACE_DMU
+  if (CurFn->getName().contains(StringRef("createtask"))) {
     fprintf(stderr, "TRACE emitStoreBarrier_dmu_ createtask %d %d\n", __LINE__, isKnownToBeInitialization);
   }
   # endif
