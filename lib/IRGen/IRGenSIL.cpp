@@ -800,7 +800,7 @@ public:
   /// TODO: (dmu cleanup) fix this comment:  Set bit in source (explosion)'s reference count if it now can be concurrently accessed after
   /// initializing or assigning it to dest (addr)
   /// rename to storeBarrier?
-  void emitVisitRefsInValuesAssignedTo_dmu_(SILValue const &src, Address const outermostDestAggregate);
+  void emitVisitRefsInValuesAssignedTo_dmu_(SILValue const &src, Address const outermostDestAggregate, bool isDestIndirect);
 
   
   //===--------------------------------------------------------------------===//
@@ -3336,11 +3336,25 @@ void IRGenSILFunction::emitVisitRefsInInitialValues_dmu_(SILValue const &srcSILV
 //#include <swift/Runtime/HeapObject.h> // blecch! TODO: (dmu) clean this up!
 #include <../stdlib/public/SwiftShims/RefCount.h> // blecch! TODO: (dmu) clean this up!
 // Return non-zero if the reference count has the atomic bit set
-void IRGenSILFunction::emitVisitRefsInValuesAssignedTo_dmu_(SILValue const &srcSILValue, Address const outermostDestAggregate)  {
+void IRGenSILFunction::emitVisitRefsInValuesAssignedTo_dmu_(SILValue const &srcSILValue,
+                                                            Address const outermostDestAggregate,
+                                                            bool isDestIndirect)  {
   // TODO: (dmu) fix this hack, knowing where the ref count is!
   // TODO: (dmu) dest must be native and the outermost heap object to hold the value
   
-  llvm::Value *destRefCountPtr = Builder.CreateBitCast(outermostDestAggregate.getAddress(), IGM.RefCountedPtrTy);
+  llvm::Value *destAddress = nullptr;
+  if (!isDestIndirect)
+    destAddress = outermostDestAggregate.getAddress();
+  else {
+    llvm::Type *ptrPtrTy = IGM.RefCountedPtrTy->getPointerTo();
+    Address destRefCountPtrPtr = Address(
+                                         Builder.CreateBitCast(outermostDestAggregate.getAddress(), ptrPtrTy),
+                                         Alignment(8)
+                                         ); // TODO: (dmu) 8?
+    llvm::LoadInst *destAddrLoad = Builder.CreateLoad(destRefCountPtrPtr);
+    destAddress = destAddrLoad;
+  }
+  llvm::Value *destRefCountPtr = Builder.CreateBitCast(destAddress, IGM.RefCountedPtrTy);
   Address refCountAddr = Builder.CreateStructGEP(
                                                  Address(destRefCountPtr, Alignment(4)), // TODO: (dmu) 4?!
                                                  1,
@@ -4801,6 +4815,7 @@ void IRGenSILFunction::setAllocatedAddressForBuffer(SILValue v,
 struct OutermostAggregateResult_dmu_ {
   enum Kind {
     foundOutermostAggregate,
+    foundIndirectOutermostAggregate,
     noOutermostAggregateExists,
     outermostAggregateIsAccessedConcurrently,
     dontKnowBecauseNotAnInstruction,
@@ -4835,10 +4850,10 @@ private:
         return OutermostAggregateResult_dmu_(vArg, k, v);
       }
       if (!isa<SILInstruction>(v)) {
-# if DO_TRACE_DMU
+        # if DO_TRACE_DMU
         if (trace)
           fprintf(stderr, "TRACE not an instruction %d\n", __LINE__);
-# endif
+        # endif
         return OutermostAggregateResult_dmu_(vArg, dontKnowBecauseNotAnInstruction, v);
       }
       switch (v->getKind()) {
@@ -4849,9 +4864,9 @@ private:
           // YES, causes crash because newly allocated thing ref count is safe
           // WHY?????
           // Moving a ref to a garbage value on the stack: DON'T DO ANYTHING
-# if DO_TRACE_DMU
+          # if DO_TRACE_DMU
           if (trace) fprintf(stderr, "TRACE allocStackInst %s: %d\n", __FILE__, __LINE__);
-# endif
+          # endif
           return OutermostAggregateResult_dmu_(vArg, noOutermostAggregateExists, v);
 
         default: break;
@@ -4881,17 +4896,17 @@ private:
     //
     SILType type = sa->getType();
     if (type.isReferenceCounted(M)) {
-# if DO_TRACE_DMU
+      # if DO_TRACE_DMU
       if (trace) fprintf(stderr,"TRACE ref counted arg %s: %d\n", __FILE__, __LINE__);
-# endif
-      return foundOutermostAggregate;
+      # endif
+      return foundIndirectOutermostAggregate;
     }
     auto fa = dyn_cast<SILFunctionArgument>(sa);
     if (     fa == nullptr
         ||  !fa->getArgumentConvention().mayBeContainedInALargerInstance_dmu_()) {
-# if DO_TRACE_DMU
+      # if DO_TRACE_DMU
       if (trace) fprintf(stderr, "TRACE arg w/o agg %s: %d\n", __FILE__, __LINE__);
-# endif
+      # endif
       return noOutermostAggregateExists;
     }
     
@@ -5096,6 +5111,7 @@ private:
     StringRef const kindStringRef() const {
       switch (kind) {
         case foundOutermostAggregate:                       return StringRef("foundOutermostAggregate");
+        case foundIndirectOutermostAggregate:               return StringRef("foundIndirectOutermostAggregate");
         case noOutermostAggregateExists:                    return StringRef("noOutermostAggregateExists");
         case outermostAggregateIsAccessedConcurrently:      return StringRef("outermostAggregateIsAccessedConcurrently");
         case dontKnowWhatThisInstDoes:                      return StringRef("dontKnowWhatThisInstDoes");
@@ -5119,11 +5135,15 @@ public:
 # endif
       switch (oar.kind) {
         case foundOutermostAggregate:
+        case foundIndirectOutermostAggregate:
         case noOutermostAggregateExists:
         case outermostAggregateIsAccessedConcurrently:
           break;
           
-        default:
+        case dontKnowWhatThisInstDoes:
+        case dontKnowBecauseNoOperands:
+        case dontKnowBecauseNotAnInstruction:
+        case dontKnowBecauseNotDefinitelyReferenceCounted:
           oar.printBacktrace(IGF);
           break;
       }
@@ -5166,11 +5186,11 @@ public:
 
 void IRGenSILFunction::emitStoreBarrier_dmu_( SILValue srcSILValue, SILValue dest,  bool isKnownToBeInitialization) {
   
-# if DO_TRACE_DMU
-  if (CurFn->getName().contains(StringRef("createtask"))) {
+  # if DO_TRACE_DMU || 1
+  if (CurFn->getName().contains(StringRef("gazorp"))) {
     fprintf(stderr, "TRACE emitStoreBarrier_dmu_ createtask %d %d\n", __LINE__, isKnownToBeInitialization);
   }
-# endif
+  # endif
   OutermostAggregateResult_dmu_ oar = OutermostAggregateResult_dmu_::get(*this, dest);
   switch (oar.kind) {
     case OutermostAggregateResult_dmu_::Kind::noOutermostAggregateExists:
@@ -5189,6 +5209,7 @@ void IRGenSILFunction::emitStoreBarrier_dmu_( SILValue srcSILValue, SILValue des
       return;
       
     case OutermostAggregateResult_dmu_::Kind::foundOutermostAggregate:
+    case OutermostAggregateResult_dmu_::Kind::foundIndirectOutermostAggregate:
       auto k = oar.value->getKind();
       if (k == ValueKind::GlobalAddrInst) {
 # if DO_TRACE_DMU
@@ -5225,7 +5246,8 @@ void IRGenSILFunction::emitStoreBarrier_dmu_( SILValue srcSILValue, SILValue des
       if (CurSILFn->getName().contains("createtask"))
         fprintf(stderr, "TRACE emitStoreBarrier_dmu_ createtask %d\n", __LINE__);
 # endif
-      emitVisitRefsInValuesAssignedTo_dmu_( srcSILValue, destAddress);
+      emitVisitRefsInValuesAssignedTo_dmu_( srcSILValue, destAddress,
+                                           oar.kind == OutermostAggregateResult_dmu_::Kind::foundIndirectOutermostAggregate);
       return;
   }
 }
