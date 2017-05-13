@@ -96,6 +96,10 @@ private:
 
   // start dmu
   bool isSafeToUseNonatomic_dmu_() {
+    return isSafeToUseNonatomicBasedOnNonatomicBit_dmu_();
+  }
+
+  bool isSafeToUseNonatomicBasedOnNonatomicBit_dmu_() {
     switch (nonatomicOption_dmu_) {
       case baseline_dmu:
         return false;
@@ -109,6 +113,11 @@ private:
         // the flag is set, and the flag setting is NOT RELAXED
         return !(__atomic_load_n(&refCount, __ATOMIC_RELAXED)  &  RC_MIGHT_BE_CONCURRENTLY_ACCESSED_FLAG_dmu_);
     }
+  }
+  
+  bool isSafeToUseNonatomicBasedOnNumberOfReferences_dmu_() { XXXXXXXXXXX
+    return (1 << RC_FLAGS_COUNT) ==
+    (__atomic_load_n(&refCount, __ATOMIC_RELAXED) & (RC_FLAGS_MASK | RC_PINNED_FLAG | RC_DEALLOCATING_FLAG));
   }
   
   
@@ -345,7 +354,7 @@ private:
     return doDecrementShouldDeallocateNonAtomic<false>();
   }
 
-  bool decrementShouldDeallocateN(uint32_t n) {
+  bool decrementShouldDeallocate(uint32_t n) {
     if (isSafeToUseNonatomic_dmu_()) {
       return doDecrementShouldDeallocateNNonAtomic<false>(n);
     }
@@ -661,6 +670,14 @@ class WeakRefCount {
   // Note that this is not equal to the number of outstanding weak pointers.
   uint32_t getCount() const {
     return __atomic_load_n(&refCount, __ATOMIC_RELAXED) >> RC_FLAGS_COUNT;
+  }
+  
+  bool isAsInitialized_dmu_() {
+    return refCount == WeakRefCount(Initialized).refCount;
+  }
+  
+  bool areNoWeakReferences_dmu_() {
+    return isAsInitialized();
   }
 };
 

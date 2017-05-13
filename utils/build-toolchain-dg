@@ -22,7 +22,7 @@ fi
 YEAR=$(date +"%Y")
 MONTH=$(date +"%m")
 DAY=$(date +"%d")
-TOOLCHAIN_VERSION="swift-rc-dynamic-${YEAR}-${MONTH}-${DAY}-a"
+TOOLCHAIN_VERSION="swift-rc-dynamic-apr-outOnly-${YEAR}-${MONTH}-${DAY}-a"
 ARCHIVE="${TOOLCHAIN_VERSION}-osx.tar.gz"
 SYM_ARCHIVE="${TOOLCHAIN_VERSION}-osx-symbols.tar.gz"
 BUNDLE_PREFIX=${1:?Please specify bundle prefix e.g. $0 local.swift}
@@ -38,7 +38,7 @@ SWIFT_TOOLCHAIN_DIR="/Library/Developer/Toolchains/${TOOLCHAIN_NAME}.xctoolchain
 SYMBOLS_PACKAGE="${SRC_DIR}/${SYM_ARCHIVE}"
 
 if [[ "$(uname -s)" == "Darwin" ]] ; then
-    SWIFT_PACKAGE=rc-dynamic
+    SWIFT_PACKAGE=rc-dynamic-apr-outOnly
 else
     SWIFT_PACKAGE=buildbot_linux
 fi
@@ -54,4 +54,4 @@ fi
         darwin_toolchain_display_name_short="${DISPLAY_NAME_SHORT}" \
         darwin_toolchain_xctoolchain_name="${TOOLCHAIN_NAME}" \
         darwin_toolchain_version="${TOOLCHAIN_VERSION}" \
-        darwin_toolchain_alias="rc-dynamic"
+        darwin_toolchain_alias="rc-dynamic-apr-outOnly"
