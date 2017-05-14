@@ -2091,15 +2091,15 @@ void IRGenSILFunction::visitTryApplyInst(swift::TryApplyInst *i) {
 void IRGenSILFunction::makeArgumentsOfNonSwiftCalleeSaveForConcurrentAccess_dmu_(
       FullApplySite site)
 {
-  auto origCalleeType = site.getOrigCalleeType();
+//  auto origCalleeType = site.getOrigCalleeType();
   auto args = site.getArguments();
-  if (origCalleeType->hasSelfParam() &&
-      isSelfContextParameter(origCalleeType->getSelfParameter())) {
-    SILValue selfArg = args.back();
-    TRACE_DMU_(*this);
-    // MISSING WARNING (dmu)
-    emitVisitRefsInInitialValues_dmu_(selfArg);
-  }
+//  if (origCalleeType->hasSelfParam() &&
+//      isSelfContextParameter(origCalleeType->getSelfParameter())) {
+//    SILValue selfArg = args.back();
+//    TRACE_DMU_(*this);
+//    // MISSING WARNING (dmu)
+//    emitVisitRefsInInitialValues_dmu_(selfArg);
+//  }
   
   SILFunction *fn = site.getCalleeFunction();
   SILModule &M = IGM.getSILModule();
@@ -2118,8 +2118,6 @@ void IRGenSILFunction::makeArgumentsOfNonSwiftCalleeSaveForConcurrentAccess_dmu_
     if (site.getArgumentConvention(index).isIndirectConvention())
       ; // dmu TODO: dpg.  Actually hande this correctly. With new work extending emitStoreBarrier_dmu_ to more cases, should be easy
     else {
-      if (CurSILFn->getName().contains("createtask"))
-        fprintf(stderr, "visitFullApplySite createtask %d \n", __LINE__);
       emitVisitRefsInInitialValues_dmu_(args[index]);
     }
 }
@@ -2152,7 +2150,7 @@ void IRGenSILFunction::visitFullApplySite(FullApplySite site) {
     }
   }
 
-  Explosion llArgs;
+  Explosion llArgs;    
   WitnessMetadata witnessMetadata;
   CallEmission emission =
     getCallEmissionForLoweredValue(*this, origCalleeType, substCalleeType,
