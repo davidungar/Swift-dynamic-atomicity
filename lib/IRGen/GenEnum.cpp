@@ -515,10 +515,7 @@ namespace {
     void visitRefs_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
       if (getSingleton() &&
           !getSingleton()->isPOD(ResilienceExpansion::Maximal)) {
-        # if DO_TRACE_DMU
-        if (IGF.CurFn->getName().contains(StringRef("createtask")))
-          fprintf(stderr, "TRACE: visitRefs_dmu_ createtask %d\n", __LINE__);
-        # endif
+        TRACE_DMU_(IGF);
         getSingleton()->visitRefs_dmu_(
                                        IGF, getSingletonAddress(IGF, addr),
                                        getSingletonType(IGF.IGM, T));
@@ -2353,11 +2350,7 @@ namespace {
     
     // inspired by copy method
     void genIRToVisitRefsInInitialValuesOfPayload_dmu_(IRGenFunction &IGF, Explosion &src) const override {
-# if DO_TRACE_DMU
-      if (IGF.CurFn->getName().contains(StringRef("createtask"))) {
-        fprintf(stderr, "TRACE genIRToVisitRefsInInitialValuesOfPayload_dmu_ %d createtask\n", __LINE__);
-      }
-# endif
+      TRACE_DMU_(IGF);
       assert(TIK >= Loadable);
       
       switch (CopyDestroyKind) {
@@ -2560,10 +2553,7 @@ namespace {
           
           // If there is, project and fix it.
           Address payloadAddr = projectPayloadData(IGF, addr);
-# if DO_TRACE_DMU
-          if (IGF.CurFn->getName().contains(StringRef("createtask")))
-            fprintf(stderr, "TRACE visitRefs_dmu_ createtask %d\n", __LINE__);
-# endif
+          TRACE_DMU_(IGF);
           getPayloadTypeInfo().visitRefs_dmu_(IGF, payloadAddr,
                                               getPayloadType(IGF.IGM, T));
           
@@ -2577,10 +2567,7 @@ namespace {
           addr = IGF.Builder.CreateBitCast(addr,
                                            getRefcountedPtrType(IGF.IGM)->getPointerTo());
           llvm::Value *ptr = IGF.Builder.CreateLoad(addr);
-# if DO_TRACE_DMU
-          if (IGF.CurFn->getName().contains(StringRef("createtask")))
-            fprintf(stderr, "TRACE visitRefs_dmu_ createtask %d\n", __LINE__);
-# endif
+          TRACE_DMU_(IGF);
           IGF.emitVisitRefInScalar_dmu_(ptr, Refcounting);
           return;
         }
@@ -4591,10 +4578,7 @@ namespace {
       if (TI->isLoadable()) {
         Explosion tmp;
         loadAsTake(IGF, addr, tmp);
-# if DO_TRACE_DMU
-        if (IGF.CurFn->getName().contains(StringRef("createtask")))
-          fprintf(stderr, "TRACE visitRefs_dmu_ createtask %d\n", __LINE__);
-# endif
+        TRACE_DMU_(IGF);
         genIRToVisitRefsInInitialValuesOfPayload_dmu_(IGF, tmp);
         return;
       }
@@ -5160,11 +5144,7 @@ namespace {
     }
 
     void visitRefs_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
-# if DO_TRACE_DMU
-      if (IGF.CurFn->getName().contains(StringRef("createtask"))) {
-        fprintf(stderr, "TRACE visitRefs_dmu_ createtask %d\n", __LINE__);
-      }
-# endif
+      TRACE_DMU_(IGF);
       emitVisitRefsCall_dmu_(IGF, T, addr);
     }
 

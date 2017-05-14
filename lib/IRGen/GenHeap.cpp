@@ -560,10 +560,7 @@ namespace {
     }
 
     void visitRefs_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
-# if DO_TRACE_DMU
-      if (IGF.CurFn->getName().contains("createtask"))
-        fprintf(stderr, "TRACE visitRefs_dmu_ createtask %d\n", __LINE__);
-# endif
+      TRACE_DMU_(IGF);
       IGF.emitNativeWeakVisitRef_dmu_(addr);
     }
 
@@ -725,11 +722,7 @@ namespace {
     }
 
     void visitRefs_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
-# if DO_TRACE_DMU
-      if (IGF.CurFn->getName().contains(StringRef("createtask"))) {
-        fprintf(stderr, "TRACE visitRefs_dmu_ createtask %d\n", __LINE__);
-      }
-# endif
+      TRACE_DMU_(IGF);
       IGF.emitUnknownUnownedVisitRef_dmu_(addr);
     }
 
@@ -805,10 +798,7 @@ namespace {
     }
                                 
     void visitRefs_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
-# if DO_TRACE_DMU
-      if (IGF.CurFn->getName().contains(StringRef("createtask")))
-        fprintf(stderr, "TRACE visitRefs_dmu_ createtask %d\n", __LINE__);
-# endif
+      TRACE_DMU_(IGF);
       IGF.emitUnknownWeakVisitRef_dmu_(addr);
     }
                                 
@@ -1290,11 +1280,7 @@ void IRGenFunction::emitNativeVisitRefInScalar_dmu_(llvm::Value *objToSet) {
 }
 
 void IRGenFunction::emitNativeBeSafeForConcurrentAccess_dmu_(llvm::Value *objToSet) {
-# if DO_TRACE_DMU
-  if (CurFn->getName().contains(StringRef("createtask"))) {
-    fprintf(stderr, "TRACE emitNativeBeSafeForConcurrentAccess_dmu_ createtask %d\n", __LINE__);
-  }
-# endif
+  TRACE_DMU_(*this);
   if (doesNotRequireRefCounting(objToSet)) {
     return;
   }

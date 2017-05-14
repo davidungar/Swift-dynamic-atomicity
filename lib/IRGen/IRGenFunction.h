@@ -632,7 +632,14 @@ private:
 
   llvm::DenseMap<CanType, std::vector<ArchetypeAccessPath>>
   ArchetypeAccessPaths;
+  
+public:
+  void trace_dmu_(const char* function, const char* file, int line) const {
+    if (CurFn->getName().contains(StringRef("createtask")))
+      fprintf(stderr, "TRACE: %s %s:%d\n", function, file, line);
+  }
 };
+#define TRACE_DMU_(IGF) (IGF).trace_dmu_(__FUNCTION__, __FILE__, __LINE__)
 
 using ConditionalDominanceScope = IRGenFunction::ConditionalDominanceScope;
 

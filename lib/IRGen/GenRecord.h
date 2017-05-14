@@ -219,10 +219,7 @@ public:
     for (auto &field : getFields()) {
       if (field.isPOD())
         continue;
-# if DO_TRACE_DMU
-      if (IGF.CurFn->getName().contains(StringRef("createtask")))
-        fprintf(stderr, "TRACE visitRefs_dmu_ createtask %d\n", __LINE__);
-# endif
+      TRACE_DMU_(IGF);
       field.getTypeInfo().visitRefs_dmu_(IGF, field.projectAddress(IGF, addr, offsets),
                                          field.getType(IGF.IGM, T));
     }
