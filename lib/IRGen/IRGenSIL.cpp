@@ -1004,6 +1004,9 @@ public:
   void visitDynamicMethodBranchInst(DynamicMethodBranchInst *i);
   void visitCheckedCastBranchInst(CheckedCastBranchInst *i);
   void visitCheckedCastAddrBranchInst(CheckedCastAddrBranchInst *i);
+  
+private:
+  void makeArgumentsOfNonSwiftCalleeSaveForConcurrentAccess_dmu_(FullApplySite site);
 };
 
 } // end anonymous namespace
@@ -1835,14 +1838,31 @@ static void emitApplyArgument(IRGenSILFunction &IGF,
   if (paramType.isAddress()) {
     // This address is of the substituted type.
     auto addr = IGF.getLoweredAddress(arg);
-
-    // If a substitution is in play, just bitcast the address.
-    if (isSubstituted) {
-      auto origType = IGF.IGM.getStoragePointerType(paramType);
-      addr = IGF.Builder.CreateBitCast(addr, origType);
-    }
+    
+    if (true ) {
+      // If a substitution is in play, just bitcast the address.
+      if (isSubstituted) {
+        auto origType = IGF.IGM.getStoragePointerType(paramType);
+        addr = IGF.Builder.CreateBitCast(addr, origType);
+      }
       
-    out.add(addr.getAddress());
+      out.add(addr.getAddress());
+    }
+    else {
+      const auto &typeInfo = IGF.getTypeInfo(paramType);
+      auto tempAddr = typeInfo.allocateStack(IGF, paramType, false, StringRef("anon_dmu_"));
+      if (!isSubstituted) {
+//        typeInfo.initializeWithCopy(IGF, tempAddr, arg, paramType);
+//        typeInfo.assign(IGF, sourceExplosion, tempAddr);
+//        IGF.getLoweredExplosion( tempAddr, out);
+        return;
+      }
+      
+//      emitDebugInfoForAllocStack(i, type, addr.getAddress().getAddress());
+//      
+//      setLoweredStackAddress(i, addr);
+
+    }
     return;
   }
 
@@ -2068,12 +2088,51 @@ void IRGenSILFunction::visitTryApplyInst(swift::TryApplyInst *i) {
   visitFullApplySite(i);
 }
 
+void IRGenSILFunction::makeArgumentsOfNonSwiftCalleeSaveForConcurrentAccess_dmu_(
+      FullApplySite site)
+{
+  auto origCalleeType = site.getOrigCalleeType();
+  auto args = site.getArguments();
+  if (origCalleeType->hasSelfParam() &&
+      isSelfContextParameter(origCalleeType->getSelfParameter())) {
+    SILValue selfArg = args.back();
+    TRACE_DMU_(*this);
+    // MISSING WARNING (dmu)
+    emitVisitRefsInInitialValues_dmu_(selfArg);
+  }
+  
+  SILFunction *fn = site.getCalleeFunction();
+  SILModule &M = IGM.getSILModule();
+  if (fn && M.dynamicRCFunctionsWithInOuts_dmu_.lookup(fn).empty()) {
+    StringRef fnName = fn == nullptr ? StringRef("<anon>") : StringRef(demangle_wrappers::demangleSymbolAsString(fn->getName())).copy(M.dynamicRCFunctionNames_dmu_);
+    M.dynamicRCFunctionsWithInOuts_dmu_.insert( std::make_pair( fn, fnName ));
+    const SourceLoc &sl = site.getLoc().getSourceLoc();
+    for (auto index : indices(args))
+      // NOTE: isIndirectConvention tests for more than just Out
+      if (site.getArgumentConvention(index).isIndirectConvention())
+        IGM.getSwiftModule()->getASTContext().Diags.diagnose(sl, diag::not_handling_inout_to_non_Swift_dmu_, fnName);
+      else
+        IGM.getSwiftModule()->getASTContext().Diags.diagnose(sl, diag::conservative_for_argument_of_nonSwift_dmu_, fnName);
+  }
+  for (auto index : indices(args))
+    if (site.getArgumentConvention(index).isIndirectConvention())
+      ; // dmu TODO: dpg.  Actually hande this correctly. With new work extending emitStoreBarrier_dmu_ to more cases, should be easy
+    else {
+      if (CurSILFn->getName().contains("createtask"))
+        fprintf(stderr, "visitFullApplySite createtask %d \n", __LINE__);
+      emitVisitRefsInInitialValues_dmu_(args[index]);
+    }
+}
+
 void IRGenSILFunction::visitFullApplySite(FullApplySite site) {
+  if (site.isNonSwift_dmu_()) {
+    makeArgumentsOfNonSwiftCalleeSaveForConcurrentAccess_dmu_(site);
+  }
+  
   const LoweredValue &calleeLV = getLoweredValue(site.getCallee());
   
   auto origCalleeType = site.getOrigCalleeType();
   auto substCalleeType = site.getSubstCalleeType();
-  bool nonSwiftCallee = site.isNonSwift_dmu_();
   
   auto args = site.getArguments();
   SILFunctionConventions origConv(origCalleeType, getSILModule());
@@ -2086,40 +2145,11 @@ void IRGenSILFunction::visitFullApplySite(FullApplySite site) {
     SILValue selfArg = args.back();
     args = args.drop_back();
 
-    if (nonSwiftCallee) {
-      TRACE_DMU_(*this);
-      emitVisitRefsInInitialValues_dmu_(selfArg);
-    }
-
     if (selfArg->getType().isObject()) {
       selfValue = getLoweredSingletonExplosion(selfArg);
     } else {
       selfValue = getLoweredAddress(selfArg).getAddress();
     }
-  }
-
-  if (nonSwiftCallee) {
-    SILFunction *fn = site.getCalleeFunction();
-    SILModule &M = IGM.getSILModule();
-    if (fn && M.dynamicRCFunctionsWithInOuts_dmu_.lookup(fn).empty()) {
-      StringRef fnName = fn == nullptr ? StringRef("<anon>") : StringRef(demangle_wrappers::demangleSymbolAsString(fn->getName())).copy(M.dynamicRCFunctionNames_dmu_);
-      M.dynamicRCFunctionsWithInOuts_dmu_.insert( std::make_pair( fn, fnName ));
-      const SourceLoc &sl = site.getLoc().getSourceLoc();
-      for (auto index : indices(args))
-        // NOTE: isIndirectConvention tests for more than just Out
-        if (site.getArgumentConvention(index).isIndirectConvention())
-          IGM.getSwiftModule()->getASTContext().Diags.diagnose(sl, diag::not_handling_inout_to_non_Swift_dmu_, fnName);
-        else
-          IGM.getSwiftModule()->getASTContext().Diags.diagnose(sl, diag::conservative_for_argument_of_nonSwift_dmu_, fnName);
-    }
-    for (auto index : indices(args))
-      if (site.getArgumentConvention(index).isIndirectConvention())
-        ; // dmu TODO: dpg.  Actually hande this correctly. With new work extending emitStoreBarrier_dmu_ to more cases, should be easy
-      else {
-        if (CurSILFn->getName().contains("createtask"))
-          fprintf(stderr, "visitFullApplySite createtask %d XXXXXXXX\n", __LINE__);
-        emitVisitRefsInInitialValues_dmu_(args[index]);
-      }
   }
 
   Explosion llArgs;
