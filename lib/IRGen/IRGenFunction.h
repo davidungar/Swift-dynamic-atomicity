@@ -635,11 +635,16 @@ private:
   
 public:
   void trace_dmu_(const char* function, const char* file, int line) const {
-    if (CurFn->getName().contains(StringRef("createtask")))
+    if (CurFn->getName().contains(StringRef("gazorp")))
       fprintf(stderr, "TRACE: %s %s:%d\n", function, file, line);
   }
 };
-#define TRACE_DMU_(IGF) (IGF).trace_dmu_(__FUNCTION__, __FILE__, __LINE__)
+  // define as nothing to turn off
+# if 1
+  # define TRACE_DMU_(IGF) (IGF).trace_dmu_(__FUNCTION__, __FILE__, __LINE__)
+# else
+  # define TRACE_DMU_(IGF) if (true) ; else
+# endif
 
 using ConditionalDominanceScope = IRGenFunction::ConditionalDominanceScope;
 
