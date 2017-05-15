@@ -208,6 +208,9 @@ public:
     }
   }
   
+  // void IsSafeForConcurrentAccess_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override;
+
+  
   void packIntoEnumPayload(IRGenFunction &IGF,
                            EnumPayload &payload,
                            Explosion &src,

@@ -800,8 +800,8 @@ public:
   /// TODO: (dmu cleanup) fix this comment:  Set bit in source (explosion)'s reference count if it now can be concurrently accessed after
   /// initializing or assigning it to dest (addr)
   /// rename to storeBarrier?
-  void emitVisitRefsInValuesAssignedTo_dmu_(SILValue const &src, Address const outermostDestAggregate, bool isDestIndirect);
-
+  void emitVisitRefsInValuesAssignedTo_dmu_(SILValue const &src, SILValue const &dest, bool isDestIndirect);
+  llvm::Value *emitAddressContainedIn_dmu_(llvm::Value*);
   
   //===--------------------------------------------------------------------===//
   // SIL instruction lowering
@@ -1006,7 +1006,7 @@ public:
   void visitCheckedCastAddrBranchInst(CheckedCastAddrBranchInst *i);
   
 private:
-  void makeArgumentsOfNonSwiftCalleeSaveForConcurrentAccess_dmu_(FullApplySite site);
+  void makeArgumentsOfNonSwiftCalleeSafeForConcurrentAccess_dmu_(FullApplySite site);
 };
 
 } // end anonymous namespace
@@ -2088,7 +2088,7 @@ void IRGenSILFunction::visitTryApplyInst(swift::TryApplyInst *i) {
   visitFullApplySite(i);
 }
 
-void IRGenSILFunction::makeArgumentsOfNonSwiftCalleeSaveForConcurrentAccess_dmu_(
+void IRGenSILFunction::makeArgumentsOfNonSwiftCalleeSafeForConcurrentAccess_dmu_(
       FullApplySite site)
 {
   auto args = site.getArguments();
@@ -2126,7 +2126,7 @@ void IRGenSILFunction::makeArgumentsOfNonSwiftCalleeSaveForConcurrentAccess_dmu_
 
 void IRGenSILFunction::visitFullApplySite(FullApplySite site) {
   if (site.isNonSwift_dmu_()) {
-    makeArgumentsOfNonSwiftCalleeSaveForConcurrentAccess_dmu_(site);
+    makeArgumentsOfNonSwiftCalleeSafeForConcurrentAccess_dmu_(site);
   }
   
   const LoweredValue &calleeLV = getLoweredValue(site.getCallee());
@@ -3344,27 +3344,35 @@ void IRGenSILFunction::emitVisitRefsInInitialValues_dmu_(SILValue const &srcSILV
   }
 }
 
+llvm::Value *IRGenSILFunction::emitAddressContainedIn_dmu_(llvm::Value *v) {
+  llvm::Type *ptrPtrTy = IGM.RefCountedPtrTy->getPointerTo();
+  Address destRefCountPtrPtr = Address(
+                                       Builder.CreateBitCast(v, ptrPtrTy),
+                                       Alignment(8)
+                                       ); // TODO: (dmu) 8?
+  return Builder.CreateLoad(destRefCountPtrPtr);
+}
+
 //#include <swift/Runtime/HeapObject.h> // blecch! TODO: (dmu) clean this up!
 #include <../stdlib/public/SwiftShims/RefCount.h> // blecch! TODO: (dmu) clean this up!
 // Return non-zero if the reference count has the atomic bit set
 void IRGenSILFunction::emitVisitRefsInValuesAssignedTo_dmu_(SILValue const &srcSILValue,
-                                                            Address const outermostDestAggregate,
+                                                            SILValue const &destSILValue,
                                                             bool isDestIndirect)  {
   // TODO: (dmu) fix this hack, knowing where the ref count is!
   // TODO: (dmu) dest must be native and the outermost heap object to hold the value
+  Address outermostDestAggregate = getLoweredValue(destSILValue).getAddressOfOutermostAggregate_dmu_(*this);
+  llvm::Value *outermostDestAggreggateAddress = outermostDestAggregate.getAddress();
   
-  llvm::Value *destAddress = nullptr;
-  if (!isDestIndirect)
-    destAddress = outermostDestAggregate.getAddress();
-  else {
-    llvm::Type *ptrPtrTy = IGM.RefCountedPtrTy->getPointerTo();
-    Address destRefCountPtrPtr = Address(
-                                         Builder.CreateBitCast(outermostDestAggregate.getAddress(), ptrPtrTy),
-                                         Alignment(8)
-                                         ); // TODO: (dmu) 8?
-    llvm::LoadInst *destAddrLoad = Builder.CreateLoad(destRefCountPtrPtr);
-    destAddress = destAddrLoad;
-  }
+  llvm::Value *destAddress = isDestIndirect
+    ?  emitAddressContainedIn_dmu_(outermostDestAggreggateAddress)
+    :                              outermostDestAggreggateAddress;
+
+  
+  SILType destType = destSILValue->getType().getObjectType();
+  const TypeInfo &destTI = getTypeInfo(destType);
+
+  
   llvm::Value *destRefCountPtr = Builder.CreateBitCast(destAddress, IGM.RefCountedPtrTy);
   Address refCountAddr = Builder.CreateStructGEP(
                                                  Address(destRefCountPtr, Alignment(4)), // TODO: (dmu) 4?!
@@ -3372,7 +3380,12 @@ void IRGenSILFunction::emitVisitRefsInValuesAssignedTo_dmu_(SILValue const &srcS
                                                  IGM.DataLayout.getStructLayout(IGM.RefCountedStructTy),
                                                  Twine("refCount"));
   
+  // TODO: (dmu 5-15) is destType right when there is indirection???
+  //destTI.IsSafeForConcurrentAccess_dmu_(*this, refCountAddr, destType);
+  
 
+
+  
   llvm::LoadInst *refCount = Builder.CreateLoad(refCountAddr);
   llvm::Value *safeBit = Builder.CreateAnd(refCount, StrongRefCount::might_be_concurrently_accessed_mask__dmu_);
   
@@ -5192,9 +5205,8 @@ void IRGenSILFunction::emitStoreBarrier_dmu_( SILValue srcSILValue, SILValue des
       }
       if (isKnownToBeInitialization)
         return;
-      Address destAddress = getLoweredValue(oar.value).getAddressOfOutermostAggregate_dmu_(*this);
       TRACE_DMU_(*this);
-      emitVisitRefsInValuesAssignedTo_dmu_( srcSILValue, destAddress,
+      emitVisitRefsInValuesAssignedTo_dmu_( srcSILValue, oar.value,
                                            oar.kind == OutermostAggregateResult_dmu_::Kind::foundIndirectOutermostAggregate);
       return;
   }
