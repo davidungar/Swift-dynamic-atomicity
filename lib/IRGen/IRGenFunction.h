@@ -640,7 +640,7 @@ public:
   }
 };
   // define as nothing to turn off
-# if 1
+# if 0
   # define TRACE_DMU_(IGF) (IGF).trace_dmu_(__FUNCTION__, __FILE__, __LINE__)
 # else
   # define TRACE_DMU_(IGF) if (true) ; else

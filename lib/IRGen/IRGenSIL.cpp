@@ -2091,15 +2091,17 @@ void IRGenSILFunction::visitTryApplyInst(swift::TryApplyInst *i) {
 void IRGenSILFunction::makeArgumentsOfNonSwiftCalleeSaveForConcurrentAccess_dmu_(
       FullApplySite site)
 {
-//  auto origCalleeType = site.getOrigCalleeType();
   auto args = site.getArguments();
-//  if (origCalleeType->hasSelfParam() &&
-//      isSelfContextParameter(origCalleeType->getSelfParameter())) {
-//    SILValue selfArg = args.back();
-//    TRACE_DMU_(*this);
-//    // MISSING WARNING (dmu)
-//    emitVisitRefsInInitialValues_dmu_(selfArg);
-//  }
+  
+  // TODO: (dmu) in-outs this para may be redundant
+  auto origCalleeType = site.getOrigCalleeType();
+  if (origCalleeType->hasSelfParam() &&
+      isSelfContextParameter(origCalleeType->getSelfParameter())) {
+    SILValue selfArg = args.back();
+    TRACE_DMU_(*this);
+    // MISSING WARNING (dmu)
+    emitVisitRefsInInitialValues_dmu_(selfArg);
+  }
   
   SILFunction *fn = site.getCalleeFunction();
   SILModule &M = IGM.getSILModule();
@@ -5092,7 +5094,7 @@ private:
   }
 public:
   static OutermostAggregateResult_dmu_ get(IRGenSILFunction& IGF, SILValue vArg) {
-    bool traceForDebugging = IGF.CurFn->getName().contains(StringRef("createtask"));
+    bool traceForDebugging = false; // XXXXXXXX IGF.CurFn->getName().contains(StringRef("createtask"));
     OutermostAggregateResult_dmu_ oar = _get(IGF, vArg, traceForDebugging);
     if (traceForDebugging) {
       std::string result;
