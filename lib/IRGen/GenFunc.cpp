@@ -306,7 +306,7 @@ namespace {
    }
    llvm::Value *genIRToVisitRefsInValuesAssignedIntoOutermostAggregate_dmu_(IRGenFunction &IGF, llvm::Value *destAddr) const override {
      llvm_unreachable("How can a function be an in-out parameter?"); // 5-15
-#error fix
+     abort();
      return llvm::Constant::getNullValue(IGF.IGM.Int1Ty);
    }
 

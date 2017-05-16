@@ -833,7 +833,6 @@ public:
   llvm::Value *genIRToVisitRefsInValuesAssignedIntoOutermostAggregate_dmu_(IRGenFunction &IGF, llvm::Value *destAddr) const override {
     // TODO: (dmu check) is the getAddress right???
     // 5-15
-#error fix
     assert(false && "not handling existentials yet");
     return llvm::Constant::getAllOnesValue(IGF.IGM.Int1Ty);
 //    llvm::Value *r = asDerived().emitValueCheckHolderInScalar_dmu_(IGF, dest.getAddress());
@@ -1092,6 +1091,7 @@ public:
                                            
   llvm::Value *emitValueCheckHolderInScalar_dmu_(IRGenFunction &IGF, llvm::Value *dst) const {
     //5-15 call into vwt
+    abort();
   }
 
 
@@ -1350,6 +1350,7 @@ public:
                                            
   llvm::Value *emitValueCheckHolderInScalar_dmu_(IRGenFunction &IGF, llvm::Value *dst) const {// 5-15
   // vwt?
+    abort();
   }
 
   void emitValueFixLifetime(IRGenFunction &IGF, llvm::Value *value) const {
