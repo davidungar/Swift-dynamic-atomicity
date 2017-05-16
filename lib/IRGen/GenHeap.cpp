@@ -1479,7 +1479,7 @@ llvm::Value *IRGenFunction::emitUnknownCheckHolder_dmu_(llvm::Value *objToCheck)
   return emitUnknownIsDestSafeForConcurrentAccess_dmu_(objToCheck); // level-shift
 }
 llvm::Value *IRGenFunction::emitUnknownIsDestSafeForConcurrentAccess_dmu_(llvm::Value *objToCheck) {
-  return emitIsDestSafeCall_dmu_(IGM.getUnknownIsDestSafeForConcurremtAccess_dmu_Fn(), objToCheck);
+  return emitIsDestSafeCall_dmu_(IGM.getUnknownIsDestSafeForConcurrentAccess_dmu_Fn(), objToCheck);
 }
 
 
@@ -1534,7 +1534,7 @@ void IRGenFunction::emitBridgeBeSafeForConcurrentAccess_dmu_(llvm::Value *value)
 }
 
 llvm::Value *IRGenFunction::emitBridgeCheckHolder_dmu_(llvm::Value *valueToCheck) {
-  return emitBridgeIsDestIsSafeForConcurrentAccess_dmu_(valueToCheck);
+  return emitBridgeIsDestSafeForConcurrentAccess_dmu_(valueToCheck);
 }
 
 llvm::Value *IRGenFunction::emitBridgeIsDestSafeForConcurrentAccess_dmu_(llvm::Value *objToCheck) {

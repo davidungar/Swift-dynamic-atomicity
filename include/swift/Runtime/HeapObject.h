@@ -773,7 +773,7 @@ void swift_bridgeObjectBeSafeForConcurrentAccess_dmu_(void *value)
     SWIFT_CC(DefaultCC);
   
 SWIFT_RUNTIME_EXPORT
-bool swift_bridgeObjectIsDestIsSafeForConcurrentAccess_dmu_(void *dst)
+bool swift_bridgeObjectIsDestSafeForConcurrentAccess_dmu_(void *dst)
     SWIFT_CC(DefaultCC);
 
 
@@ -812,7 +812,7 @@ void swift_unknownBeSafeForConcurrentAccess_dmu_(void *value)
   
 /// TODO: (dmu): comment
 SWIFT_RUNTIME_EXPORT
-bool swift_unknownIsDestIsSafeForConcurrentAccess_dmu_(void *dst)
+bool swift_unknownIsDestSafeForConcurrentAccess_dmu_(void *dst)
     SWIFT_CC(DefaultCC);
 
 
