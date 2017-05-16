@@ -165,12 +165,8 @@ public:
     asDerived().emitVisitRefInScalar_dmu_(IGF, src.claimNext());
   }
   
-  void genIRToVisitRefsInValuesAssignedTo_dmu_(IRGenFunction &IGF, Explosion &src, Address dest) const override {
-    if (Derived::IsScalarPOD) {
-      (void)src.claimNext();
-      return;
-    }
-    asDerived().emitCheckHolderThenVisitHeldRefsInScalar_dmu_(IGF, dest.getAddress(), src.claimNext());
+  llvm::Value *genIRToVisitRefsInValuesAssignedInToOutermostAggregate_dmu_(IRGenFunction &IGF, llvm::Value *destAddr) const override {
+    return asDerived().emitCheckHolderThenVisitHeldRefsInScalar_dmu_(IGF, destAddr); // 5-15
   }
 
   void copy(IRGenFunction &IGF, Explosion &in, Explosion &out,

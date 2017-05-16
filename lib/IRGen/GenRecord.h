@@ -511,8 +511,8 @@ public:
   void genIRToVisitRefsInInitialValues_dmu_(IRGenFunction &IGF, Explosion &myLoadedValues) const override {
     forAllFields_dmu_<&LoadableTypeInfo::genIRToVisitRefsInInitialValues_dmu_>(IGF, myLoadedValues);
   }
-  void genIRToVisitRefsInValuesAssignedTo_dmu_(IRGenFunction &IGF, Explosion &e, Address dest) const override {
-    forAllFields<&LoadableTypeInfo::genIRToVisitRefsInValuesAssignedTo_dmu_>(IGF, e, dest);
+  llvm::Value *genIRToVisitRefsInValuesAssignedInToOutermostAggregate_dmu_(IRGenFunction &IGF, llvm::Value *destAddr) const override {
+     return llvm::Constant::getNullValue(IGF.IGM.Int1Ty);
   }
 
 

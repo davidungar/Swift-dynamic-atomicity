@@ -3359,42 +3359,25 @@ llvm::Value *IRGenSILFunction::emitAddressContainedIn_dmu_(llvm::Value *v) {
 void IRGenSILFunction::emitVisitRefsInValuesAssignedTo_dmu_(SILValue const &srcSILValue,
                                                             SILValue const &destSILValue,
                                                             bool isDestIndirect)  {
-  // TODO: (dmu) fix this hack, knowing where the ref count is!
-  // TODO: (dmu) dest must be native and the outermost heap object to hold the value
-  Address outermostDestAggregate = getLoweredValue(destSILValue).getAddressOfOutermostAggregate_dmu_(*this);
-  llvm::Value *outermostDestAggreggateAddress = outermostDestAggregate.getAddress();
-  
-  llvm::Value *destAddress = isDestIndirect
-    ?  emitAddressContainedIn_dmu_(outermostDestAggreggateAddress)
-    :                              outermostDestAggreggateAddress;
-
   
   SILType destType = destSILValue->getType().getObjectType();
   const TypeInfo &destTI = getTypeInfo(destType);
+  const LoadableTypeInfo *loadableDestTI = cast_or_null<LoadableTypeInfo>(&destTI);
+  assert(loadableDestTI && "not loadable?!");
+  
+  Address outermostDestAggregate = getLoweredValue(destSILValue).getAddressOfOutermostAggregate_dmu_(*this);
+  llvm::Value *outermostDestAggreggateAddress = outermostDestAggregate.getAddress();
+  llvm::Value *destAddress = isDestIndirect
+  ?  emitAddressContainedIn_dmu_(outermostDestAggreggateAddress)
+  :                              outermostDestAggreggateAddress;
 
-  
-  llvm::Value *destRefCountPtr = Builder.CreateBitCast(destAddress, IGM.RefCountedPtrTy);
-  Address refCountAddr = Builder.CreateStructGEP(
-                                                 Address(destRefCountPtr, Alignment(4)), // TODO: (dmu) 4?!
-                                                 1,
-                                                 IGM.DataLayout.getStructLayout(IGM.RefCountedStructTy),
-                                                 Twine("refCount"));
-  
-  // TODO: (dmu 5-15) is destType right when there is indirection???
-  //destTI.IsSafeForConcurrentAccess_dmu_(*this, refCountAddr, destType);
-  
+  ConditionalDominanceScope condition(*this); // a shot in the dark
 
-
-  
-  llvm::LoadInst *refCount = Builder.CreateLoad(refCountAddr);
-  llvm::Value *safeBit = Builder.CreateAnd(refCount, StrongRefCount::might_be_concurrently_accessed_mask__dmu_);
+  llvm::Value *cond = loadableDestTI->genIRToVisitRefsInValuesAssignedInToOutermostAggregate_dmu_(*this, destAddress);
   
   llvm::BasicBlock *isSafe = createBasicBlock("isSafe");
   llvm::BasicBlock *safeOrNot = createBasicBlock("safeOrNot");
   
-  ConditionalDominanceScope condition(*this); // a shot in the dark
-  
-  llvm::Value *cond = Builder.CreateICmpNE(safeBit, llvm::ConstantInt::get(IGM.Int32Ty, 0));
   Builder.CreateCondBr(cond, isSafe, safeOrNot);
   Builder.emitBlock(isSafe);
   
@@ -3403,9 +3386,6 @@ void IRGenSILFunction::emitVisitRefsInValuesAssignedTo_dmu_(SILValue const &srcS
   
   Builder.CreateBr(safeOrNot);
   Builder.emitBlock(safeOrNot);
-  
-  // NOTE: Used to call genIRToVisitRefsInValuesAssignedTo_dmu_
-  // TODO: (dmu) remove genIRToVisitRefsInValuesAssignedTo_dmu_ and all unique callees
 }
 
 

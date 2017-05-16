@@ -479,10 +479,6 @@ namespace {
       if (!getSingleton()) return;
       getLoadableSingleton()->genIRToVisitRefsInInitialValues_dmu_(IGF, e);
     }
-    void genIRToVisitRefsInValuesAssignedTo_dmu_(IRGenFunction &IGF, Explosion &e, Address dest) const override {
-      if (!getSingleton()) return;
-      getLoadableSingleton()->genIRToVisitRefsInValuesAssignedTo_dmu_(IGF, e, dest);
-    }
 
     void reexplode(IRGenFunction &IGF, Explosion &src, Explosion &dest)
     const override {
@@ -1331,13 +1327,8 @@ namespace {
       assert(TIK >= Loadable);
       genIRToVisitRefsInInitialValuesOfPayload_dmu_(IGF, e);
     }
-    void genIRToVisitRefsInValuesAssignedTo_dmu_(IRGenFunction &IGF, Explosion &e, Address dest) const override {
-      assert(TIK >= Loadable);
-      genIRToVisitRefsInValuesOfPayloadAssignedTo_dmu_(IGF, e, dest);
-    }
   private:
     virtual void genIRToVisitRefsInInitialValuesOfPayload_dmu_(IRGenFunction &IGF, Explosion &e) const = 0;
-    virtual void genIRToVisitRefsInValuesOfPayloadAssignedTo_dmu_(IRGenFunction &IGF, Explosion &e, Address dest) const = 0;
   public:
 
     void reexplode(IRGenFunction &IGF, Explosion &src, Explosion &dest)
@@ -1518,7 +1509,6 @@ namespace {
     llvm::Function *copyEnumFunction = nullptr;
     llvm::Function *consumeEnumFunction = nullptr;
     llvm::Function *visitRefsInInitialValuesOfPayload_dmu_EnumFunction = nullptr;
-    llvm::Function *visitRefsInValuesOfPayloadAssignedTo_dmu_EnumFunction = nullptr;
     
     SmallVector<llvm::Type *, 2> PayloadTypesAndTagType;
     SmallVector<llvm::Type *, 2> RefTypePayloadTypesAndTagType_dmu_;
@@ -1617,43 +1607,6 @@ namespace {
       return func;
     }
 
-//    llvm::Function *emitVisitRefsInValuesOfPayloadAssignedTo_dmu_EnumFunction(IRGenModule &IGM, EnumDecl *theEnum) {
-//      IRGenMangler Mangler;
-//      std::string name = Mangler.mangleOutlinedVisitRefsInValuesOfPayloadAssignedTo_dmu_EnumFunction(theEnum);
-//      // TODO: (dmu) fix this awful implementation that checks the dest for every field!
-//      auto func = createOutlineLLVMFunction(IGM, name, RefTypePayloadTypesAndTagType_dmu_);
-//    
-//      IRGenFunction IGF(IGM, func);
-//      Explosion src = IGF.collectParameters();
-//      assert(false && "unused and unimp");
-//    
-////      EnumPayload payload;
-////      llvm::Value *extraTag;
-////      std::tie(payload, extraTag) =
-////      getPayloadAndExtraTagFromExplosionOutlined(IGF, src);
-////      llvm::BasicBlock *endBB =
-////      testFixedEnumContainsPayload(IGF, payload, extraTag);
-////      
-////      if (PayloadBitCount > 0) {
-////        ConditionalDominanceScope condition(IGF);
-////        Explosion payloadValue;
-////        Explosion payloadCopy;
-////        auto &loadableTI = getLoadablePayloadTypeInfo();
-////        loadableTI.unpackFromEnumPayload(IGF, payload, payloadValue, 0);
-////        // dmu unimp
-////        loadableTI.genIRToVisitRefsInValuesAssignedTo_dmu_(IGF, payloadValue, destAddress);
-////        (void)payloadCopy.claimAll(); // FIXME: repack if not bit-identical
-////      }
-////      
-////      IGF.Builder.CreateBr(endBB);
-////      IGF.Builder.emitBlock(endBB);
-////      
-////      IGF.Builder.CreateRetVoid();
-//      return func;
-//    }
-//    
-    
-    
     static EnumPayloadSchema getPreferredPayloadSchema(Element payloadElement) {
       // TODO: If the payload type info provides a preferred explosion schema,
       // use it. For now, just use a generic word-chunked schema.
@@ -2380,12 +2333,6 @@ namespace {
       
     }
     
-    void genIRToVisitRefsInValuesOfPayloadAssignedTo_dmu_(IRGenFunction &IGF, Explosion &e, Address dest) const override {
-      fprintf(stderr, "WARNING: genIRToVisitRefsInValuesOfPayloadAssignedTo_dmu_ not really done; being too conservative");
-      // TODO: (dmu): In fact may not use this at all
-      genIRToVisitRefsInInitialValuesOfPayload_dmu_(IGF, e);
-    }
-    
     
     void fillExplosionForOutlinedCall(IRGenFunction &IGF, Explosion &src,
                                       Explosion &out) const {
@@ -3088,7 +3035,6 @@ namespace {
     llvm::Function *copyEnumFunction = nullptr;
     llvm::Function *consumeEnumFunction = nullptr;
     llvm::Function *visitRefsInInitialValuesOfPayload_dmu_EnumFunction = nullptr;
-    llvm::Function *visitRefsInValuesOfPayloadAssignedTo_dmu_EnumFunction = nullptr;
     
     
     SmallVector<llvm::Type *, 2> PayloadTypesAndTagType;
@@ -3165,30 +3111,6 @@ namespace {
       return func;
     }
     
-//    llvm::Function *emitVisitRefsInValuesOfPayloadAssignedTo_dmu_EnumFunction(IRGenModule &IGM, EnumDecl *theEnum) {
-//      IRGenMangler Mangler;
-//      std::string name = Mangler.mangleOutlinedVisitRefsInInitialValuesOfPayload_dmu_EnumFunction(theEnum);
-//      auto func = createOutlineLLVMFunction(IGM, name, PayloadTypesAndTagType);
-//      
-//      IRGenFunction IGF(IGM, func);
-//      Explosion src = IGF.collectParameters();
-//      assert("is this even used?" && false);
-//
-////      auto parts = destructureAndTagLoadableEnumFromOutlined(IGF, src);
-////      
-////      forNontrivialPayloads(IGF, parts.tag, [&](unsigned tagIndex,
-////                                                EnumImplStrategy::Element elt) {
-////        auto &lti = cast<LoadableTypeInfo>(*elt.ti);
-////        Explosion value;
-////        projectPayloadValue(IGF, parts.payload, tagIndex, lti, value);
-////        
-////        lti.genIRToVisitRefsInInitialValues_dmu_(IGF, value);
-////      });
-//      
-//      IGF.Builder.CreateRetVoid();
-//      return func;
-//    }
-
     
     static EnumPayloadSchema getPayloadSchema(ArrayRef<Element> payloads) {
       // TODO: We might be able to form a nicer schema if the payload elements
@@ -4242,11 +4164,6 @@ namespace {
       }
     }
     
-    void genIRToVisitRefsInValuesOfPayloadAssignedTo_dmu_(IRGenFunction &IGF, Explosion &e, Address dest) const override {
-      fprintf(stderr, "WARNING: genIRToVisitRefsInValuesOfPayloadAssignedTo_dmu_ not really done; being too conservative");
-      // TODO: (dmu): In fact may not use this at all
-      genIRToVisitRefsInInitialValuesOfPayload_dmu_(IGF, e);
-    }
     
 
     
@@ -5236,9 +5153,6 @@ namespace {
     void genIRToVisitRefsInInitialValues_dmu_(IRGenFunction &IGF, Explosion &e) const override {
       llvm_unreachable("resilient enums are always indirect");
     }
-    void genIRToVisitRefsInValuesAssignedTo_dmu_(IRGenFunction &IGF, Explosion &e, Address dest) const override {
-      llvm_unreachable("resilient enums are always indirect");
-    }
 
     void reexplode(IRGenFunction &IGF, Explosion &src,
                            Explosion &dest) const override {
@@ -5628,9 +5542,9 @@ namespace {
     void genIRToVisitRefsInInitialValues_dmu_(IRGenFunction &IGF, Explosion &e) const override {
       return Strategy.genIRToVisitRefsInInitialValues_dmu_(IGF, e);
     }
-    void genIRToVisitRefsInValuesAssignedTo_dmu_(IRGenFunction &IGF, Explosion &e,
-                                           Address dest) const override {
-      return Strategy.genIRToVisitRefsInValuesAssignedTo_dmu_(IGF, e, dest);
+    llvm::Value *genIRToVisitRefsInValuesAssignedInToOutermostAggregate_dmu_(IRGenFunction &IGF,
+                                           llvm::Value *destAddr) const override {
+      return llvm::Constant::getNullValue(IGF.IGM.Int1Ty);
     }
     void reexplode(IRGenFunction &IGF, Explosion &src,
                    Explosion &dest) const override {
@@ -5942,7 +5856,6 @@ TypeInfo *SinglePayloadEnumImplStrategy::completeFixedLayout(
     copyEnumFunction = emitCopyEnumFunction(TC.IGM, theEnum);
     consumeEnumFunction = emitConsumeEnumFunction(TC.IGM, theEnum);
     visitRefsInInitialValuesOfPayload_dmu_EnumFunction = emitVisitRefsInInitialValuesOfPayload_dmu_EnumFunction(TC.IGM, theEnum);
-//    visitRefsInValuesOfPayloadAssignedTo_dmu_EnumFunction = emitVisitRefsInValuesOfPayloadAssignedTo_dmu_EnumFunction(TC.IGM, theEnum);
   }
 
   return const_cast<TypeInfo *>(TI);
@@ -6134,7 +6047,6 @@ MultiPayloadEnumImplStrategy::completeFixedLayout(TypeConverter &TC,
     copyEnumFunction = emitCopyEnumFunction(TC.IGM, theEnum);
     consumeEnumFunction = emitConsumeEnumFunction(TC.IGM, theEnum);
     visitRefsInInitialValuesOfPayload_dmu_EnumFunction = emitVisitRefsInInitialValuesOfPayload_dmu_EnumFunction(TC.IGM, theEnum);
-//    visitRefsInValuesOfPayloadAssignedTo_dmu_EnumFunction = emitVisitRefsInValuesOfPayloadAssignedTo_dmu_EnumFunction(TC.IGM, theEnum);
   }
 
   return const_cast<TypeInfo *>(TI);

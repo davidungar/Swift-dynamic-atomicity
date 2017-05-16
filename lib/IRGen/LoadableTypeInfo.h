@@ -114,8 +114,8 @@ public:
   /// TODO: (dmu cleanup) fix this comment:  Set bit in source (explosion)'s reference count if it now can be concurrently accessed after
   /// initializing or assigning it to dest (addr)
   /// rename to storeBarrier?
-  virtual void genIRToVisitRefsInValuesAssignedTo_dmu_(IRGenFunction &IGF, Explosion &explosion,
-                                                 Address dest) const = 0;
+  virtual llvm::Value *genIRToVisitRefsInValuesAssignedInToOutermostAggregate_dmu_(IRGenFunction &IGF,
+                                                 llvm::Value *destAddr) const = 0;
 
   // We can give this a reasonable default implementation.
   void initializeWithCopy(IRGenFunction &IGF, Address destAddr,
