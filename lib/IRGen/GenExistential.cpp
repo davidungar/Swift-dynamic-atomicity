@@ -831,12 +831,7 @@ public:
     asDerived().claimTables(IGF, e);
   }
   llvm::Value *genIRToVisitRefsInValuesAssignedIntoOutermostAggregate_dmu_(IRGenFunction &IGF, llvm::Value *destAddr) const override {
-    // TODO: (dmu check) is the getAddress right???
-    // 5-15
-    assert(false && "not handling existentials yet");
-    return llvm::Constant::getAllOnesValue(IGF.IGM.Int1Ty);
-//    llvm::Value *r = asDerived().emitValueCheckHolderInScalar_dmu_(IGF, dest.getAddress());
-//    asDerived().claimTables(IGF, src);
+    return asDerived().emitValueCheckHolderInScalar_dmu_(IGF, destAddr);
   }
   
   void copy(IRGenFunction &IGF, Explosion &src, Explosion &dest,
@@ -1090,8 +1085,7 @@ public:
   }
                                            
   llvm::Value *emitValueCheckHolderInScalar_dmu_(IRGenFunction &IGF, llvm::Value *dst) const {
-    //5-15 call into vwt
-    abort();
+    return llvm::Constant::getAllOnesValue(IGF.IGM.Int1Ty);  // conservative
   }
 
 
@@ -1223,7 +1217,7 @@ public:
   }
 
   llvm::Value *emitValueCheckHolderInScalar_dmu_(IRGenFunction &IGF, llvm::Value *dst) const {
-    return IGF.emitCheckHolderInScalar_dmu_(dst, Refcounting);  //5-15
+    return IGF.emitCheckHolderInScalar_dmu_(dst, Refcounting);
   }
 
   void emitValueFixLifetime(IRGenFunction &IGF, llvm::Value *value) const {
@@ -1349,8 +1343,7 @@ public:
   }
                                            
   llvm::Value *emitValueCheckHolderInScalar_dmu_(IRGenFunction &IGF, llvm::Value *dst) const {// 5-15
-  // vwt?
-    abort();
+    return llvm::Constant::getNullValue(IGF.IGM.Int1Ty);
   }
 
   void emitValueFixLifetime(IRGenFunction &IGF, llvm::Value *value) const {
