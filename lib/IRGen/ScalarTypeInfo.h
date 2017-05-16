@@ -165,7 +165,7 @@ public:
     asDerived().emitVisitRefInScalar_dmu_(IGF, src.claimNext());
   }
   
-  llvm::Value *genIRToVisitRefsInValuesAssignedInToOutermostAggregate_dmu_(IRGenFunction &IGF, llvm::Value *destAddr) const override {
+  llvm::Value *genIRToVisitRefsInValuesAssignedIntoOutermostAggregate_dmu_(IRGenFunction &IGF, llvm::Value *destAddr) const override {
     return asDerived().emitCheckHolderInScalar_dmu_(IGF, destAddr); 
   }
 

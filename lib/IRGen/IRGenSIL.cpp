@@ -3371,7 +3371,7 @@ void IRGenSILFunction::emitVisitRefsInValuesAssignedTo_dmu_(SILValue const &srcS
 
   ConditionalDominanceScope condition(*this); // a shot in the dark
 
-  llvm::Value *cond = loadableDestTI->genIRToVisitRefsInValuesAssignedInToOutermostAggregate_dmu_(*this, destAddress);
+  llvm::Value *cond = loadableDestTI->genIRToVisitRefsInValuesAssignedIntoOutermostAggregate_dmu_(*this, destAddress);
   
   llvm::BasicBlock *isSafe = createBasicBlock("isSafe");
   llvm::BasicBlock *safeOrNot = createBasicBlock("safeOrNot");

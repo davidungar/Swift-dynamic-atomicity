@@ -404,7 +404,7 @@ namespace {
     void genIRToVisitRefsInInitialValues_dmu_(IRGenFunction &IGF, Explosion &e) const override {
       (void)e.claimAll(); // TODO: (dmu cleanup) should not be needed, should be empty
     }
-    llvm::Value *genIRToVisitRefsInValuesAssignedInToOutermostAggregate_dmu_(IRGenFunction &IGF, llvm::Value *destAddr) const override {
+    llvm::Value *genIRToVisitRefsInValuesAssignedIntoOutermostAggregate_dmu_(IRGenFunction &IGF, llvm::Value *destAddr) const override {
       return llvm::Constant::getNullValue(IGF.IGM.Int1Ty);
     }
 
@@ -534,7 +534,7 @@ namespace {
     void genIRToVisitRefsInInitialValues_dmu_(IRGenFunction &IGF, Explosion &e) const override {
       (void)e.claimNext();
     }
-    llvm::Value *genIRToVisitRefsInValuesAssignedInToOutermostAggregate_dmu_(IRGenFunction &IGF, llvm::Value *destAddr) const override {
+    llvm::Value *genIRToVisitRefsInValuesAssignedIntoOutermostAggregate_dmu_(IRGenFunction &IGF, llvm::Value *destAddr) const override {
       return llvm::Constant::getAllOnesValue(IGF.IGM.Int1Ty);
     }
 

@@ -830,9 +830,10 @@ public:
     asDerived().emitValueVisitRefInScalar_dmu_(IGF, instance);
     asDerived().claimTables(IGF, e);
   }
-  llvm::Value *genIRToVisitRefsInValuesAssignedInToOutermostAggregate_dmu_(IRGenFunction &IGF, llvm::Value *destAddr) const override {
+  llvm::Value *genIRToVisitRefsInValuesAssignedIntoOutermostAggregate_dmu_(IRGenFunction &IGF, llvm::Value *destAddr) const override {
     // TODO: (dmu check) is the getAddress right???
     // 5-15
+#error fix
     assert(false && "not handling existentials yet");
     return llvm::Constant::getAllOnesValue(IGF.IGM.Int1Ty);
 //    llvm::Value *r = asDerived().emitValueCheckHolderInScalar_dmu_(IGF, dest.getAddress());

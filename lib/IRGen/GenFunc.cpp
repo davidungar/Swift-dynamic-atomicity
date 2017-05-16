@@ -304,8 +304,9 @@ namespace {
        IGF.emitNativeVisitRefInScalar_dmu_(context);
      }
    }
-   llvm::Value *genIRToVisitRefsInValuesAssignedInToOutermostAggregate_dmu_(IRGenFunction &IGF, llvm::Value *destAddr) const override {
+   llvm::Value *genIRToVisitRefsInValuesAssignedIntoOutermostAggregate_dmu_(IRGenFunction &IGF, llvm::Value *destAddr) const override {
      llvm_unreachable("How can a function be an in-out parameter?"); // 5-15
+#error fix
      return llvm::Constant::getNullValue(IGF.IGM.Int1Ty);
    }
 

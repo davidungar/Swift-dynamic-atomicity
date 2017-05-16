@@ -5534,9 +5534,9 @@ namespace {
     void genIRToVisitRefsInInitialValues_dmu_(IRGenFunction &IGF, Explosion &e) const override {
       return Strategy.genIRToVisitRefsInInitialValues_dmu_(IGF, e);
     }
-    llvm::Value *genIRToVisitRefsInValuesAssignedInToOutermostAggregate_dmu_(IRGenFunction &IGF,
+    llvm::Value *genIRToVisitRefsInValuesAssignedIntoOutermostAggregate_dmu_(IRGenFunction &IGF,
                                            llvm::Value *destAddr) const override {
-      return llvm::Constant::getNullValue(IGF.IGM.Int1Ty);
+      return llvm::Constant::getNullValue(IGF.IGM.Int1Ty); // Enums are on stack
     }
     void reexplode(IRGenFunction &IGF, Explosion &src,
                    Explosion &dest) const override {
