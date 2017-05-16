@@ -1308,11 +1308,12 @@ llvm::Value *IRGenFunction::emitNativeIsDestSafeForConcurrentAccess_dmu_(llvm::V
   if (doesNotRequireRefCounting(objToCheck)) {
     return llvm::Constant::getNullValue(IGM.Int1Ty);
   }
+  llvm::Value *destRefCountPtr = Builder.CreateBitCast(objToCheck, IGM.RefCountedPtrTy);
   bool optimize = false; // 5-15
   if (!optimize)
-    return emitIsDestSafeCall_dmu_(IGM.getIsDestSafeForConcurrentAccess_dmu_Fn(), objToCheck);
+    return emitIsDestSafeCall_dmu_(IGM.getIsDestSafeForConcurrentAccess_dmu_Fn(), destRefCountPtr);
   
-  llvm::Value *destRefCountPtr = Builder.CreateBitCast(objToCheck, IGM.RefCountedPtrTy);
+
   Address refCountAddr = Builder.CreateStructGEP(
                                                  Address(destRefCountPtr, Alignment(4)), // TODO: (dmu) 4?!
                                                  1,

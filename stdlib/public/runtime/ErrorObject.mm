@@ -614,7 +614,7 @@ static bool _swift_errorIsDestSafeForConcurrentAccess_dmu__(SwiftError *dst) {
 SWIFT_RUNTIME_EXPORT
 auto *_swift_errorIsDestSafeForConcurrentAccess_dmu_ = _swift_errorIsDestSafeForConcurrentAccess_dmu__;
 
-bool swift::swift_errorIsDestSafeForConcurrentAccessMakeSrcSafe_dmu_(SwiftError *dst) {
+bool swift::swift_errorIsDestSafeForConcurrentAccess_dmu_(SwiftError *dst) {
   return _swift_errorIsDestSafeForConcurrentAccess_dmu_(dst);
 }
 

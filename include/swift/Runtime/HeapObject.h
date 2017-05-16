@@ -647,7 +647,7 @@ static inline void swift_unownedBeSafeForConcurrentAccess_dmu_(UnownedReference 
 }
   
 static inline bool swift_unownedIsDestSafeForConcurrentAccess_dmu_(UnownedReference *dst) {
-  return swift_isDestSafeForConcurrentAccess_dmu_(dst->Value); // right? a snapped unowned?? 5-15
+  return swift_isDestSafeForConcurrentAccess_dmu_(dst->Value);
 }
 
 

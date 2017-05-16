@@ -743,7 +743,7 @@ SWIFT_CC(DefaultCC_IMPL) {
   }
 #endif
   auto const dstRef = static_cast<HeapObject *>(toPlainObject_unTagged_bridgeObject(dst));
-  return _swift_isDestSafeForConcurrentAccess_dmu_(destRef);
+  return _swift_isDestSafeForConcurrentAccess_dmu_(dstRef);
 }
 
 
@@ -997,8 +997,8 @@ void swift::swift_unknownUnownedBeSafeForConcurrentAccess_dmu_(UnownedReference 
 
 bool swift::swift_unknownUnownedIsDestSafeForConcurrentAccess_dmu_(UnownedReference *dst) {
   return
-    dst->Value == nullptr)               ? false
-  : dyn_cast<ObjCUnownedReference>(dst)) ? true
+    dst->Value == nullptr                ? false
+  : dyn_cast<ObjCUnownedReference>(dst)  ? true
   : swift_unownedIsDestSafeForConcurrentAccess_dmu_(dst);
 }
 
