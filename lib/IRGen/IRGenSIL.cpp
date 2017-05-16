@@ -2118,7 +2118,7 @@ void IRGenSILFunction::makeArgumentsOfNonSwiftCalleeSafeForConcurrentAccess_dmu_
   }
   for (auto index : indices(args))
     if (site.getArgumentConvention(index).isIndirectConvention())
-      ; // dmu TODO: dpg.  Actually hande this correctly. With new work extending emitStoreBarrier_dmu_ to more cases, should be easy
+      ; // dmu TODO: dpg.  5-15 Actually hande this correctly. With new work extending emitStoreBarrier_dmu_ to more cases, should be easy
     else {
       emitVisitRefsInInitialValues_dmu_(args[index]);
     }
