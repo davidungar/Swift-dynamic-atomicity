@@ -247,7 +247,7 @@ public:
   llvm::Value *emitLoadRefcountedPtr(Address addr, ReferenceCounting style);
 
   void emitVisitRefInScalar_dmu_(llvm::Value *objToSet, ReferenceCounting refcounting);
-  void emitCheckHolderThenVisitHeldRefsInScalar_dmu_(llvm::Value *objToCheck, llvm::Value *objToSet, ReferenceCounting refcounting);
+  llvm::Value* emitCheckHolderInScalar_dmu_(llvm::Value *objToCheck, ReferenceCounting refcounting);
 
 
   //   - unowned references
@@ -357,21 +357,17 @@ public:
   llvm::Value *emitObjCAutoreleaseCall(llvm::Value *value);
 
   void emitObjCStrongRelease(llvm::Value *value);
-  void emitObjCCheckHolderThenVisitHeldRefs_dmu_(llvm::Value *valueToCheck, llvm::Value *valueToSet);
   
   void emitObjCVisitRefInScalar_dmu_(llvm::Value *value);
   
   void emitObjCBeSafeForConcurrentAccess_dmu_(llvm::Value *value);
-  void emitObjCIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(llvm::Value *valueToCheck, llvm::Value *valueToSet);
 
   llvm::Value *emitBlockCopyCall(llvm::Value *value);
   void emitBlockRelease(llvm::Value *value);
   
   void emitBlockVisitRefInScalar_dmu_(llvm::Value *value);
-  void emitBlockCheckHolderThenVisitHeldRefs_dmu_(llvm::Value *valueToCheck, llvm::Value *valueToSet);
   
   void emitBlockBeSafeForConcurrentAccess_dmu_(llvm::Value *value);
-  void emitBlockIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(llvm::Value *valueCheck, llvm::Value *valueToSet);
 
   // Routines for an unknown reference-counting style (meaning,
   // dynamically something compatible with either the ObjC or Swift styles).

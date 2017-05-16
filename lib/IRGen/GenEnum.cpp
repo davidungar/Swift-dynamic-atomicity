@@ -884,9 +884,6 @@ namespace {
     void emitVisitRefInScalar_dmu_(IRGenFunction &IGF,
                                    llvm::Value *objToSet) const {}
 
-    void emitCheckHolderThenVisitHeldRefsInScalar_dmu_(IRGenFunction &IGF,
-                                                        llvm::Value *objToCheck, llvm::Value *objToSet) const {}
-    
     void initializeWithTake(IRGenFunction &IGF, Address dest, Address src,
                             SILType T)
     const override {
@@ -2829,11 +2826,6 @@ namespace {
                              {opaqueAddr, payload, tag, numEmptyCases});
     }
 
-    // TODO: (dmu implement enums)
-    void emitCheckHolderThenVisitHeldRefsInScalar_dmu_(IRGenFunction &IGF,
-                                               llvm::Value *objToCheck,
-                                               llvm::Value *objToSet) const {}
-    
     void initializeMetadata(IRGenFunction &IGF,
                             llvm::Value *metadata,
                             llvm::Value *vwtable,

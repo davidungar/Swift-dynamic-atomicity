@@ -114,15 +114,7 @@ void IRGenFunction::emitObjCVisitRefInScalar_dmu_(llvm::Value *value) {
   emitObjCBeSafeForConcurrentAccess_dmu_(value); // level-shift
 }
 
-void IRGenFunction::emitObjCCheckHolderThenVisitHeldRefs_dmu_(llvm::Value *valueToCheck, llvm::Value *valueToSet) {
-  emitObjCIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(valueToCheck, valueToSet); // level-shift
-}
-
 void IRGenFunction::emitObjCBeSafeForConcurrentAccess_dmu_(llvm::Value *value) {
-  // nothing to do, assume ObjC always atomically ref-counted
-}
-
-void IRGenFunction::emitObjCIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(llvm::Value *valueToCheck, llvm::Value *valueToSet) {
   // nothing to do, assume ObjC always atomically ref-counted
 }
 
@@ -1538,14 +1530,9 @@ void IRGenFunction::emitBlockRelease(llvm::Value *value) {
 void IRGenFunction::emitBlockVisitRefInScalar_dmu_(llvm::Value *value) {
   emitBlockBeSafeForConcurrentAccess_dmu_(value); // level-shift
 }
-void IRGenFunction::emitBlockCheckHolderThenVisitHeldRefs_dmu_(llvm::Value *valueToCheck, llvm::Value *valueToSet) {
-  emitBlockIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(valueToCheck, valueToSet);
-}
 
 void IRGenFunction::emitBlockBeSafeForConcurrentAccess_dmu_(llvm::Value *value) {
   // nothing to do; assume ObjC atomically ref-counted
 }
-void IRGenFunction::emitBlockIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(llvm::Value *valueToCheck, llvm::Value *valueToSet) {
-  // nothing to do; assume ObjC atomically ref-counted
-}
+
 

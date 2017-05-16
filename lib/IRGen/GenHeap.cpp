@@ -487,9 +487,9 @@ namespace {
                                        llvm::Value *objToSet) const {
       IGF.emitVisitRefInScalar_dmu_(objToSet, ReferenceCounting::Native);
     }
-    void emitCheckHolderThenVisitHeldRefsInScalar_dmu_(IRGenFunction &IGF,
-                                       llvm::Value *objToCheck, llvm::Value *objToSet) const {
-      IGF.emitCheckHolderThenVisitHeldRefsInScalar_dmu_(objToCheck, objToSet, ReferenceCounting::Native);
+    llvm::Value *emitCheckHolderInScalar_dmu_(IRGenFunction &IGF,
+                                       llvm::Value *objToCheck) const {
+      return IGF.emitCheckHolderInScalar_dmu_(objToCheck, ReferenceCounting::Native);
     }
     
     unsigned getFixedExtraInhabitantCount(IRGenModule &IGM) const override {
@@ -1119,16 +1119,16 @@ void IRGenFunction::emitVisitRefInScalar_dmu_(llvm::Value *objToSet,
       break;
   }
 }
-void IRGenFunction::emitCheckHolderThenVisitHeldRefsInScalar_dmu_(llvm::Value *objToCheck,
-                                                                   llvm::Value *objToSet,
-                                                                   ReferenceCounting refcounting) {
+llvm::Value* IRGenFunction::emitCheckHolderInScalar_dmu_(llvm::Value *objToCheck,
+                                                 ReferenceCounting refcounting) {
   switch (refcounting) {
+      // 5-15 each case
     case ReferenceCounting::Native:
       return emitNativeCheckHolderThenVisitHeldRefs_dmu_(objToCheck, objToSet);
     case ReferenceCounting::ObjC:
-      return emitObjCCheckHolderThenVisitHeldRefs_dmu_(objToCheck, objToSet);
     case ReferenceCounting::Block:
-      return emitBlockCheckHolderThenVisitHeldRefs_dmu_(objToCheck, objToSet);
+      return llvm::Value::getAllOnesValue(IGM.Int1Ty);
+
     case ReferenceCounting::Unknown:
       return emitUnknownCheckHolderThenVisitHeldRefs_dmu_(objToCheck, objToSet);
     case ReferenceCounting::Bridge:

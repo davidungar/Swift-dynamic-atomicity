@@ -166,7 +166,7 @@ public:
   }
   
   llvm::Value *genIRToVisitRefsInValuesAssignedInToOutermostAggregate_dmu_(IRGenFunction &IGF, llvm::Value *destAddr) const override {
-    return asDerived().emitCheckHolderThenVisitHeldRefsInScalar_dmu_(IGF, destAddr); // 5-15
+    return asDerived().emitCheckHolderInScalar_dmu_(IGF, destAddr); 
   }
 
   void copy(IRGenFunction &IGF, Explosion &in, Explosion &out,
@@ -259,8 +259,10 @@ private:
   
   void emitVisitRefInScalar_dmu_(IRGenFunction &IGF,
                                   llvm::Value *objToSet) const {}
-  void emitCheckHolderThenVisitHeldRefsInScalar_dmu_(IRGenFunction &IGF, // dmu
-                                             llvm::Value *objToCheck, llvm::Value *objToSet) const {}
+  llvm::Value *emitCheckHolderInScalar_dmu_(IRGenFunction &IGF, // dmu
+                                    llvm::Value *objToCheck) const {
+    return llvm::Constant::getNullValue(IGF.IGM.Int1Ty);
+  }
 };
 
 }

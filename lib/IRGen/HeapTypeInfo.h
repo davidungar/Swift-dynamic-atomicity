@@ -106,9 +106,9 @@ public:
   void emitVisitRefInScalar_dmu_(IRGenFunction &IGF, llvm::Value *objToSet) const {
     IGF.emitVisitRefInScalar_dmu_(objToSet, asDerived().getReferenceCounting());
   }
-  void emitCheckHolderThenVisitHeldRefsInScalar_dmu_(IRGenFunction &IGF,
-                                     llvm::Value *objToCheck, llvm::Value *objToSet) const {
-    IGF.emitCheckHolderThenVisitHeldRefsInScalar_dmu_(objToCheck, objToSet, asDerived().getReferenceCounting());
+  llvm::Value *emitCheckHolderInScalar_dmu_(IRGenFunction &IGF,
+                                     llvm::Value *objToCheck) const {
+    return IGF.emitCheckHoldersInScalar_dmu_(objToCheck, asDerived().getReferenceCounting());
   }
   
 

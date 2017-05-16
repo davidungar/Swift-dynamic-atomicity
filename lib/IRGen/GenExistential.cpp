@@ -833,8 +833,10 @@ public:
   llvm::Value *genIRToVisitRefsInValuesAssignedInToOutermostAggregate_dmu_(IRGenFunction &IGF, llvm::Value *destAddr) const override {
     // TODO: (dmu check) is the getAddress right???
     // 5-15
-    return asDerived().emitValueCheckHolderThenVisitHeldRefInScalar_dmu_(IGF, dest.getAddress());
-    asDerived().claimTables(IGF, src);
+    assert(false && "not handling existentials yet");
+    return llvm::Constant::getAllOnesValue(IGF.IGM.Int1Ty);
+//    llvm::Value *r = asDerived().emitValueCheckHolderInScalar_dmu_(IGF, dest.getAddress());
+//    asDerived().claimTables(IGF, src);
   }
   
   void copy(IRGenFunction &IGF, Explosion &src, Explosion &dest,
@@ -1005,7 +1007,7 @@ public:
     IGF.emitUnownedVisitRefInScalar_dmu_(value, Refcounting);
   }
                                            
-  void emitValueCheckHolderThenVisitHeldRefInScalar_dmu_(IRGenFunction &IGF, llvm::Value *dst, llvm::Value *src) const {
+  void emitValueCheckHolderThenVisitHeldRefInScalar_dmu_(IRGenFunction &IGF, llvm::Value *dst, llvm::Value *src) const { // 5-15
     IGF.emitUnownedCheckHolderThenVisitHeldRefInScalar_dmu_(dst, src, Refcounting);
   }
 
@@ -1087,7 +1089,7 @@ public:
    // Nothing to do be done for unmanaged
   }
                                            
-  void emitValueCheckHolderThenVisitHeldRefInScalar_dmu_(IRGenFunction &IGF, llvm::Value *dst, llvm::Value *src) const {
+  void emitValueCheckHolderThenVisitHeldRefInScalar_dmu_(IRGenFunction &IGF, llvm::Value *dst, llvm::Value *src) const {// 5-15
    // Nothing to do be done for unmanaged
   }
 
@@ -1219,8 +1221,9 @@ public:
     IGF.emitVisitRefInScalar_dmu_(value, Refcounting);
   }
 
-  void emitValueCheckHolderThenVisitHeldRefInScalar_dmu_(IRGenFunction &IGF, llvm::Value *dst, llvm::Value *src) const {
-    IGF.emitCheckHolderThenVisitHeldRefsInScalar_dmu_(dst, src, Refcounting);
+  // 5-15
+  void emitValueCheckHolderThenVisitHeldRefInScalar_dmu_(IRGenFunction &IGF, llvm::Value *dst) const {
+    return IGF.emitCheckHolderInScalar_dmu_(dst, Refcounting);
   }
 
   void emitValueFixLifetime(IRGenFunction &IGF, llvm::Value *value) const {
@@ -1345,7 +1348,7 @@ public:
    // do nothing
   }
                                            
-  void emitValueCheckHolderThenVisitHeldRefInScalar_dmu_(IRGenFunction &IGF, llvm::Value *dst, llvm::Value *src) const {
+  void emitValueCheckHolderThenVisitHeldRefInScalar_dmu_(IRGenFunction &IGF, llvm::Value *dst, llvm::Value *src) const {// 5-15
   // do nothing
   }
 
