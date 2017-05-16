@@ -1538,7 +1538,7 @@ llvm::Value *IRGenFunction::emitBridgeCheckHolder_dmu_(llvm::Value *valueToCheck
 }
 
 llvm::Value *IRGenFunction::emitBridgeIsDestSafeForConcurrentAccess_dmu_(llvm::Value *objToCheck) {
-  return emitIsDestSafeCall_dmu_(IGM.getBridgeObjectIsDestSafeForConcurrentAccess_dmu_Fn());
+  return emitIsDestSafeCall_dmu_(IGM.getBridgeObjectIsDestSafeForConcurrentAccess_dmu_Fn(), objToCheck);
 }
 
 llvm::Value *IRGenFunction::emitNativeTryPin(llvm::Value *value,
@@ -1915,7 +1915,7 @@ DEFINE_VALUE_OP(NativeUnownedRelease)
 DEFINE_VALUE_OP(NativeUnownedRetain)
 DEFINE_VALUE_OP(NativeUnownedBeSafeForConcurrentAccess_dmu_)
 llvm::Value *IRGenFunction::emitNativeUnownedIsDestSafeForConcurrentAccess_dmu_(llvm::Value *dst) {
-  emitIsDestSafeCall_dmu_(IGM.getNativeUnownedIsDestSafeForConcurrentAccess_dmu_Fn(), dst);
+  return emitIsDestSafeCall_dmu_(IGM.getNativeUnownedIsDestSafeForConcurrentAccess_dmu_Fn(), dst);
 }
 DEFINE_LOAD_WEAK_OP(NativeWeakLoadStrong)
 DEFINE_LOAD_WEAK_OP(NativeWeakTakeStrong)
@@ -1928,7 +1928,7 @@ void IRGenFunction::emitNativeWeakVisitRef_dmu_(Address addr) {
 }
 DEFINE_ADDR_OP(NativeWeakBeSafeForConcurrentAccess_dmu_)
 
-llvm::Value *IRGenFunction::NativeWeakIsDestSafeForConcurrentAccess_dmu_(llvm::Value *dst) {
+llvm::Value *IRGenFunction::emitNativeWeakIsDestSafeForConcurrentAccess_dmu_(llvm::Value *dst) {
   return emitIsDestSafeCall_dmu_(IGM.getNativeWeakIsDestSafeForConcurrentAccess_dmu_Fn(), dst);//5-15
 }
 
@@ -1947,7 +1947,7 @@ void IRGenFunction::emitUnknownUnownedVisitRef_dmu_(Address addr) {
 }
 DEFINE_ADDR_OP(UnknownUnownedBeSafeForConcurrentAccess_dmu_)
 
-llvm::Value *IRGenFunction::UnknownUnownedIsDestSafeForConcurrentAccess_dmu_(llvm::Value *dst) {
+llvm::Value *IRGenFunction::emitUnknownUnownedIsDestSafeForConcurrentAccess_dmu_(llvm::Value *dst) {
   return emitIsDestSafeCall_dmu_(IGM.getUnknownUnownedIsDestSafeForConcurrentAccess_dmu_Fn(), dst);//5-15
 }
 

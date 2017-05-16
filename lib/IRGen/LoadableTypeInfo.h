@@ -111,9 +111,7 @@ public:
   virtual void genIRToVisitRefsInInitialValues_dmu_(IRGenFunction &IGF, Explosion &explosion) const = 0; // dmu
   
   
-  /// TODO: (dmu cleanup) fix this comment:  Set bit in source (explosion)'s reference count if it now can be concurrently accessed after
-  /// initializing or assigning it to dest (addr)
-  /// rename to storeBarrier?
+  /// TODO: (dmu cleanup) fix this comment:  
   virtual llvm::Value *genIRToVisitRefsInValuesAssignedIntoOutermostAggregate_dmu_(IRGenFunction &IGF,
                                                  llvm::Value *destAddr) const = 0;
 

@@ -341,7 +341,7 @@ public:
   void emitNativeWeakDestroy(Address addr);
   void emitNativeWeakVisitRef_dmu_(Address addr);
   void emitNativeWeakBeSafeForConcurrentAccess_dmu_(Address addr);
-  llvm::Value * emitNativeWeakIsDestSafeForConcurrentAccess_dmu_(Address addrToCheck);
+  llvm::Value * emitNativeWeakIsDestSafeForConcurrentAccess_dmu_(llvm::Value* addrToCheck);
   void emitNativeWeakCopyInit(Address destAddr, Address srcAddr);
   void emitNativeWeakTakeInit(Address destAddr, Address srcAddr);
   void emitNativeWeakCopyAssign(Address destAddr, Address srcAddr);
@@ -392,7 +392,7 @@ public:
   void emitUnknownUnownedDestroy(Address addr);
   void emitUnknownUnownedVisitRef_dmu_(Address addr);
   void emitUnknownUnownedBeSafeForConcurrentAccess_dmu_(Address addr);
-  llvm::Value * emitUnknownUnownedIsDestSafeForConcurrentAccess_dmu_(Address addrToCheck);
+  llvm::Value *emitUnknownUnownedIsDestSafeForConcurrentAccess_dmu_(llvm::Value *addrToCheck);
   
   //   - weak references
   void emitUnknownWeakDestroy(Address addr);
