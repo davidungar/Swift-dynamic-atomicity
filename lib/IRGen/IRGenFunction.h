@@ -425,6 +425,8 @@ public:
 
   llvm::Value *emitIsUniqueCall(llvm::Value *value, SourceLoc loc,
                                 bool isNonNull, bool checkPinned);
+  
+  llvm::Value *emitIsDestSafeCall_dmu_(llvm::Constant *fn, llvm::Value *dest);
 
 //--- Expression emission ------------------------------------------------------
 public:

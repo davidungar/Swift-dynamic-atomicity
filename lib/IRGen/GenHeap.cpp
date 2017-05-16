@@ -955,13 +955,6 @@ static void emitCopyLikeCall(IRGenFunction &IGF,
 }
 
 
-static llvm::Value *emitIsDestSafeCall(IRGenFunction &IGF, llvm::Value *value, llvm::Constant *fn) {
-  llvm::CallInst *call = IGF.Builder.CreateCall(fn, value);
-  call->setDoesNotThrow();
-  return call;
-}
-
-
 /// Emit a call to a function with a loadWeak-like signature.
 ///
 /// \param fn - expected signature 'T (Weak*)'
@@ -1317,7 +1310,7 @@ llvm::Value *IRGenFunction::emitNativeIsDestSafeForConcurrentAccess_dmu_(llvm::V
   }
   bool optimize = false; // 5-15
   if (!optimize)
-    return emitIsDestSafeCall(*this, IGM.getIsDestSafeForConcurrentAccess_dmu_Fn(), objToCheck);
+    return emitIsDestSafeCall_dmu_(IGM.getIsDestSafeForConcurrentAccess_dmu_Fn(), objToCheck);
   
   llvm::Value *destRefCountPtr = Builder.CreateBitCast(objToCheck, IGM.RefCountedPtrTy);
   Address refCountAddr = Builder.CreateStructGEP(
@@ -1486,7 +1479,7 @@ llvm::Value *IRGenFunction::emitUnknownCheckHolder_dmu_(llvm::Value *objToCheck)
   return emitUnknownIsDestSafeForConcurrentAccess_dmu_(objToCheck); // level-shift
 }
 llvm::Value *IRGenFunction::emitUnknownIsDestSafeForConcurrentAccess_dmu_(llvm::Value *objToCheck) {
-  return emitIsDestSafeCall(*this, IGM.getUnknownIsDestSafeForConcurremtAccess_dmu_Fn(), objToCheck);
+  return emitIsDestSafeCall_dmu_(IGM.getUnknownIsDestSafeForConcurremtAccess_dmu_Fn(), objToCheck);
 }
 
 
@@ -1529,7 +1522,7 @@ llvm::Value *IRGenFunction::emitErrorCheckHolder_dmu_(llvm::Value *objToCheck) {
 }
 
 llvm::Value *IRGenFunction::emitErrorIsDestSafeForConcurrentAccess_dmu_(llvm::Value *objToCheck) {
-  return emitIsDestSafeCall(*this, IGM.getErrorIsDestSafeForConcurrentAccess_dmu_Fn(), objToCheck);
+  return emitIsDestSafeCall_dmu_(IGM.getErrorIsDestSafeForConcurrentAccess_dmu_Fn(), objToCheck);
 }
 
 void IRGenFunction::emitBridgeVisitRefInScalar_dmu_(llvm::Value *value) {
@@ -1545,7 +1538,7 @@ llvm::Value *IRGenFunction::emitBridgeCheckHolder_dmu_(llvm::Value *valueToCheck
 }
 
 llvm::Value *IRGenFunction::emitBridgeIsDestSafeForConcurrentAccess_dmu_(llvm::Value *objToCheck) {
-  return emitIsDestSafeCall(*this, IGM.getBridgeObjectIsDestSafeForConcurrentAccess_dmu_Fn());
+  return emitIsDestSafeCall_dmu_(IGM.getBridgeObjectIsDestSafeForConcurrentAccess_dmu_Fn());
 }
 
 llvm::Value *IRGenFunction::emitNativeTryPin(llvm::Value *value,
@@ -1620,6 +1613,12 @@ emitIsUniqueCall(llvm::Value *value, SourceLoc loc, bool isNonNull,
   } else {
     llvm_unreachable("Unexpected LLVM type for a refcounted pointer.");
   }
+  llvm::CallInst *call = Builder.CreateCall(fn, value);
+  call->setDoesNotThrow();
+  return call;
+}
+
+llvm::Value *IRGenFunction::emitIsDestSafeCall_dmu_(llvm::Constant *fn, llvm::Value *value) {
   llvm::CallInst *call = Builder.CreateCall(fn, value);
   call->setDoesNotThrow();
   return call;
@@ -1916,7 +1915,7 @@ DEFINE_VALUE_OP(NativeUnownedRelease)
 DEFINE_VALUE_OP(NativeUnownedRetain)
 DEFINE_VALUE_OP(NativeUnownedBeSafeForConcurrentAccess_dmu_)
 llvm::Value *IRGenFunction::emitNativeUnownedIsDestSafeForConcurrentAccess_dmu_(llvm::Value *dst) {
-  emitIsDestSafeCall(*this, IGM.getNativeUnownedIsDestSafeForConcurrentAccess_dmu_Fn(), dst);
+  emitIsDestSafeCall_dmu_(IGM.getNativeUnownedIsDestSafeForConcurrentAccess_dmu_Fn(), dst);
 }
 DEFINE_LOAD_WEAK_OP(NativeWeakLoadStrong)
 DEFINE_LOAD_WEAK_OP(NativeWeakTakeStrong)
@@ -1930,7 +1929,7 @@ void IRGenFunction::emitNativeWeakVisitRef_dmu_(Address addr) {
 DEFINE_ADDR_OP(NativeWeakBeSafeForConcurrentAccess_dmu_)
 
 llvm::Value *IRGenFunction::NativeWeakIsDestSafeForConcurrentAccess_dmu_(llvm::Value *dst) {
-  return emitIsDestSafeCall(*this, IGM.getNativeWeakIsDestSafeForConcurrentAccess_dmu_Fn(), dst);//5-15
+  return emitIsDestSafeCall_dmu_(IGM.getNativeWeakIsDestSafeForConcurrentAccess_dmu_Fn(), dst);//5-15
 }
 
 
@@ -1949,7 +1948,7 @@ void IRGenFunction::emitUnknownUnownedVisitRef_dmu_(Address addr) {
 DEFINE_ADDR_OP(UnknownUnownedBeSafeForConcurrentAccess_dmu_)
 
 llvm::Value *IRGenFunction::UnknownUnownedIsDestSafeForConcurrentAccess_dmu_(llvm::Value *dst) {
-  return emitIsDestSafeCall(*this, IGM.getUnknownUnownedIsDestSafeForConcurrentAccess_dmu_Fn(), dst);//5-15
+  return emitIsDestSafeCall_dmu_(IGM.getUnknownUnownedIsDestSafeForConcurrentAccess_dmu_Fn(), dst);//5-15
 }
 
 DEFINE_COPY_OP(UnknownUnownedCopyInit)

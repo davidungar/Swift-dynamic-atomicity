@@ -108,7 +108,7 @@ public:
   }
   llvm::Value *emitCheckHolderInScalar_dmu_(IRGenFunction &IGF,
                                      llvm::Value *objToCheck) const {
-    return IGF.emitCheckHoldersInScalar_dmu_(objToCheck, asDerived().getReferenceCounting());
+    return IGF.emitCheckHolderInScalar_dmu_(objToCheck, asDerived().getReferenceCounting());
   }
   
 
