@@ -1028,7 +1028,7 @@ static inline void swift_unknownWeakDestroy(WeakReference *object) {
 #else
   
   static inline bool swift_unknownWeakIsDestSafeForConcurrentAccess_dmu_(WeakReference *dst) {
-	return swift_weakIsDestSafeForConcurrentAccess_dmu_(dst);
+	  return swift_weakIsDestSafeForConcurrentAccess_dmu_(dst);
   }
   
 #endif /* SWIFT_OBJC_INTEROP */

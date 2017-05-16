@@ -308,7 +308,7 @@ SWIFT_CC(DefaultCC_IMPL) {
 SWIFT_RT_ENTRY_IMPL_VISIBILITY
 extern "C"
 bool SWIFT_RT_ENTRY_IMPL(swift_isDestSafeForConcurrentAccess_dmu_)(HeapObject *dst) {
-  return dst->refCount.isSafeForConcurrentAccess_dmu_();
+  return dst != nullptr  &&  dst->refCount.isSafeForConcurrentAccess_dmu_();
 }
 
 void swift::swift_beSafeForConcurrentAccess_dmu_(HeapObject *object)
