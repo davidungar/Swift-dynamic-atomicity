@@ -273,8 +273,7 @@ public:
                                      ReferenceCounting style);
   void emitUnownedDestroy(Address addr, ReferenceCounting style);
   void emitUnownedVisitRefInScalar_dmu_(llvm::Value *value, ReferenceCounting style);
-  void emitUnownedCheckHolderThenVisitHeldRefInScalar_dmu_(llvm::Value *dst,
-                                                           llvm::Value* src,
+  llvm::Value *emitUnownedCheckHolderInScalar_dmu_(llvm::Value *dst,
                                                            ReferenceCounting style);
   void emitUnownedVisitRef_dmu_(Address addr, ReferenceCounting style);
   llvm::Value *getUnownedExtraInhabitantIndex(Address src,
@@ -318,7 +317,7 @@ public:
   void emitNativeUnownedRetain(llvm::Value *value);
   void emitNativeUnownedRelease(llvm::Value *value);
   void emitNativeUnownedBeSafeForConcurrentAccess_dmu_(llvm::Value *value);
-  void emitNativeUnownedIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(llvm::Value *dst, llvm::Value *src);
+  llvm::Value *emitNativeUnownedIsDestSafeForConcurrentAccess_dmu_(llvm::Value *dst);
   void emitNativeStrongRetainUnowned(llvm::Value *value);
   void emitNativeStrongRetainAndUnownedRelease(llvm::Value *value);
   void emitNativeUnownedInit(llvm::Value *val, Address dest);
@@ -332,7 +331,7 @@ public:
   void emitNativeUnownedDestroy(Address addr);
   void emitNativeUnownedVisitRef_dmu_(Address addr);
   void emitNativeUnownedVisitRefInScalar_dmu_(llvm::Value *value);
-  void emitNativeUnownedCheckHolderThenVisitHeldRefInScalar_dmu_(llvm::Value *dst, llvm::Value *src);
+  llvm::Value *emitNativeUnownedCheckHolderInScalar_dmu_(llvm::Value *dst);
 
   //   - weak references
   void emitNativeWeakInit(llvm::Value *value, Address dest);
@@ -342,7 +341,7 @@ public:
   void emitNativeWeakDestroy(Address addr);
   void emitNativeWeakVisitRef_dmu_(Address addr);
   void emitNativeWeakBeSafeForConcurrentAccess_dmu_(Address addr);
-  void emitNativeWeakIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(Address addrToCheck, Address addrToSet);
+  llvm::Value * emitNativeWeakIsDestSafeForConcurrentAccess_dmu_(Address addrToCheck);
   void emitNativeWeakCopyInit(Address destAddr, Address srcAddr);
   void emitNativeWeakTakeInit(Address destAddr, Address srcAddr);
   void emitNativeWeakCopyAssign(Address destAddr, Address srcAddr);
@@ -377,9 +376,9 @@ public:
   void emitUnknownStrongRelease(llvm::Value *valuei,
                                 Atomicity atomicity = Atomicity::Atomic);
   void emitUnknownVisitRefInScalar_dmu_(llvm::Value *objToSet);
-  void emitUnknownCheckHolderThenVisitHeldRefs_dmu_(llvm::Value *objToCheck, llvm::Value *objToSet);
+  llvm::Value *emitUnknownCheckHolder_dmu_(llvm::Value *objToCheck);
   void emitUnknownBeSafeForConcurrentAccess_dmu_(llvm::Value *objToSet);
-  void emitUnknownIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(llvm::Value *objToCheck, llvm::Value *objToSet);
+  llvm::Value * emitUnknownIsDestSafeForConcurrentAccess_dmu_(llvm::Value *objToCheck);
   
   //   - unowned references
   void emitUnknownUnownedInit(llvm::Value *val, Address dest);
@@ -393,7 +392,7 @@ public:
   void emitUnknownUnownedDestroy(Address addr);
   void emitUnknownUnownedVisitRef_dmu_(Address addr);
   void emitUnknownUnownedBeSafeForConcurrentAccess_dmu_(Address addr);
-  void emitUnknownUnownedIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(Address addrToCheck, Address addrToSet);
+  llvm::Value * emitUnknownUnownedIsDestSafeForConcurrentAccess_dmu_(Address addrToCheck);
   
   //   - weak references
   void emitUnknownWeakDestroy(Address addr);
@@ -412,17 +411,17 @@ public:
   void emitBridgeStrongRetain(llvm::Value *value, Atomicity atomicity);
   void emitBridgeStrongRelease(llvm::Value *value, Atomicity atomicity);
   void emitBridgeVisitRefInScalar_dmu_(llvm::Value *value);
-  void emitBridgeCheckHolderThenVisitHeldRefs_dmu_(llvm::Value *valueToCheck, llvm::Value *valueToSet);
+  llvm::Value *emitBridgeCheckHolder_dmu_(llvm::Value *valueToCheck);
   void emitBridgeBeSafeForConcurrentAccess_dmu_(llvm::Value *value);
-  void emitBridgeIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(llvm::Value *valueToCheck, llvm::Value *valueToSet);
+  llvm::Value *emitBridgeIsDestSafeForConcurrentAccess_dmu_(llvm::Value *valueToCheck);
 
   // Routines for the ErrorType reference-counting style.
   void emitErrorStrongRetain(llvm::Value *value);
   void emitErrorStrongRelease(llvm::Value *value);
   void emitErrorVisitRefInScalar_dmu_(llvm::Value *value);
   void emitErrorBeSafeForConcurrentAccess_dmu_(llvm::Value *value);
-  void emitErrorIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(llvm::Value *valueToCheck, llvm::Value *valueToSet);
-  void emitErrorCheckHolderThenVisitHeldRefs_dmu_(llvm::Value *objToCheck, llvm::Value *objToSet);
+  llvm::Value *emitErrorIsDestSafeForConcurrentAccess_dmu_(llvm::Value *valueToCheck);
+  llvm::Value *emitErrorCheckHolder_dmu_(llvm::Value *objToCheck);
 
   llvm::Value *emitIsUniqueCall(llvm::Value *value, SourceLoc loc,
                                 bool isNonNull, bool checkPinned);

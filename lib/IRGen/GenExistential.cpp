@@ -1007,8 +1007,8 @@ public:
     IGF.emitUnownedVisitRefInScalar_dmu_(value, Refcounting);
   }
                                            
-  void emitValueCheckHolderThenVisitHeldRefInScalar_dmu_(IRGenFunction &IGF, llvm::Value *dst, llvm::Value *src) const { // 5-15
-    IGF.emitUnownedCheckHolderThenVisitHeldRefInScalar_dmu_(dst, src, Refcounting);
+ llvm::Value *emitValueCheckHolderInScalar_dmu_(IRGenFunction &IGF, llvm::Value *dst) const {
+    return IGF.emitUnownedCheckHolderInScalar_dmu_(dst, Refcounting);
   }
 
   void emitValueFixLifetime(IRGenFunction &IGF, llvm::Value *value) const {
@@ -1089,8 +1089,8 @@ public:
    // Nothing to do be done for unmanaged
   }
                                            
-  void emitValueCheckHolderThenVisitHeldRefInScalar_dmu_(IRGenFunction &IGF, llvm::Value *dst, llvm::Value *src) const {// 5-15
-   // Nothing to do be done for unmanaged
+  llvm::Value *emitValueCheckHolderInScalar_dmu_(IRGenFunction &IGF, llvm::Value *dst) const {
+    //5-15 call into vwt
   }
 
 
@@ -1221,9 +1221,8 @@ public:
     IGF.emitVisitRefInScalar_dmu_(value, Refcounting);
   }
 
-  // 5-15
-  void emitValueCheckHolderThenVisitHeldRefInScalar_dmu_(IRGenFunction &IGF, llvm::Value *dst) const {
-    return IGF.emitCheckHolderInScalar_dmu_(dst, Refcounting);
+  llvm::Value *emitValueCheckHolderInScalar_dmu_(IRGenFunction &IGF, llvm::Value *dst) const {
+    return IGF.emitCheckHolderInScalar_dmu_(dst, Refcounting);  //5-15
   }
 
   void emitValueFixLifetime(IRGenFunction &IGF, llvm::Value *value) const {
@@ -1348,8 +1347,8 @@ public:
    // do nothing
   }
                                            
-  void emitValueCheckHolderThenVisitHeldRefInScalar_dmu_(IRGenFunction &IGF, llvm::Value *dst, llvm::Value *src) const {// 5-15
-  // do nothing
+  llvm::Value *emitValueCheckHolderInScalar_dmu_(IRGenFunction &IGF, llvm::Value *dst) const {// 5-15
+  // vwt?
   }
 
   void emitValueFixLifetime(IRGenFunction &IGF, llvm::Value *value) const {

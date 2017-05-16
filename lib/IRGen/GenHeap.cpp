@@ -954,6 +954,14 @@ static void emitCopyLikeCall(IRGenFunction &IGF,
   call->setDoesNotThrow();
 }
 
+
+static llvm::Value *emitIsDestSafeCall(IRGenFunction &IGF, llvm::Value *value, llvm::Constant *fn) {
+  llvm::CallInst *call = IGF.Builder.CreateCall(fn, value);
+  call->setDoesNotThrow();
+  return call;
+}
+
+
 /// Emit a call to a function with a loadWeak-like signature.
 ///
 /// \param fn - expected signature 'T (Weak*)'
@@ -1130,11 +1138,11 @@ llvm::Value* IRGenFunction::emitCheckHolderInScalar_dmu_(llvm::Value *objToCheck
       return llvm::Constant::getAllOnesValue(IGM.Int1Ty);
 
     case ReferenceCounting::Unknown:
-      return emitUnknownCheckHolderThenVisitHeldRefs_dmu_(objToCheck, objToSet);
+      return emitUnknownCheckHolder_dmu_(objToCheck);
     case ReferenceCounting::Bridge:
-      return emitBridgeCheckHolderThenVisitHeldRefs_dmu_(objToCheck, objToSet);
+      return emitBridgeCheckHolder_dmu_(objToCheck);
     case ReferenceCounting::Error:
-      return emitErrorCheckHolderThenVisitHeldRefs_dmu_(objToCheck, objToSet);
+      return emitErrorCheckHolder_dmu_(objToCheck);
   }
 }
 
@@ -1237,12 +1245,11 @@ void IRGenFunction::emitUnownedVisitRefInScalar_dmu_(llvm::Value *value,
   emitNativeUnownedVisitRefInScalar_dmu_(value);
 }
 
-void IRGenFunction::emitUnownedCheckHolderThenVisitHeldRefInScalar_dmu_(llvm::Value *dst,
-                                                                 llvm::Value* src,
+llvm::Value* IRGenFunction::emitUnownedCheckHolderInScalar_dmu_(llvm::Value *dst,
                                                                  ReferenceCounting style) {
   assert(style == ReferenceCounting::Native &&
          "only native references support scalar unowned reference-counting");
-  emitNativeUnownedCheckHolderThenVisitHeldRefInScalar_dmu_(dst, src);
+  return emitNativeUnownedCheckHolderInScalar_dmu_(dst);
 }
 
 void IRGenFunction::emitStrongRetainUnowned(llvm::Value *value,
@@ -1293,8 +1300,8 @@ void IRGenFunction::emitNativeUnownedVisitRefInScalar_dmu_(llvm::Value *objToSet
 }
 
 
-void IRGenFunction::emitNativeUnownedCheckHolderThenVisitHeldRefInScalar_dmu_(llvm::Value *dst, llvm::Value *src) {
-  emitNativeUnownedIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(dst, src); // dmu level-shift
+llvm::Value *IRGenFunction::emitNativeUnownedCheckHolderInScalar_dmu_(llvm::Value *dst) {
+  return emitNativeUnownedIsDestSafeForConcurrentAccess_dmu_(dst); // dmu level-shift
 }
 
 
@@ -1308,6 +1315,10 @@ llvm::Value *IRGenFunction::emitNativeIsDestSafeForConcurrentAccess_dmu_(llvm::V
   if (doesNotRequireRefCounting(objToCheck)) {
     return llvm::Constant::getNullValue(IGM.Int1Ty);
   }
+  bool optimize = false; // 5-15
+  if (!optimize)
+    return emitIsDestSafeCall(*this, IGM.getIsDestSafeForConcurrentAccess_dmu_Fn(), objToCheck);
+  
   llvm::Value *destRefCountPtr = Builder.CreateBitCast(objToCheck, IGM.RefCountedPtrTy);
   Address refCountAddr = Builder.CreateStructGEP(
                                                  Address(destRefCountPtr, Alignment(4)), // TODO: (dmu) 4?!
@@ -1319,12 +1330,6 @@ llvm::Value *IRGenFunction::emitNativeIsDestSafeForConcurrentAccess_dmu_(llvm::V
   llvm::Value *safeBit = Builder.CreateAnd(refCount, StrongRefCount::might_be_concurrently_accessed_mask__dmu_);
   
   return Builder.CreateICmpNE(safeBit, llvm::ConstantInt::get(IGM.Int32Ty, 0));
-
-//  5-15 remove or fix:
-//  emitCopyLikeCall(*this,
-//                   IGM.getIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_Fn(),
-//                   objToCheck,
-//                   objToSet);
 }
 
 
@@ -1477,11 +1482,11 @@ void IRGenFunction::emitUnknownBeSafeForConcurrentAccess_dmu_(llvm::Value *objTo
   emitUnaryRefCountCall(*this, IGM.getUnknownBeSafeForConcurrentAccess_dmu_Fn(), objToSet);
 }
 
-void IRGenFunction::emitUnknownCheckHolderThenVisitHeldRefs_dmu_(llvm::Value *objToCheck, llvm::Value *objToSet) {
-  emitUnknownIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(objToCheck, objToSet); // level-shift
+llvm::Value *IRGenFunction::emitUnknownCheckHolder_dmu_(llvm::Value *objToCheck) {
+  return emitUnknownIsDestSafeForConcurrentAccess_dmu_(objToCheck); // level-shift
 }
-void IRGenFunction::emitUnknownIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(llvm::Value *objToCheck, llvm::Value *objToSet) {
-  emitCopyLikeCall(*this, IGM.getUnknownIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_Fn(), objToCheck, objToSet);
+llvm::Value *IRGenFunction::emitUnknownIsDestSafeForConcurrentAccess_dmu_(llvm::Value *objToCheck) {
+  return emitIsDestSafeCall(*this, IGM.getUnknownIsDestSafeForConcurremtAccess_dmu_Fn(), objToCheck);
 }
 
 
@@ -1519,12 +1524,12 @@ void IRGenFunction::emitErrorBeSafeForConcurrentAccess_dmu_(llvm::Value *value) 
   emitUnaryRefCountCall(*this, IGM.getErrorBeSafeForConcurrentAccess_dmu_Fn(), value);
 }
 
-void IRGenFunction::emitErrorCheckHolderThenVisitHeldRefs_dmu_(llvm::Value *objToCheck, llvm::Value *objToSet) {
-  emitErrorIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(objToCheck, objToSet); // level-shift
+llvm::Value *IRGenFunction::emitErrorCheckHolder_dmu_(llvm::Value *objToCheck) {
+  return emitErrorIsDestSafeForConcurrentAccess_dmu_(objToCheck); // level-shift
 }
 
-void IRGenFunction::emitErrorIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(llvm::Value *objToCheck, llvm::Value *objToSet) {
-  emitCopyLikeCall(*this, IGM.getErrorIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_Fn(), objToCheck, objToSet);
+llvm::Value *IRGenFunction::emitErrorIsDestSafeForConcurrentAccess_dmu_(llvm::Value *objToCheck) {
+  return emitIsDestSafeCall(*this, IGM.getErrorIsDestSafeForConcurrentAccess_dmu_Fn(), objToCheck);
 }
 
 void IRGenFunction::emitBridgeVisitRefInScalar_dmu_(llvm::Value *value) {
@@ -1535,12 +1540,12 @@ void IRGenFunction::emitBridgeBeSafeForConcurrentAccess_dmu_(llvm::Value *value)
   emitUnaryRefCountCall(*this, IGM.getBridgeObjectBeSafeForConcurrentAccess_dmu_Fn(), value);
 }
 
-void IRGenFunction::emitBridgeCheckHolderThenVisitHeldRefs_dmu_(llvm::Value *valueToCheck, llvm::Value *valueToSet) {
-  emitBridgeIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(valueToCheck, valueToSet);
+llvm::Value *IRGenFunction::emitBridgeCheckHolder_dmu_(llvm::Value *valueToCheck) {
+  return emitBridgeIsDestIsSafeForConcurrentAccess_dmu_(valueToCheck);
 }
 
-void IRGenFunction::emitBridgeIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(llvm::Value *objToCheck, llvm::Value *objToSet) {
-  emitCopyLikeCall(*this, IGM.getBridgeObjectIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_Fn(), objToCheck, objToCheck);
+llvm::Value *IRGenFunction::emitBridgeIsDestSafeForConcurrentAccess_dmu_(llvm::Value *objToCheck) {
+  return emitIsDestSafeCall(*this, IGM.getBridgeObjectIsDestSafeForConcurrentAccess_dmu_Fn());
 }
 
 llvm::Value *IRGenFunction::emitNativeTryPin(llvm::Value *value,
@@ -1910,8 +1915,8 @@ DEFINE_VALUE_OP(NativeStrongRetainAndUnownedRelease)
 DEFINE_VALUE_OP(NativeUnownedRelease)
 DEFINE_VALUE_OP(NativeUnownedRetain)
 DEFINE_VALUE_OP(NativeUnownedBeSafeForConcurrentAccess_dmu_)
-void IRGenFunction::emitNativeUnownedIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(llvm::Value *dst, llvm::Value *src) {
-  emitCopyLikeCall(*this, IGM.getNativeUnownedIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_Fn(), dst, src);
+llvm::Value *IRGenFunction::emitNativeUnownedIsDestSafeForConcurrentAccess_dmu_(llvm::Value *dst) {
+  emitIsDestSafeCall(*this, IGM.getNativeUnownedIsDestSafeForConcurrentAccess_dmu_Fn(), dst);
 }
 DEFINE_LOAD_WEAK_OP(NativeWeakLoadStrong)
 DEFINE_LOAD_WEAK_OP(NativeWeakTakeStrong)
@@ -1923,7 +1928,10 @@ void IRGenFunction::emitNativeWeakVisitRef_dmu_(Address addr) {
   emitNativeWeakBeSafeForConcurrentAccess_dmu_(addr);// level shift
 }
 DEFINE_ADDR_OP(NativeWeakBeSafeForConcurrentAccess_dmu_)
-DEFINE_COPY_OP(NativeWeakIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_)
+
+llvm::Value *IRGenFunction::NativeWeakIsDestSafeForConcurrentAccess_dmu_(llvm::Value *dst) {
+  return emitIsDestSafeCall(*this, IGM.getNativeWeakIsDestSafeForConcurrentAccess_dmu_Fn(), dst);//5-15
+}
 
 
 DEFINE_COPY_OP(NativeWeakCopyInit)
@@ -1939,7 +1947,11 @@ void IRGenFunction::emitUnknownUnownedVisitRef_dmu_(Address addr) {
   emitUnknownUnownedBeSafeForConcurrentAccess_dmu_(addr); // dmu level-shift
 }
 DEFINE_ADDR_OP(UnknownUnownedBeSafeForConcurrentAccess_dmu_)
-DEFINE_COPY_OP(UnknownUnownedIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_)
+
+llvm::Value *IRGenFunction::UnknownUnownedIsDestSafeForConcurrentAccess_dmu_(llvm::Value *dst) {
+  return emitIsDestSafeCall(*this, IGM.getUnknownUnownedIsDestSafeForConcurrentAccess_dmu_Fn(), dst);//5-15
+}
+
 DEFINE_COPY_OP(UnknownUnownedCopyInit)
 DEFINE_COPY_OP(UnknownUnownedCopyAssign)
 DEFINE_COPY_OP(UnknownUnownedTakeInit)

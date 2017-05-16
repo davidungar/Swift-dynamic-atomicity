@@ -204,7 +204,7 @@ void swift_errorRelease(SwiftError *object);
 SWIFT_RUNTIME_EXPORT
 void swift_errorBeSafeForConcurrentAccess_dmu_(SwiftError *object);
 SWIFT_RUNTIME_EXPORT
-  void swift_errorIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(SwiftError *dst, SwiftError *src);
+  bool swift_errorIsDestIsSafeForConcurrentAccess_dmu_(SwiftError *dst);
 SWIFT_RUNTIME_EXPORT
 void swift_errorInMain(SwiftError *object);
 SWIFT_RUNTIME_EXPORT
