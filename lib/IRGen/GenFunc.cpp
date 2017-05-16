@@ -305,9 +305,9 @@ namespace {
      }
    }
    llvm::Value *genIRToVisitRefsInValuesAssignedIntoOutermostAggregate_dmu_(IRGenFunction &IGF, llvm::Value *destAddr) const override {
-     llvm_unreachable("How can a function be an in-out parameter?"); // 5-15
-     abort();
-     return llvm::Constant::getNullValue(IGF.IGM.Int1Ty);
+     return isPOD(ResilienceExpansion::Maximal)
+     ? llvm::Constant::getNullValue(IGF.IGM.Int1Ty)
+     : IGF.emitCheckHolderInScalar_dmu_(destAddr, ReferenceCounting::Native);
    }
 
     void copy(IRGenFunction &IGF, Explosion &src,

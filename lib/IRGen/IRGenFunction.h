@@ -311,7 +311,7 @@ public:
   void emitNativeSetDeallocating(llvm::Value *value);
   void emitNativeVisitRefInScalar_dmu_(llvm::Value *objToSet);
   void emitNativeBeSafeForConcurrentAccess_dmu_(llvm::Value *objToSet);
-  llvm::Value* emitNativeCheckHolder_dmu_(llvm::Value *objToCheck);
+  llvm::Value* emitNativeCheckHolderInScalar_dmu_(llvm::Value *objToCheck);
   llvm::Value* emitNativeIsDestSafeForConcurrentAccess_dmu_(llvm::Value *objToCheck);
   //   - unowned references
   void emitNativeUnownedRetain(llvm::Value *value);
@@ -376,7 +376,7 @@ public:
   void emitUnknownStrongRelease(llvm::Value *valuei,
                                 Atomicity atomicity = Atomicity::Atomic);
   void emitUnknownVisitRefInScalar_dmu_(llvm::Value *objToSet);
-  llvm::Value *emitUnknownCheckHolder_dmu_(llvm::Value *objToCheck);
+  llvm::Value *emitUnknownCheckHolderInScalar_dmu_(llvm::Value *objToCheck);
   void emitUnknownBeSafeForConcurrentAccess_dmu_(llvm::Value *objToSet);
   llvm::Value * emitUnknownIsDestSafeForConcurrentAccess_dmu_(llvm::Value *objToCheck);
   
@@ -411,7 +411,7 @@ public:
   void emitBridgeStrongRetain(llvm::Value *value, Atomicity atomicity);
   void emitBridgeStrongRelease(llvm::Value *value, Atomicity atomicity);
   void emitBridgeVisitRefInScalar_dmu_(llvm::Value *value);
-  llvm::Value *emitBridgeCheckHolder_dmu_(llvm::Value *valueToCheck);
+  llvm::Value *emitBridgeCheckHolderInScalar_dmu_(llvm::Value *valueToCheck);
   void emitBridgeBeSafeForConcurrentAccess_dmu_(llvm::Value *value);
   llvm::Value *emitBridgeIsDestSafeForConcurrentAccess_dmu_(llvm::Value *valueToCheck);
 
@@ -421,7 +421,7 @@ public:
   void emitErrorVisitRefInScalar_dmu_(llvm::Value *value);
   void emitErrorBeSafeForConcurrentAccess_dmu_(llvm::Value *value);
   llvm::Value *emitErrorIsDestSafeForConcurrentAccess_dmu_(llvm::Value *valueToCheck);
-  llvm::Value *emitErrorCheckHolder_dmu_(llvm::Value *objToCheck);
+  llvm::Value *emitErrorCheckHolderInScalar_dmu_(llvm::Value *objToCheck);
 
   llvm::Value *emitIsUniqueCall(llvm::Value *value, SourceLoc loc,
                                 bool isNonNull, bool checkPinned);

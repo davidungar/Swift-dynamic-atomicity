@@ -188,7 +188,7 @@ _swift_isDestSafeForConcurrentAccess_dmu_, _swift_isDestSafeForConcurrentAccess_
         DefaultCC, // TODO: (dmu optimize) I think this may be conservative
         RETURNS(Int1Ty),
         ARGS(RefCountedPtrTy),
-        ATTRS(NoUnwind))
+        ATTRS(NoUnwind, ZExt))
 
 // void swift_nonatomic_retain_n(void *ptr, int32_t n);
 FUNCTION_WITH_GLOBAL_SYMBOL_AND_IMPL(NativeNonAtomicStrongRetainN, swift_nonatomic_retain_n,
@@ -346,7 +346,7 @@ FUNCTION(UnknownBeSafeForConcurrentAccess_dmu_, swift_unknownBeSafeForConcurrent
 FUNCTION(UnknownIsDestSafeForConcurrentAccess_dmu_, swift_unknownIsDestSafeForConcurrentAccess_dmu_, DefaultCC,
          RETURNS(Int1Ty),
          ARGS(UnknownRefCountedPtrTy),
-         ATTRS(NoUnwind))
+         ATTRS(NoUnwind, ZExt))
 
 // void *swift_bridgeObjectRetain(void *ptr);
 FUNCTION(BridgeObjectStrongRetain, swift_bridgeObjectRetain, DefaultCC,
@@ -382,7 +382,7 @@ FUNCTION(BridgeObjectBeSafeForConcurrentAccess_dmu_, swift_bridgeObjectBeSafeFor
 FUNCTION(BridgeObjectIsDestSafeForConcurrentAccess_dmu_, swift_bridgeObjectIsDestSafeForConcurrentAccess_dmu_, DefaultCC,
          RETURNS(Int1Ty),
          ARGS(BridgeObjectPtrTy),
-         ATTRS(NoUnwind))
+         ATTRS(NoUnwind, ZExt))
 
 // error *swift_errorRetain(error *ptr);
 FUNCTION(ErrorStrongRetain, swift_errorRetain, DefaultCC,
@@ -403,10 +403,10 @@ FUNCTION(ErrorBeSafeForConcurrentAccess_dmu_, swift_errorBeSafeForConcurrentAcce
          ATTRS(NoUnwind))
 
 // void swift_errorIsDestSafeForConcurrentAccess_dmu__(void *dst, void *src);
-FUNCTION(ErrorIsDestSafeForConcurrentAccess_dmu_, swift_errorIsDestSafeForConcurrentAccess_dmu__, DefaultCC,
+FUNCTION(ErrorIsDestSafeForConcurrentAccess_dmu_, swift_errorIsDestSafeForConcurrentAccess_dmu_, DefaultCC,
          RETURNS(Int1Ty),
          ARGS(ErrorPtrTy),
-         ATTRS(NoUnwind))
+         ATTRS(NoUnwind, ZExt))
 
 // void swift_unownedRetain(void *ptr);
 FUNCTION(NativeUnownedRetain, swift_unownedRetain, RegisterPreservingCC,
@@ -431,7 +431,7 @@ FUNCTION(NativeUnownedBeSafeForConcurrentAccess_dmu_, swift_unownedBeSafeForConc
 FUNCTION(NativeUnownedIsDestSafeForConcurrentAccess_dmu_, swift_unownedIsDestSafeForConcurrentAccess_dmu_, RegisterPreservingCC,
          RETURNS(Int1Ty),
          ARGS(RefCountedPtrTy),
-         ATTRS(NoUnwind))
+         ATTRS(NoUnwind, ZExt))
 
 // void swift_unownedRetain_n(void *ptr, int32_t n);
 FUNCTION(UnownedRetainN, swift_unownedRetain_n,
@@ -476,7 +476,7 @@ FUNCTION(NativeWeakBeSafeForConcurrentAccess_dmu_, swift_weakBeSafeForConcurrent
 FUNCTION(NativeWeakIsDestSafeForConcurrentAccess_dmu_, swift_weakIsDestSafeForConcurrentAccess_dmu_, DefaultCC,
          RETURNS(Int1Ty),
          ARGS(WeakReferencePtrTy),
-         ATTRS(NoUnwind))
+         ATTRS(NoUnwind, ZExt))
 
 // void swift_weakInit(WeakReference *object, void *value);
 FUNCTION(NativeWeakInit, swift_weakInit, DefaultCC,
@@ -542,7 +542,7 @@ FUNCTION(UnknownWeakBeSafeForConcurrentAccess_dmu_, swift_unknownWeakBeSafeForCo
 FUNCTION(UnknownWeakIsDestSafeForConcurrentAccess_dmu_, swift_unknownWeakIsDestSafeForConcurrentAccess_dmu_, DefaultCC,
          RETURNS(Int1Ty),
          ARGS(WeakReferencePtrTy),
-         ATTRS(NoUnwind))
+         ATTRS(NoUnwind, ZExt))
 
 // void swift_unknownWeakInit(WeakReference *object, void *value);
 FUNCTION(UnknownWeakInit, swift_unknownWeakInit, DefaultCC,
@@ -608,7 +608,7 @@ FUNCTION(UnknownUnownedBeSafeForConcurrentAccess_dmu_, swift_unknownUnownedBeSaf
 FUNCTION(UnknownUnownedIsDestSafeForConcurrentAccess_dmu_, swift_unknownUnownedIsDestSafeForConcurrentAccess_dmu_, DefaultCC,
          RETURNS(Int1Ty),
          ARGS(UnownedReferencePtrTy),
-         ATTRS(NoUnwind))
+         ATTRS(NoUnwind, ZExt))
 
 // void swift_unknownUnownedInit(UnownedReference *object, void *value);
 FUNCTION(UnknownUnownedInit, swift_unknownUnownedInit, DefaultCC,

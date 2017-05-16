@@ -605,6 +605,7 @@ void swift::swift_errorBeSafeForConcurrentAccess_dmu_(SwiftError *error) {
 }
 
 
+
 static bool _swift_errorIsDestSafeForConcurrentAccess_dmu__(SwiftError *dst) {
   // For now, SwiftError is always objc-refcounted.
   // Assume ObjC is atomically ref-counted.
@@ -617,6 +618,8 @@ auto *_swift_errorIsDestSafeForConcurrentAccess_dmu_ = _swift_errorIsDestSafeFor
 bool swift::swift_errorIsDestSafeForConcurrentAccess_dmu_(SwiftError *dst) {
   return _swift_errorIsDestSafeForConcurrentAccess_dmu_(dst);
 }
+
+
 
 static void _swift_willThrow_(SwiftError *error) { }
 

@@ -1128,18 +1128,18 @@ llvm::Value* IRGenFunction::emitCheckHolderInScalar_dmu_(llvm::Value *objToCheck
   switch (refcounting) {
       // 5-15 each case
     case ReferenceCounting::Native:
-      return emitNativeCheckHolder_dmu_(v);
+      return emitNativeCheckHolderInScalar_dmu_(v);
 
     case ReferenceCounting::ObjC:
     case ReferenceCounting::Block:
       return llvm::Constant::getAllOnesValue(IGM.Int1Ty);
 
     case ReferenceCounting::Unknown:
-      return emitUnknownCheckHolder_dmu_(v);
+      return emitUnknownCheckHolderInScalar_dmu_(v);
     case ReferenceCounting::Bridge:
-      return emitBridgeCheckHolder_dmu_(v);
+      return emitBridgeCheckHolderInScalar_dmu_(v);
     case ReferenceCounting::Error:
-      return emitErrorCheckHolder_dmu_(v);
+      return emitErrorCheckHolderInScalar_dmu_(v);
   }
 }
 
@@ -1302,7 +1302,7 @@ llvm::Value *IRGenFunction::emitNativeUnownedCheckHolderInScalar_dmu_(llvm::Valu
 }
 
 
-llvm::Value *IRGenFunction::emitNativeCheckHolder_dmu_(llvm::Value *objToCheck) {
+llvm::Value *IRGenFunction::emitNativeCheckHolderInScalar_dmu_(llvm::Value *objToCheck) {
   return emitNativeIsDestSafeForConcurrentAccess_dmu_(objToCheck); // dmu level-shift
 }
 
@@ -1481,7 +1481,7 @@ void IRGenFunction::emitUnknownBeSafeForConcurrentAccess_dmu_(llvm::Value *objTo
   emitUnaryRefCountCall(*this, IGM.getUnknownBeSafeForConcurrentAccess_dmu_Fn(), objToSet);
 }
 
-llvm::Value *IRGenFunction::emitUnknownCheckHolder_dmu_(llvm::Value *objToCheck) {
+llvm::Value *IRGenFunction::emitUnknownCheckHolderInScalar_dmu_(llvm::Value *objToCheck) {
   return emitUnknownIsDestSafeForConcurrentAccess_dmu_(objToCheck); // level-shift
 }
 llvm::Value *IRGenFunction::emitUnknownIsDestSafeForConcurrentAccess_dmu_(llvm::Value *objToCheck) {
@@ -1523,7 +1523,7 @@ void IRGenFunction::emitErrorBeSafeForConcurrentAccess_dmu_(llvm::Value *value) 
   emitUnaryRefCountCall(*this, IGM.getErrorBeSafeForConcurrentAccess_dmu_Fn(), value);
 }
 
-llvm::Value *IRGenFunction::emitErrorCheckHolder_dmu_(llvm::Value *objToCheck) {
+llvm::Value *IRGenFunction::emitErrorCheckHolderInScalar_dmu_(llvm::Value *objToCheck) {
   return emitErrorIsDestSafeForConcurrentAccess_dmu_(objToCheck); // level-shift
 }
 
@@ -1539,7 +1539,7 @@ void IRGenFunction::emitBridgeBeSafeForConcurrentAccess_dmu_(llvm::Value *value)
   emitUnaryRefCountCall(*this, IGM.getBridgeObjectBeSafeForConcurrentAccess_dmu_Fn(), value);
 }
 
-llvm::Value *IRGenFunction::emitBridgeCheckHolder_dmu_(llvm::Value *valueToCheck) {
+llvm::Value *IRGenFunction::emitBridgeCheckHolderInScalar_dmu_(llvm::Value *valueToCheck) {
   return emitBridgeIsDestSafeForConcurrentAccess_dmu_(valueToCheck);
 }
 
