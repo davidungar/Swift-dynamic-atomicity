@@ -1120,22 +1120,26 @@ void IRGenFunction::emitVisitRefInScalar_dmu_(llvm::Value *objToSet,
       break;
   }
 }
+
 llvm::Value* IRGenFunction::emitCheckHolderInScalar_dmu_(llvm::Value *objToCheck,
                                                  ReferenceCounting refcounting) {
+  auto v = Builder.CreateBitCast(objToCheck, IGM.getReferenceType(refcounting));
+
   switch (refcounting) {
       // 5-15 each case
     case ReferenceCounting::Native:
-      return emitNativeCheckHolder_dmu_(objToCheck);
+      return emitNativeCheckHolder_dmu_(v);
+
     case ReferenceCounting::ObjC:
     case ReferenceCounting::Block:
       return llvm::Constant::getAllOnesValue(IGM.Int1Ty);
 
     case ReferenceCounting::Unknown:
-      return emitUnknownCheckHolder_dmu_(objToCheck);
+      return emitUnknownCheckHolder_dmu_(v);
     case ReferenceCounting::Bridge:
-      return emitBridgeCheckHolder_dmu_(objToCheck);
+      return emitBridgeCheckHolder_dmu_(v);
     case ReferenceCounting::Error:
-      return emitErrorCheckHolder_dmu_(objToCheck);
+      return emitErrorCheckHolder_dmu_(v);
   }
 }
 
@@ -1308,14 +1312,15 @@ llvm::Value *IRGenFunction::emitNativeIsDestSafeForConcurrentAccess_dmu_(llvm::V
   if (doesNotRequireRefCounting(objToCheck)) {
     return llvm::Constant::getNullValue(IGM.Int1Ty);
   }
-  llvm::Value *destRefCountPtr = Builder.CreateBitCast(objToCheck, IGM.RefCountedPtrTy);
   bool optimize = false; // 5-15
-  if (!optimize)
-    return emitIsDestSafeCall_dmu_(IGM.getIsDestSafeForConcurrentAccess_dmu_Fn(), destRefCountPtr);
+  if (!optimize) {
+    auto r = emitIsDestSafeCall_dmu_(IGM.getIsDestSafeForConcurrentAccess_dmu_Fn(), objToCheck);
+    return r;
+  }
   
 
   Address refCountAddr = Builder.CreateStructGEP(
-                                                 Address(destRefCountPtr, Alignment(4)), // TODO: (dmu) 4?!
+                                                 Address(objToCheck, Alignment(4)), // TODO: (dmu) 4?!
                                                  1,
                                                  IGM.DataLayout.getStructLayout(IGM.RefCountedStructTy),
                                                  Twine("refCount"));
