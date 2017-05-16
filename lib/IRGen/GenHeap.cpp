@@ -1124,10 +1124,10 @@ llvm::Value* IRGenFunction::emitCheckHolderInScalar_dmu_(llvm::Value *objToCheck
   switch (refcounting) {
       // 5-15 each case
     case ReferenceCounting::Native:
-      return emitNativeCheckHolderThenVisitHeldRefs_dmu_(objToCheck, objToSet);
+      return emitNativeCheckHolder_dmu_(objToCheck);
     case ReferenceCounting::ObjC:
     case ReferenceCounting::Block:
-      return llvm::Value::getAllOnesValue(IGM.Int1Ty);
+      return llvm::Constant::getAllOnesValue(IGM.Int1Ty);
 
     case ReferenceCounting::Unknown:
       return emitUnknownCheckHolderThenVisitHeldRefs_dmu_(objToCheck, objToSet);
@@ -1298,18 +1298,33 @@ void IRGenFunction::emitNativeUnownedCheckHolderThenVisitHeldRefInScalar_dmu_(ll
 }
 
 
-void IRGenFunction::emitNativeCheckHolderThenVisitHeldRefs_dmu_(llvm::Value *objToCheck, llvm::Value *objToSet) {
-  emitNativeIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(objToCheck, objToSet); // dmu level-shift
+llvm::Value *IRGenFunction::emitNativeCheckHolder_dmu_(llvm::Value *objToCheck) {
+  return emitNativeIsDestSafeForConcurrentAccess_dmu_(objToCheck); // dmu level-shift
 }
 
-void IRGenFunction::emitNativeIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(llvm::Value *objToCheck, llvm::Value *objToSet) {
-  if (doesNotRequireRefCounting(objToSet)) {
-    return;
+#include <../stdlib/public/SwiftShims/RefCount.h> // blecch! TODO: (dmu) clean this up!
+
+llvm::Value *IRGenFunction::emitNativeIsDestSafeForConcurrentAccess_dmu_(llvm::Value *objToCheck) {
+  if (doesNotRequireRefCounting(objToCheck)) {
+    return llvm::Constant::getNullValue(IGM.Int1Ty);
   }
-  emitCopyLikeCall(*this,
-                              IGM.getIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_Fn(),
-                              objToCheck,
-                              objToSet);
+  llvm::Value *destRefCountPtr = Builder.CreateBitCast(objToCheck, IGM.RefCountedPtrTy);
+  Address refCountAddr = Builder.CreateStructGEP(
+                                                 Address(destRefCountPtr, Alignment(4)), // TODO: (dmu) 4?!
+                                                 1,
+                                                 IGM.DataLayout.getStructLayout(IGM.RefCountedStructTy),
+                                                 Twine("refCount"));
+  
+  llvm::LoadInst *refCount = Builder.CreateLoad(refCountAddr);
+  llvm::Value *safeBit = Builder.CreateAnd(refCount, StrongRefCount::might_be_concurrently_accessed_mask__dmu_);
+  
+  return Builder.CreateICmpNE(safeBit, llvm::ConstantInt::get(IGM.Int32Ty, 0));
+
+//  5-15 remove or fix:
+//  emitCopyLikeCall(*this,
+//                   IGM.getIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_Fn(),
+//                   objToCheck,
+//                   objToSet);
 }
 
 

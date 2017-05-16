@@ -312,8 +312,8 @@ public:
   void emitNativeSetDeallocating(llvm::Value *value);
   void emitNativeVisitRefInScalar_dmu_(llvm::Value *objToSet);
   void emitNativeBeSafeForConcurrentAccess_dmu_(llvm::Value *objToSet);
-  void emitNativeCheckHolderThenVisitHeldRefs_dmu_(llvm::Value *objToCheck, llvm::Value *objToSet);
-  void emitNativeIfDestIsSafeForConcurrentAccessMakeSrcSafe_dmu_(llvm::Value *objToCheck, llvm::Value *objToSet);
+  llvm::Value* emitNativeCheckHolder_dmu_(llvm::Value *objToCheck);
+  llvm::Value* emitNativeIsDestSafeForConcurrentAccess_dmu_(llvm::Value *objToCheck);
   //   - unowned references
   void emitNativeUnownedRetain(llvm::Value *value);
   void emitNativeUnownedRelease(llvm::Value *value);

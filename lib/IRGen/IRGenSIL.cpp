@@ -3353,8 +3353,6 @@ llvm::Value *IRGenSILFunction::emitAddressContainedIn_dmu_(llvm::Value *v) {
   return Builder.CreateLoad(destRefCountPtrPtr);
 }
 
-//#include <swift/Runtime/HeapObject.h> // blecch! TODO: (dmu) clean this up!
-#include <../stdlib/public/SwiftShims/RefCount.h> // blecch! TODO: (dmu) clean this up!
 // Return non-zero if the reference count has the atomic bit set
 void IRGenSILFunction::emitVisitRefsInValuesAssignedTo_dmu_(SILValue const &srcSILValue,
                                                             SILValue const &destSILValue,
