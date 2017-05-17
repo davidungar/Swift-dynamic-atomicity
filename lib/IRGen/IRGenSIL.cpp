@@ -4903,7 +4903,7 @@ private:
     
     diagnoseIndirectArgument(IGF, fa);
     if (trace) fprintf(stderr, "TRACE arg with conservative agg %s: %d\n", __FILE__, __LINE__);
-    return outermostAggregateIsAccessedConcurrently;
+    return outermostAggregateIsAccessedConcurrently; //5-15
   }
   
   static Kind kindForNoOperands(IRGenSILFunction &IGF, SILValue v, bool trace) {

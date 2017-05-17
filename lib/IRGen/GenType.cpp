@@ -417,6 +417,10 @@ namespace {
     
     void visitRefs_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
     }
+    
+    llvm::Value *checkHolder_dmu_(IRGenFunction &IGF, llvm::Value *holderAddr, SILType T) const override {
+      return llvm::Constant::getNullValue(IGF.IGM.Int1Ty);
+    }
 
     void packIntoEnumPayload(IRGenFunction &IGF, EnumPayload &payload,
                              Explosion &src, unsigned offset) const override {}
@@ -565,6 +569,10 @@ namespace {
     void visitRefs_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
     }
     
+    llvm::Value *checkHolder_dmu_(IRGenFunction &IGF, llvm::Value *holderAddr, SILType T) const override {
+      return llvm::Constant::getNullValue(IGF.IGM.Int1Ty);
+    }
+
     void getSchema(ExplosionSchema &schema) const override {
       schema.add(ExplosionSchema::Element::forScalar(ScalarType));
     }
@@ -629,6 +637,11 @@ namespace {
     void visitRefs_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
         llvm_unreachable("cannot opaquely manipulate immovable types!");
     }
+      
+    llvm::Value *checkHolder_dmu_(IRGenFunction &IGF, llvm::Value *holderAddr, SILType T) const override {
+      llvm_unreachable("cannot opaquely manipulate immovable types!");
+    }
+
   };
 } // end anonymous namespace
 

@@ -563,6 +563,10 @@ namespace {
       TRACE_DMU_(IGF);
       IGF.emitNativeWeakVisitRef_dmu_(addr);
     }
+                                
+    llvm::Value *checkHolder_dmu_(IRGenFunction &IGF, llvm::Value *holderAddr, SILType T) const override {
+      return IGF.emitNativeWeakCheckHolder_dmu_(holderAddr);
+    }
 
     llvm::Type *getOptionalIntType() const {
       return llvm::IntegerType::get(ValueType->getContext(),
@@ -725,6 +729,10 @@ namespace {
       TRACE_DMU_(IGF);
       IGF.emitUnknownUnownedVisitRef_dmu_(addr);
     }
+        
+    llvm::Value *checkHolder_dmu_(IRGenFunction &IGF, llvm::Value *holderAddr, SILType T) const override {
+      return IGF.emitUnknownUnownedCheckHolder_dmu_(addr);
+    }
 
     // Unowned types have the same extra inhabitants as normal pointers.
     // They do not, however, necessarily have any spare bits.
@@ -800,6 +808,10 @@ namespace {
     void visitRefs_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
       TRACE_DMU_(IGF);
       IGF.emitUnknownWeakVisitRef_dmu_(addr);
+    }
+                                
+    llvm::Value *checkHolder_dmu_(IRGenFunction &IGF, llvm::Value *holderAddr, SILType T) const override {
+      return IGF.emitUnknownWeakCheckHolder_dmu_(holderAddr);
     }
                                 
     llvm::Type *getOptionalIntType() const {

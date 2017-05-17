@@ -522,6 +522,10 @@ namespace {
                                        getSingletonType(IGF.IGM, T));
       }
     }
+    
+    llvm::Value *checkHolder_dmu_(IRGenFunction &IGF, llvm::Value *holderAddr, SILType T) const override {
+      return llvm::Constant::getNullValue(IGF.IGM.Int1Ty);
+    }
 
 
     void packIntoEnumPayload(IRGenFunction &IGF, EnumPayload &payload,
@@ -2532,6 +2536,11 @@ namespace {
         }
       }
     }
+    
+    llvm::Value *checkHolder_dmu_(IRGenFunction &IGF, llvm::Value *holderAddr, SILType T) const override {
+      return llvm::Constant::getNullValue(IGF.IGM.Int1Ty);
+    }
+
     
     llvm::Value *loadRefcountedPtr(IRGenFunction &IGF, SourceLoc loc,
                                    Address addr) const override {
@@ -4571,8 +4580,12 @@ namespace {
       }
       
       IGF.Builder.emitBlock(endBB);
-      
     }
+    
+    llvm::Value *checkHolder_dmu_(IRGenFunction &IGF, llvm::Value *holderAddr, SILType T) const override {
+      return llvm::Constant::getNullValue(IGF.IGM.Int1Ty);
+    }
+
     
   private:
     void storePayloadTag(IRGenFunction &IGF, Address enumAddr,
@@ -5071,6 +5084,10 @@ namespace {
       TRACE_DMU_(IGF);
       emitVisitRefsCall_dmu_(IGF, T, addr);
     }
+    
+    llvm::Value *checkHolder_dmu_(IRGenFunction &IGF, llvm::Value *holderAddr, SILType T) const override {
+      return llvm::Constant::getNullValue(IGF.IGM.Int1Ty);
+    }
 
     void getSchema(ExplosionSchema &schema) const override {
       schema.add(ExplosionSchema::Element::forAggregate(getStorageType(),
@@ -5446,6 +5463,10 @@ namespace {
     void visitRefs_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
       Strategy.visitRefs_dmu_(IGF, addr, T);
     }
+    llvm::Value *checkHolder_dmu_(IRGenFunction &IGF, llvm::Value *holderAddr, SILType T) const override {
+      return Strategy.checkHolder_dmu_(IGF, holderAddr, T);
+    }
+
     void initializeFromParams(IRGenFunction &IGF, Explosion &params,
                               Address dest, SILType T) const override {
       return Strategy.initializeFromParams(IGF, params, dest, T);

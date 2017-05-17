@@ -204,7 +204,13 @@ public:
     }
   }
   
-  // void IsSafeForConcurrentAccess_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override;
+  llvm::Value *checkHolder_dmu_(IRGenFunction &IGF, llvm::Value *holderAddr, SILType T) const override {
+    if (Derived::IsScalarPOD)
+      return llvm::Constant::getNullValue(IGF.IGM.Int1Ty);
+    auto addr = asDerived().projectScalar(IGF, holderAddr);
+    llvm::Value *value = IGF.Builder.CreateLoad(addr, "toVisit");
+    return asDerived().emitHolderInScalar_dmu_(IGF, value);
+  }
 
   
   void packIntoEnumPayload(IRGenFunction &IGF,

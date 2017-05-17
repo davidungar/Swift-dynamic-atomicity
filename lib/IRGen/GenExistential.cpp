@@ -369,6 +369,10 @@ public:
     TRACE_DMU_(IGF);
     emitVisitRefsInExistentialValue_dmu_(IGF, addr, getLayout());
   }
+               
+  llvm::Value *checkHolder_dmu_(IRGenFunction &IGF, llvm::Value *holderAddr, SILType T) const override {
+    return emitCheckHolderInExistentialValue_dmu_(IGF, holderAddr, getLayout()); //5-15
+  }
 
 };
 
@@ -454,6 +458,9 @@ public:
     asDerived().emitValueVisitRef_dmu_(IGF, valueAddr);
   }
 
+  llvm::Value *checkHolder_dmu_(IRGenFunction &IGF, llvm::Value *holderAddr, SILType T) const override {
+    return asDerived().emitValueCheckHolder_dmu_(IGF, holderAddr); // 5-15
+  }
 
   /// Given an explosion with multiple pointer elements in them, pack them
   /// into an enum payload explosion.
@@ -874,6 +881,10 @@ public:
     llvm::Value *value = asDerived().loadValue(IGF, addr);
     TRACE_DMU_(IGF);
     asDerived().emitValueVisitRefInScalar_dmu_(IGF, value);
+  }
+
+  llvm::Value *checkHolder_dmu_(IRGenFunction &IGF, llvm::Value *holderAddr, SILType T) const override {
+    return asDerived().emitValueCheckHolder_dmu_(IGF, holderAddr); // 5-15
   }
 
 

@@ -224,6 +224,11 @@ public:
                                          field.getType(IGF.IGM, T));
     }
   }
+      
+  llvm::Value *checkHolder_dmu_(IRGenFunction &IGF, llvm::Value *holderAddr, SILType T) const override {
+    return llvm::Constant::getNullValue(IGF.IGM.Int1Ty);
+  }
+
 };
 
 template <class Impl, class Base, class FieldImpl_,
