@@ -3370,7 +3370,6 @@ void IRGenSILFunction::emitVisitRefsInValuesAssignedTo_dmu_(SILValue const &srcS
   ConditionalDominanceScope condition(*this); // a shot in the dark
 
   llvm::Value *cond = destTI.checkHolder_dmu_(*this, Address(destAddress, Alignment(8)), destType); // need destType??
-  //5-15 used? llvm::Value *cond = loadableDestTI->genIRToVisitRefsInValuesAssignedIntoOutermostAggregate_dmu_(*this, destAddress);
 
   
   llvm::BasicBlock *isSafe = createBasicBlock("isSafe");

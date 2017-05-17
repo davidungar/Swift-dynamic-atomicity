@@ -837,8 +837,8 @@ public:
     asDerived().emitValueVisitRefInScalar_dmu_(IGF, instance);
     asDerived().claimTables(IGF, e);
   }
-  llvm::Value *genIRToVisitRefsInValuesAssignedIntoOutermostAggregate_dmu_(IRGenFunction &IGF, llvm::Value *destAddr) const override {
-    return asDerived().emitValueCheckHolderInScalar_dmu_(IGF, destAddr);
+  llvm::Value *checkHolder_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
+    return asDerived().emitValueCheckHolderInScalar_dmu_(IGF, addr);
   }
   
   void copy(IRGenFunction &IGF, Explosion &src, Explosion &dest,

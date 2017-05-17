@@ -165,8 +165,8 @@ public:
     asDerived().emitVisitRefInScalar_dmu_(IGF, src.claimNext());
   }
   //5-15 NEED THIS???
-  llvm::Value *genIRToVisitRefsInValuesAssignedIntoOutermostAggregate_dmu_(IRGenFunction &IGF, llvm::Value *destAddr) const override {
-    return asDerived().emitCheckHolderInScalar_dmu_(IGF, destAddr); 
+  llvm::Value *checkHolder_dmu_(IRGenFunction &IGF, Address addr, SILType) const override {
+    return asDerived().emitCheckHolderInScalar_dmu_(IGF, addr);
   }
 
   void copy(IRGenFunction &IGF, Explosion &in, Explosion &out,

@@ -304,10 +304,10 @@ namespace {
        IGF.emitNativeVisitRefInScalar_dmu_(context);
      }
    }
-   llvm::Value *genIRToVisitRefsInValuesAssignedIntoOutermostAggregate_dmu_(IRGenFunction &IGF, llvm::Value *destAddr) const override {
+   llvm::Value *checkHolder_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
      return isPOD(ResilienceExpansion::Maximal)
      ? llvm::Constant::getNullValue(IGF.IGM.Int1Ty)
-     : IGF.emitCheckHolderInScalar_dmu_(destAddr, ReferenceCounting::Native);
+     : IGF.emitCheckHolderInScalar_dmu_(addr, ReferenceCounting::Native);
    }
 
     void copy(IRGenFunction &IGF, Explosion &src,

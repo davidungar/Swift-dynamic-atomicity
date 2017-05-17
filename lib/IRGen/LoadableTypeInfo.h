@@ -111,10 +111,6 @@ public:
   virtual void genIRToVisitRefsInInitialValues_dmu_(IRGenFunction &IGF, Explosion &explosion) const = 0; // dmu
   
   
-  /// TODO: (dmu cleanup) fix this comment:  
-  virtual llvm::Value *genIRToVisitRefsInValuesAssignedIntoOutermostAggregate_dmu_(IRGenFunction &IGF,
-                                                 llvm::Value *destAddr) const = 0;
-
   // We can give this a reasonable default implementation.
   void initializeWithCopy(IRGenFunction &IGF, Address destAddr,
                           Address srcAddr, SILType T) const override;

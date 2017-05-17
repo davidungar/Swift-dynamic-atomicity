@@ -480,11 +480,6 @@ namespace {
       getLoadableSingleton()->genIRToVisitRefsInInitialValues_dmu_(IGF, e);
     }
     
-    llvm::Value *genIRToVisitRefsInValuesAssignedIntoOutermostAggregate_dmu_(IRGenFunction &IGF,
-                                                                             llvm::Value *destAddr) const override {
-      return llvm::Constant::getNullValue(IGF.IGM.Int1Ty); // Enums are on stack
-    }
-
     void reexplode(IRGenFunction &IGF, Explosion &src, Explosion &dest)
     const override {
       if (getLoadableSingleton()) getLoadableSingleton()->reexplode(IGF, src, dest);
@@ -1339,8 +1334,7 @@ namespace {
       genIRToVisitRefsInInitialValuesOfPayload_dmu_(IGF, e);
     }
     
-    llvm::Value *genIRToVisitRefsInValuesAssignedIntoOutermostAggregate_dmu_(IRGenFunction &IGF,
-                                                                             llvm::Value *destAddr) const override {
+    llvm::Value *checkHolder_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
       return llvm::Constant::getNullValue(IGF.IGM.Int1Ty); // Enums are on stack
     }
   private:
@@ -5178,11 +5172,6 @@ namespace {
       llvm_unreachable("resilient enums are always indirect");
     }
     
-    llvm::Value *genIRToVisitRefsInValuesAssignedIntoOutermostAggregate_dmu_(IRGenFunction &IGF,
-                                                                             llvm::Value *destAddr) const override {
-      return llvm::Constant::getNullValue(IGF.IGM.Int1Ty); // Enums are on stack
-    }
-
     void reexplode(IRGenFunction &IGF, Explosion &src,
                            Explosion &dest) const override {
       llvm_unreachable("resilient enums are always indirect");
@@ -5575,9 +5564,8 @@ namespace {
     void genIRToVisitRefsInInitialValues_dmu_(IRGenFunction &IGF, Explosion &e) const override {
       return Strategy.genIRToVisitRefsInInitialValues_dmu_(IGF, e);
     }
-    llvm::Value *genIRToVisitRefsInValuesAssignedIntoOutermostAggregate_dmu_(IRGenFunction &IGF,
-                                           llvm::Value *destAddr) const override {
-      return Strategy.genIRToVisitRefsInValuesAssignedIntoOutermostAggregate_dmu_(IGF, destAddr);
+    llvm::Value *checkHolder(IRGenFunction &IGF, Address addr, SILType T) const override {
+      return Strategy.checkHolder(IGF, addr, T);
     }
     void reexplode(IRGenFunction &IGF, Explosion &src,
                    Explosion &dest) const override {
