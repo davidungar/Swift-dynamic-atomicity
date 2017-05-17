@@ -418,7 +418,7 @@ namespace {
     void visitRefs_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
     }
     
-    llvm::Value *checkHolder_dmu_(IRGenFunction &IGF, llvm::Value *holderAddr, SILType T) const override {
+    llvm::Value *checkHolder_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
       return llvm::Constant::getNullValue(IGF.IGM.Int1Ty);
     }
 
@@ -569,8 +569,8 @@ namespace {
     void visitRefs_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
     }
     
-    llvm::Value *checkHolder_dmu_(IRGenFunction &IGF, llvm::Value *holderAddr, SILType T) const override {
-      return llvm::Constant::getNullValue(IGF.IGM.Int1Ty);
+    llvm::Value *checkHolder_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
+      return llvm::Constant::getAllOnesValue(IGF.IGM.Int1Ty);
     }
 
     void getSchema(ExplosionSchema &schema) const override {
@@ -638,7 +638,7 @@ namespace {
         llvm_unreachable("cannot opaquely manipulate immovable types!");
     }
       
-    llvm::Value *checkHolder_dmu_(IRGenFunction &IGF, llvm::Value *holderAddr, SILType T) const override {
+    llvm::Value *checkHolder_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
       llvm_unreachable("cannot opaquely manipulate immovable types!");
     }
 

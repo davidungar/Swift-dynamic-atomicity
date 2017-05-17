@@ -164,7 +164,7 @@ public:
     }
     asDerived().emitVisitRefInScalar_dmu_(IGF, src.claimNext());
   }
-  
+  //5-15 NEED THIS???
   llvm::Value *genIRToVisitRefsInValuesAssignedIntoOutermostAggregate_dmu_(IRGenFunction &IGF, llvm::Value *destAddr) const override {
     return asDerived().emitCheckHolderInScalar_dmu_(IGF, destAddr); 
   }
@@ -203,13 +203,13 @@ public:
       asDerived().emitVisitRefInScalar_dmu_(IGF, value);
     }
   }
-  
-  llvm::Value *checkHolder_dmu_(IRGenFunction &IGF, llvm::Value *holderAddr, SILType T) const override {
+  // 5-15 NOTICE project
+  llvm::Value *checkHolder_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
     if (Derived::IsScalarPOD)
       return llvm::Constant::getNullValue(IGF.IGM.Int1Ty);
-    auto addr = asDerived().projectScalar(IGF, holderAddr);
+    addr = asDerived().projectScalar(IGF, addr);
     llvm::Value *value = IGF.Builder.CreateLoad(addr, "toVisit");
-    return asDerived().emitHolderInScalar_dmu_(IGF, value);
+    return asDerived().emitCheckHolderInScalar_dmu_(IGF, value);
   }
 
   

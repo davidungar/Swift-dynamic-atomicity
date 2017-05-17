@@ -523,7 +523,7 @@ namespace {
       }
     }
     
-    llvm::Value *checkHolder_dmu_(IRGenFunction &IGF, llvm::Value *holderAddr, SILType T) const override {
+    llvm::Value *checkHolder_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
       return llvm::Constant::getNullValue(IGF.IGM.Int1Ty);
     }
 
@@ -2537,7 +2537,7 @@ namespace {
       }
     }
     
-    llvm::Value *checkHolder_dmu_(IRGenFunction &IGF, llvm::Value *holderAddr, SILType T) const override {
+    llvm::Value *checkHolder_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
       return llvm::Constant::getNullValue(IGF.IGM.Int1Ty);
     }
 
@@ -4582,7 +4582,7 @@ namespace {
       IGF.Builder.emitBlock(endBB);
     }
     
-    llvm::Value *checkHolder_dmu_(IRGenFunction &IGF, llvm::Value *holderAddr, SILType T) const override {
+    llvm::Value *checkHolder_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
       return llvm::Constant::getNullValue(IGF.IGM.Int1Ty);
     }
 
@@ -5085,7 +5085,7 @@ namespace {
       emitVisitRefsCall_dmu_(IGF, T, addr);
     }
     
-    llvm::Value *checkHolder_dmu_(IRGenFunction &IGF, llvm::Value *holderAddr, SILType T) const override {
+    llvm::Value *checkHolder_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
       return llvm::Constant::getNullValue(IGF.IGM.Int1Ty);
     }
 
@@ -5463,7 +5463,7 @@ namespace {
     void visitRefs_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
       Strategy.visitRefs_dmu_(IGF, addr, T);
     }
-    llvm::Value *checkHolder_dmu_(IRGenFunction &IGF, llvm::Value *holderAddr, SILType T) const override {
+    llvm::Value *checkHolder_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
       return Strategy.checkHolder_dmu_(IGF, holderAddr, T);
     }
 

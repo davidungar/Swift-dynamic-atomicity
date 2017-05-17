@@ -146,8 +146,8 @@ public:
     emitVisitRefsCall_dmu_(IGF, T, addr);
   }
   
-  llvm::Value *checkHolder_dmu_(IRGenFunction &IGF, llvm::Value *holderAddr, SILType T) const override {
-    return emitCheckHolderCall_dmu_(IGF, T, holderAddr);
+  llvm::Value *checkHolder_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
+    return emitCheckHolderCall_dmu_(IGF, T, addr);
   }
 
   

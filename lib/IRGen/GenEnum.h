@@ -358,7 +358,7 @@ public:
 
   virtual void visitRefs_dmu_(IRGenFunction &IGF, Address addr, SILType T) const = 0;
   
-  virtual llvm::Value *checkHolder_dmu_(IRGenFunction &IGF, llvm::Value *holderAddr, SILType T) const = 0;
+  virtual llvm::Value *checkHolder_dmu_(IRGenFunction &IGF, Address addr, SILType T) const = 0;
 
   virtual void initializeFromParams(IRGenFunction &IGF, Explosion &params,
                                     Address dest, SILType T) const;

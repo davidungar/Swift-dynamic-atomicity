@@ -564,8 +564,8 @@ namespace {
       IGF.emitNativeWeakVisitRef_dmu_(addr);
     }
                                 
-    llvm::Value *checkHolder_dmu_(IRGenFunction &IGF, llvm::Value *holderAddr, SILType T) const override {
-      return IGF.emitNativeWeakCheckHolder_dmu_(holderAddr);
+    llvm::Value *checkHolder_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
+      return IGF.emitNativeWeakCheckHolder_dmu_(addr);
     }
 
     llvm::Type *getOptionalIntType() const {
@@ -730,7 +730,7 @@ namespace {
       IGF.emitUnknownUnownedVisitRef_dmu_(addr);
     }
         
-    llvm::Value *checkHolder_dmu_(IRGenFunction &IGF, llvm::Value *holderAddr, SILType T) const override {
+    llvm::Value *checkHolder_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
       return IGF.emitUnknownUnownedCheckHolder_dmu_(addr);
     }
 
@@ -810,8 +810,8 @@ namespace {
       IGF.emitUnknownWeakVisitRef_dmu_(addr);
     }
                                 
-    llvm::Value *checkHolder_dmu_(IRGenFunction &IGF, llvm::Value *holderAddr, SILType T) const override {
-      return IGF.emitUnknownWeakCheckHolder_dmu_(holderAddr);
+    llvm::Value *checkHolder_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
+      return IGF.emitUnknownWeakCheckHolder_dmu_(addr);
     }
                                 
     llvm::Type *getOptionalIntType() const {

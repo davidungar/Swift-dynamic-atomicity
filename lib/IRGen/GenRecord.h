@@ -225,7 +225,7 @@ public:
     }
   }
       
-  llvm::Value *checkHolder_dmu_(IRGenFunction &IGF, llvm::Value *holderAddr, SILType T) const override {
+  llvm::Value *checkHolder_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
     return llvm::Constant::getNullValue(IGF.IGM.Int1Ty);
   }
 

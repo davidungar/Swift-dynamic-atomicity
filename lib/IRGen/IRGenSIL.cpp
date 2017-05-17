@@ -3360,8 +3360,6 @@ void IRGenSILFunction::emitVisitRefsInValuesAssignedTo_dmu_(SILValue const &srcS
   
   SILType destType = destSILValue->getType().getObjectType();
   const TypeInfo &destTI = getTypeInfo(destType);
-  const LoadableTypeInfo *loadableDestTI = cast_or_null<LoadableTypeInfo>(&destTI);
-  assert(loadableDestTI && "not loadable?!");
   
   Address outermostDestAggregate = getLoweredValue(destSILValue).getAddressOfOutermostAggregate_dmu_(*this);
   llvm::Value *outermostDestAggreggateAddress = outermostDestAggregate.getAddress();
@@ -3371,7 +3369,9 @@ void IRGenSILFunction::emitVisitRefsInValuesAssignedTo_dmu_(SILValue const &srcS
 
   ConditionalDominanceScope condition(*this); // a shot in the dark
 
-  llvm::Value *cond = loadableDestTI->genIRToVisitRefsInValuesAssignedIntoOutermostAggregate_dmu_(*this, destAddress);
+  llvm::Value *cond = destTI.checkHolder_dmu_(*this, Address(destAddress, Alignment(8)), destType); // need destType??
+  //5-15 used? llvm::Value *cond = loadableDestTI->genIRToVisitRefsInValuesAssignedIntoOutermostAggregate_dmu_(*this, destAddress);
+
   
   llvm::BasicBlock *isSafe = createBasicBlock("isSafe");
   llvm::BasicBlock *safeOrNot = createBasicBlock("safeOrNot");

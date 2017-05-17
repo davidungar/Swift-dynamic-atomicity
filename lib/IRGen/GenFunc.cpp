@@ -399,7 +399,7 @@ namespace {
       }
     }
                          
-    llvm::Value *checkHolder_dmu_(IRGenFunction &IGF, llvm::Value *holderAddr, SILType T) const override {
+    llvm::Value *checkHolder_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
       if (isPOD(ResilienceExpansion::Maximal))
         return llvm::Constant::getNullValue(IGF.IGM.Int1Ty);
       auto data = IGF.Builder.CreateLoad(projectData(IGF, addr));
@@ -526,7 +526,7 @@ namespace {
     void visitRefs_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
       IGF.unimplemented(SourceLoc(), "visitRefs_dmu_ @block_storage");
     }
-    llvm::Value *checkHolder_dmu_(IRGenFunction &IGF, llvm::Value *holderAddr, SILType T) const override {
+    llvm::Value *checkHolder_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
       IGF.unimplemented(SourceLoc(), "visitRefs_dmu_ @block_storage");
     }
   };
