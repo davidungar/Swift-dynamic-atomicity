@@ -1329,7 +1329,6 @@ llvm::Value *IRGenFunction::emitNativeIsDestSafeForConcurrentAccess_dmu_(llvm::V
     auto r = emitIsDestSafeCall_dmu_(IGM.getIsDestSafeForConcurrentAccess_dmu_Fn(), objToCheck);
     return r;
   }
-  
 
   Address refCountAddr = Builder.CreateStructGEP(
                                                  Address(objToCheck, Alignment(4)), // TODO: (dmu) 4?!

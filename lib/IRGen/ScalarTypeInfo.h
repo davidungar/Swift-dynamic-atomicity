@@ -203,9 +203,11 @@ public:
   llvm::Value *checkHolder_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
     if (Derived::IsScalarPOD)
       return llvm::Constant::getNullValue(IGF.IGM.Int1Ty);
-    addr = asDerived().projectScalar(IGF, addr);
-    llvm::Value *value = IGF.Builder.CreateLoad(addr, "toVisit");
-    return asDerived().emitCheckHolderInScalar_dmu_(IGF, value);
+    Address scalarAddr = asDerived().projectScalar(IGF, addr);
+    // 5-15 right??
+//    llvm::Value *value = IGF.Builder.CreateLoad(scalarAddr, "toVisit");
+//    return asDerived().emitCheckHolderInScalar_dmu_(IGF, value);
+    return asDerived().emitCheckHolderInScalar_dmu_(IGF, scalarAddr.getAddress());
   }
 
   

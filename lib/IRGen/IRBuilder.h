@@ -162,6 +162,7 @@ public:
   llvm::LoadInst *CreateLoad(llvm::Value *addr, Alignment align,
                              const llvm::Twine &name = "") {
     llvm::LoadInst *load = IRBuilderBase::CreateLoad(addr, name);
+    assert(load->getType()->isSized()  &&  "llvm must have a sized load");
     load->setAlignment(align.getValue());
     return load;
   }
