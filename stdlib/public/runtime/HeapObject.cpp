@@ -300,17 +300,6 @@ void swift::swift_setDeallocating(HeapObject *object) {
 
 // dmu storeBarrier sharing
 
-bool swift::swift_isDestSafeForConcurrentAccess_dmu_(HeapObject *dst)
-SWIFT_CC(DefaultCC_IMPL) {
-  return SWIFT_RT_ENTRY_REF(swift_isDestSafeForConcurrentAccess_dmu_)(dst);
-}
-
-SWIFT_RT_ENTRY_IMPL_VISIBILITY
-extern "C"
-bool SWIFT_RT_ENTRY_IMPL(swift_isDestSafeForConcurrentAccess_dmu_)(HeapObject *dst) {
-  return dst != nullptr  &&  dst->refCount.isSafeForConcurrentAccess_dmu_();
-}
-
 void swift::swift_beSafeForConcurrentAccess_dmu_(HeapObject *object)
 SWIFT_CC(DefaultCC_IMPL) {
   return _swift_beSafeForConcurrentAccess_dmu_(object);
@@ -340,6 +329,18 @@ void SWIFT_RT_ENTRY_IMPL(swift_beSafeForConcurrentAccess_dmu_)(HeapObject *objec
   //  assert(visitorOfRefsInHeapObj_dmu_ != nullptr  &&  "if obj is nonatomic, visitorOfRefsInHeapObj_dmu_ fn cannot be nil");
   if (visitorOfRefsInHeapObj_dmu_)
     visitorOfRefsInHeapObj_dmu_(object);
+}
+
+
+bool swift::swift_isDestSafeForConcurrentAccess_dmu_(HeapObject *dst)
+SWIFT_CC(DefaultCC_IMPL) {
+  return SWIFT_RT_ENTRY_REF(swift_isDestSafeForConcurrentAccess_dmu_)(dst);
+}
+
+SWIFT_RT_ENTRY_IMPL_VISIBILITY
+extern "C"
+bool SWIFT_RT_ENTRY_IMPL(swift_isDestSafeForConcurrentAccess_dmu_)(HeapObject *dst) {
+  return dst != nullptr  &&  dst->refCount.isSafeForConcurrentAccess_dmu_();
 }
 
 
@@ -882,6 +883,11 @@ void swift::swift_weakTakeAssign(WeakReference *dest, WeakReference *src) {
 void swift::swift_weakVisitRefs_dmu_(WeakReference *ref) {
   auto tmp = (HeapObject*) (ref->Value & ~WR_NATIVE);
   SWIFT_RT_ENTRY_CALL(swift_beSafeForConcurrentAccess_dmu_)(tmp); // TODO: (dmu) level shift
+}
+
+bool swift::swift_weakCheckHolder_dmu_(WeakReference *ref) {
+  auto tmp = (HeapObject*) (ref->Value & ~WR_NATIVE);
+  return SWIFT_RT_ENTRY_CALL(swift_isDestSafeForConcurrentAccess_dmu_)(tmp); // TODO: (dmu) level shift
 }
 
 

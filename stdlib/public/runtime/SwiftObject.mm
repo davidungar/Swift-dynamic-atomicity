@@ -1007,6 +1007,9 @@ void swift::swift_unknownUnownedVisitRefs_dmu_(UnownedReference *ref) {
   swift_unknownUnownedBeSafeForConcurrentAccess_dmu_(ref);
 }
 
+bool swift::swift_unknownUnownedCheckHolder_dmu_(UnownedReference *ref) {
+  return swift_unknownUnownedIsDestSafeForConcurrentAccess_dmu_(ref);
+}
 
 /*****************************************************************************/
 /****************************** WEAK REFERENCES ******************************/

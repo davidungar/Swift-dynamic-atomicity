@@ -333,14 +333,6 @@ SWIFT_RUNTIME_EXPORT
 void (*SWIFT_CC(RegisterPreservingCC)
                      _swift_nonatomic_release_n)(HeapObject *object, uint32_t n);
 
-  
-// dmu storeBarrier sharing
-SWIFT_RT_ENTRY_VISIBILITY
-bool swift_isDestSafeForConcurrentAccess_dmu_(HeapObject *dst)
-      SWIFT_CC(DefaultCC);
-
-SWIFT_RUNTIME_EXPORT
-bool (*SWIFT_CC(DefaultCC)_swift_isDestSafeForConcurrentAccess_dmu_)(HeapObject *dst);
 
 SWIFT_RT_ENTRY_VISIBILITY
 void swift_beSafeForConcurrentAccess_dmu_(HeapObject *object)
@@ -348,6 +340,14 @@ void swift_beSafeForConcurrentAccess_dmu_(HeapObject *object)
 
 SWIFT_RUNTIME_EXPORT
 void (*SWIFT_CC(DefaultCC)_swift_beSafeForConcurrentAccess_dmu_)(HeapObject *object);
+  
+// dmu storeBarrier sharing
+SWIFT_RT_ENTRY_VISIBILITY
+bool swift_isDestSafeForConcurrentAccess_dmu_(HeapObject *dst)
+     SWIFT_CC(DefaultCC);
+
+SWIFT_RUNTIME_EXPORT
+bool (*SWIFT_CC(DefaultCC)_swift_isDestSafeForConcurrentAccess_dmu_)(HeapObject *dst);
 
 
 // Refcounting observation hooks for memory tools. Don't use these.
@@ -746,6 +746,9 @@ void swift_weakTakeAssign(WeakReference *dest, WeakReference *src);
 /// Ensure that my reference count and contained references count atomically -- dmu
 SWIFT_RUNTIME_EXPORT
 void swift_weakVisitRefs_dmu_(WeakReference *ref);
+  
+SWIFT_RUNTIME_EXPORT
+bool swift_weakCheckHolder_dmu_(WeakReference *ref);
 
 /*****************************************************************************/
 /************************* OTHER REFERENCE-COUNTING **************************/

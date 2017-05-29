@@ -176,6 +176,9 @@ struct NativeBox {
   static void visitRefsInBuffer_dmu_(T *value) {}
   
   static void visitRefsInArray_dmu_(T *array, size_t n) {}
+  
+  static bool checkHolder_dmu_(T *value) { return false; } // dmu 5-15 right?
+  static bool checkHoldlerInBuffer_dmu_(T *value) { return false; } // dmu 5-15 right?
 
 private:
   static T *next(T *ptr, size_t n = 1) {
@@ -201,6 +204,10 @@ template <class Impl, class T> struct RetainableBoxBase {
   
   static void visitRefs_dmu_(T *addr) {
     Impl::visitRefsInScalar_dmu_(*addr);
+  }
+  
+  static bool checkHolder_dmu_(T *addr) {
+    return Impl::checkHolderInScalar_dmu_(*addr);
   }
 
   static T *initializeWithCopy(T *dest, T *src) {
@@ -285,6 +292,10 @@ struct SwiftRetainableBox :
   static void visitRefsInScalar_dmu_(HeapObject *obj) {
     swift_beSafeForConcurrentAccess_dmu_(obj); // level-shift
   }
+      
+  static bool checkHolderInScalar_dmu_(HeapObject *obj) {
+    return swift_isDestSafeForConcurrentAccess_dmu_(obj); // level-shift
+  }
 };
 
 /// A box implementation class for Swift unowned object pointers.
@@ -301,6 +312,10 @@ struct SwiftUnownedRetainableBox :
 
   static void visitRefsInScalar_dmu_(HeapObject *obj) {
     swift_unownedBeSafeForConcurrentAccess_dmu_(obj); // level-shift
+  }
+
+  static bool visitCheckHolderInScalar_dmu_(HeapObject *obj) {
+    return swift_unownedIsDestSafeForConcurrentAccess_dmu_(obj); // level-shift
   }
 
 #if SWIFT_OBJC_INTEROP
@@ -404,6 +419,9 @@ struct SwiftWeakRetainableBox :
   static void visitRefs_dmu_(WeakReference *value) {
     swift_weakVisitRefs_dmu_(value);
   }
+  static bool checkHolder_dmu_(WeakReference *value) {
+    return swift_weakCheckHolder_dmu_(value);
+  }
 };
 
 #if SWIFT_OBJC_INTEROP
@@ -463,6 +481,9 @@ struct ObjCUnownedRetainableBox
   static void visitRefs_dmu_(UnownedReference *ref) {
     swift_unknownUnownedVisitRefs_dmu_(ref);
   }
+  static bool checkHolder_dmu_(UnownedReference *ref) {
+    return swift_unknownUnownedCheckHolder_dmu_(ref);
+  }
 };
 
 /// A box implementation class for ObjC weak object pointers.
@@ -493,6 +514,9 @@ struct ObjCWeakRetainableBox :
   }
   static void visitRefs_dmu_(WeakReference *ref) {
     swift_unknownBeSafeForConcurrentAccess_dmu_(ref); // Note: breaks the symmetry  // level-shift
+  }
+  static bool checkHolder_dmu_(WeakReference *ref) {
+    return swift_unknownIsDestSafeForConcurrentAccess_dmu_(ref); // Note: breaks the symmetry  // level-shift
   }
 };
 
@@ -525,6 +549,14 @@ struct UnknownRetainableBox : RetainableBoxBase<UnknownRetainableBox, void*> {
     swift_beSafeForConcurrentAccess_dmu_(static_cast<HeapObject *>(obj)); // level-shift
 #endif
   }
+  
+  static bool checkHolderInScalar_dmu_(void *obj) {
+#if SWIFT_OBJC_INTEROP
+    return swift_unknownIsDestSafeForConcurrentAccess_dmu_(obj); // level-shift
+#else
+    return swift_isDestSafeForConcurrentAccess_dmu_(static_cast<HeapObject *>(obj)); // level-shift
+#endif
+  }
 };
 
 /// A box implementation class for BridgeObject.
@@ -551,6 +583,10 @@ struct BridgeObjectBox :
       
   static void visitRefsInScalar_dmu_(void *obj) {
     swift_bridgeObjectBeSafeForConcurrentAccess_dmu_(obj); // level-shift
+  }
+      
+  static bool checkHolderInScalar_dmu_(void *obj) {
+    return swift_bridgeObjectIsDestSafeForConcurrentAccess_dmu_(obj); // level-shift
   }
 };
   
@@ -691,7 +727,7 @@ public:
     EltBox::visitRefs_dmu_((typename EltBox::type*) addr);
     NextHelper::visitRefs_dmu_(addr + eltToNextOffset);
   }
-
+  
 };
 
 /// A class which produces a tuple-like box (with Swift layout rules)
@@ -796,6 +832,9 @@ struct AggregateBox {
       array += stride;
     }
   }
+  static bool checkHolder_dmu_(char* value) {
+    return false; // right??
+  }
 };
   
 /// A template for using the Swift allocation APIs with a known size
@@ -841,6 +880,10 @@ template <class Impl> struct BufferValueWitnessesBase {
   
   static void visitRefsInBuffer_dmu_(ValueBuffer* buffer, const Metadata *self) {
     Impl::visitRefs_dmu_(Impl::projectBuffer(buffer, self), self);
+  }
+  
+  static bool checkHolderInBuffer_dmu_(ValueBuffer* buffer, const Metadata *self) {
+    return Impl::checkHolder_dmu_(Impl::projectBuffer(buffer, self), self);
   }
 };
 
@@ -994,6 +1037,10 @@ struct ValueWitnesses : BufferValueWitnesses<ValueWitnesses<Box>,
   static void visitRefs_dmu_(OpaqueValue *value, const Metadata *self) {
     Box::visitRefs_dmu_((typename Box::type*) value);
   }
+  
+  static bool checkHolder_dmu_(OpaqueValue *value, const Metadata *self) {
+    return Box::checkHolder_dmu_((typename Box::type*) value);
+  }
 
   static OpaqueValue *initializeWithCopy(OpaqueValue *dest, OpaqueValue *src,
                                          const Metadata *self) {
@@ -1098,6 +1145,10 @@ struct NonFixedValueWitnesses :
   
   static void visitRefs_dmu_(OpaqueValue *value, const Metadata *self) {
     Box::visitRefs_dmu_((typename Box::type*) value, self);
+  }
+  
+  static bool checkHolder_dmu_(OpaqueValue *value, const Metadata *self) {
+    return Box::checkHolder_dmu_((typename Box::type*) value, self);
   }
   
   static void destroyArray(OpaqueValue *array, size_t n,

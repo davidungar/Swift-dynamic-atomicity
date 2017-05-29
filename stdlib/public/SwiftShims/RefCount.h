@@ -134,15 +134,15 @@ private:
   }
   
   // for debugging
-  static const StrongRefCount_t_dmu_ *nonatomicallyCounting_dmu_;
-  static const StrongRefCount_t_dmu_ *atomicallyCounting_dmu_;
-  static const StrongRefCount_t_dmu_ *culprit_dmu_;
-  static const char                  *message_dmu_;
+  static const void *nonatomicallyCounting_dmu_;
+  static const void *atomicallyCounting_dmu_;
+  static const void *culprit_dmu_;
+  static const char *message_dmu_;
 
-  void assertAndStoreThis(const StrongRefCount_t_dmu_ *shouldNotBeThis, const char *msg) const {
+  void assertAndStoreThis(const void *shouldNotBeThis, const char *msg) const {
     if (shouldNotBeThis != this)
       return;
-    culprit_dmu_ = this;
+    culprit_dmu_ = (void*)this;
     message_dmu_ = msg;
     assert(false && "reference count atomicity error");
     abort();
@@ -165,7 +165,7 @@ private:
   }
   void startingAtomicCount_dmu_ () const {
     assertAndStoreThis(nonatomicallyCounting_dmu_, "noatomic/atomic overlapping ref counts");
-    atomicallyCounting_dmu_ = this;
+    atomicallyCounting_dmu_ = (void*)this;
   }
   void finishedAtomicCount_dmu_() const {
     atomicallyCounting_dmu_ = nullptr; // object could get recycled

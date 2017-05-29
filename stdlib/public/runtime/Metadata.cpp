@@ -611,7 +611,6 @@ static void tuple_visitRefs_dmu_(OpaqueValue *tuple, const Metadata *_metadata) 
   assert(IsInline == tuple_getValueWitnesses(&metadata)->isValueInline());
   
   if (IsPOD) return;
-
   
   for (size_t i = 0, e = metadata.NumElements; i != e; ++i) {
     auto &eltInfo = metadata.getElements()[i];
@@ -646,6 +645,18 @@ static void tuple_visitRefsInArray_dmu_(OpaqueValue *array, size_t n, const Meta
     bytes += stride;
   }
 }
+
+/// TODO: (dmu) explain
+template <bool IsPOD, bool IsInline>
+static bool tuple_checkHolder_dmu_(OpaqueValue *tuple, const Metadata *_metadata) {
+  return false; // value type
+}
+/// TODO: (dmu) explain
+template <bool IsPOD, bool IsInline>
+static void tuple_visitRefsInBuffer_dmu_(ValueBuffer *buffer, const Metadata *metatype) {
+  return false;
+}
+
 
 /// Generic tuple value witness for 'destroyArray'.
 template <bool IsPOD, bool IsInline>
@@ -1230,10 +1241,10 @@ static void pod_noop(void *object, const Metadata *self) {
   pointer_function_cast<value_witness_types::deallocateBuffer>(pod_noop)
 
 
-#define pod_direct_visitRefs_dmu_ /*dmu*/ \
+#define pod_direct_visitRefs_dmu_ \
  pointer_function_cast<value_witness_types::visitRefs_dmu_>(pod_noop)
 
-#define pod_indirect_visitRefs_dmu_ /*dmu*/ \
+#define pod_indirect_visitRefs_dmu_ \
   pod_direct_visitRefs_dmu_
 
 
@@ -1242,6 +1253,20 @@ pointer_function_cast<value_witness_types::visitRefsInBuffer_dmu_>(pod_noop)
 
 #define pod_indirect_visitRefsInBuffer_dmu_ \
 pod_direct_visitRefsInBuffer_dmu_
+
+
+#define pod_direct_checkHoldler_dmu_ \
+pointer_function_cast<value_witness_types::checkHolder_dmu_>(pod_noop)
+
+#define pod_indirect_checkHolder_dmu_ \
+pod_direct_checkHolder_dmu_
+
+
+#define pod_direct_checkHolderInBuffer_dmu_ \
+pointer_function_cast<value_witness_types::checkHolderInBuffer_dmu_>(pod_noop)
+
+#define pod_indirect_checkHollderInBuffer_dmu_ \
+pod_direct_checkHolderInBuffer_dmu_
 
 
 

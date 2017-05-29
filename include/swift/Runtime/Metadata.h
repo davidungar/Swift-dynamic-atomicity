@@ -612,11 +612,17 @@ typedef int getExtraInhabitantIndex(const OpaqueValue *src,
   
 /// Given a value, find all its references and (recursively) make them safe for concurrent access -- dmu
 typedef void visitRefs_dmu_(OpaqueValue *object,
-                                   const Metadata *self);
+                            const Metadata *self);
 typedef void visitRefsInBuffer_dmu_(ValueBuffer* buffer,
                                     const Metadata *self);
 typedef void visitRefsInArray_dmu_(OpaqueValue *array, size_t n,
-                                                        const Metadata *self);
+                                   const Metadata *self);
+  
+/// Check the isSafeForConcurrentAccess bit of the reference count (false for value types, true for ObjC)
+typedef bool checkHolder_dmu_(OpaqueValue *object,
+                              const Metadata *self);
+typedef bool checkHolderInBuffer_dmu_(OpaqueValue *object,
+                                      const Metadata *self);
 
 /// Given a valid object of this enum type, extracts the tag value indicating
 /// which case of the enum is inhabited. Returned values are in the range
@@ -673,7 +679,9 @@ OpaqueValue *swift_copyPOD(OpaqueValue *dest,
   MACRO(initializeArrayWithTakeBackToFront) \
   MACRO(visitRefs_dmu_) \
   MACRO(visitRefsInBuffer_dmu_) \
-  MACRO(visitRefsInArray_dmu_)
+  MACRO(visitRefsInArray_dmu_) \
+  MACRO(checkHolder_dmu_) \
+  MACRO(checkHolderInBuffer_dmu_)
   
 
 struct TypeLayout;

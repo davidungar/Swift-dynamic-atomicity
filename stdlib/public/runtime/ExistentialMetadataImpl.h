@@ -107,6 +107,11 @@ struct LLVM_LIBRARY_VISIBILITY OpaqueExistentialBoxBase
     value->getType()->vw_visitRefsInBuffer_dmu_(value->getBuffer(args...));
   }
 
+  template <class Container, class... A>
+  static bool checkHolder_dmu_(Container *value, A... args) {
+    return value->getType()->vw_checkHolderInBuffer_dmu_(value->getBuffer(args...));
+  }
+
   
   
   template <class Container, class... A>
@@ -264,6 +269,11 @@ struct LLVM_LIBRARY_VISIBILITY ClassExistentialBoxBase
   static void visitRefs_dmu_(Container *value, A... args) {
     swift_unknownBeSafeForConcurrentAccess_dmu_(*value->getValueSlot());
   }
+      
+  template <class Container, class... A>
+  static bool checkHolder_dmu_(Container *value, A... args) {
+    return swift_unknownIsDestSafewForConcurrentAccess_dmu_(*value->getValueSlot());
+  }
   
   template <class Container, class... A>
   static Container *initializeWithCopy(Container *dest, Container *src,
@@ -398,6 +408,11 @@ struct LLVM_LIBRARY_VISIBILITY ExistentialMetatypeBoxBase
       
   template <class Container, class... A>
     static void visitRefs_dmu_(Container *value, A... args) {
+  }
+      
+  template <class Container, class... A>
+  static bool checkHolder_dmu_(Container *value, A... args) {
+    return true;
   }
   
   template <class Container, class... A>
