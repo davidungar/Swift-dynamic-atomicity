@@ -295,7 +295,11 @@ static StringRef toString(ValueWitnessKind k) {
   case ValueWitnessKind::VisitRefsInBuffer_dmu_:
     return "visitRefsInBuffer_dmu_";
   case ValueWitnessKind::VisitRefsInArray_dmu_:
-      return "visitRefsInArray_dmu_";
+    return "visitRefsInArray_dmu_";
+  case ValueWitnessKind::CheckHolder_dmu_:
+    return "checkHolder_dmu_";
+  case ValueWitnessKind::CheckHolderInBuffer_dmu_:
+    return "checkHolderInBuffer_dmu_";
   }
   unreachable("bad value witness kind");
 }

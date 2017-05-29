@@ -139,6 +139,15 @@ static void emitVisitRefsInExistentialValue_dmu_(IRGenFunction &IGF,
   emitVisitRefsInBuffer_dmu_Call(IGF, metadata, object);
 }
 
+static llvm::Value *emitCheckHolderInExistentialValue_dmu_(IRGenFunction &IGF,
+                                     Address addr,
+                                     OpaqueExistentialLayout layout) {
+  llvm::Value *metadata = layout.loadMetadataRef(IGF, addr);
+  
+  Address object = layout.projectExistentialBuffer(IGF, addr);
+  return emitCheckHolderInBuffer_dmu_Call(IGF, metadata, object);
+}
+
 static llvm::Constant *getAssignExistentialsFunction(IRGenModule &IGM,
                                                llvm::Type *objectPtrTy,
                                                OpaqueExistentialLayout layout);
@@ -542,6 +551,10 @@ public:
   void emitValueVisitRef_dmu_(IRGenFunction &IGF, Address addr) const {
     IGF.emitWeakVisitRef_dmu_(addr, Refcounting);
   }
+                                                     
+  llvm::Value *emitValueCheckHolder_dmu_(IRGenFunction &IGF, Address addr) const {
+    return IGF.emitWeakCheckHolder_dmu_(addr, Refcounting);
+  }
 
   // These explosions must follow the same schema as
   // ClassExistentialTypeInfo, i.e. first the value, then the tables.
@@ -636,6 +649,11 @@ public:
   void emitValueVisitRef_dmu_(IRGenFunction &IGF, Address addr) const {
     IGF.emitUnownedVisitRef_dmu_(addr, Refcounting);
   }
+                                                     
+  llvm::Value *emitValueCheckHolder_dmu_(IRGenFunction &IGF, Address addr) const {
+    return IGF.emitUnownedCheckHolder_dmu_(addr, Refcounting);
+  }
+                                                     
 
 
   bool mayHaveExtraInhabitants(IRGenModule &IGM) const override {
@@ -837,9 +855,6 @@ public:
     asDerived().emitValueVisitRefInScalar_dmu_(IGF, instance);
     asDerived().claimTables(IGF, e);
   }
-  llvm::Value *checkHolder_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
-    return asDerived().emitValueCheckHolderInScalar_dmu_(IGF, addr);
-  }
   
   void copy(IRGenFunction &IGF, Explosion &src, Explosion &dest,
             Atomicity atomicity)
@@ -884,7 +899,8 @@ public:
   }
 
   llvm::Value *checkHolder_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
-    return asDerived().emitValueCheckHolder_dmu_(IGF, addr); // 5-15
+    llvm::Value *value = asDerived().loadValue(IGF, addr);
+    return asDerived().emitValueCheckHolderInScalar_dmu_(IGF, value);
   }
 
 

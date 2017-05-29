@@ -40,4 +40,8 @@ VALUE_WITNESS(mc, VisitRefs_dmu_)
 VALUE_WITNESS(mb, VisitRefsInBuffer_dmu_)
 VALUE_WITNESS(ma, VisitRefsInArray_dmu_)
 
+VALUE_WITNESS(hh, CheckHolder_dmu_)
+VALUE_WITNESS(hb, CheckHolderInBuffer_dmu_)
+
+
 #undef VALUE_WITNESS

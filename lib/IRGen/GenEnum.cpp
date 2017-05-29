@@ -5453,7 +5453,7 @@ namespace {
       Strategy.visitRefs_dmu_(IGF, addr, T);
     }
     llvm::Value *checkHolder_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
-      return Strategy.checkHolder_dmu_(IGF, holderAddr, T);
+      return Strategy.checkHolder_dmu_(IGF, addr, T);
     }
 
     void initializeFromParams(IRGenFunction &IGF, Explosion &params,
@@ -5564,8 +5564,8 @@ namespace {
     void genIRToVisitRefsInInitialValues_dmu_(IRGenFunction &IGF, Explosion &e) const override {
       return Strategy.genIRToVisitRefsInInitialValues_dmu_(IGF, e);
     }
-    llvm::Value *checkHolder(IRGenFunction &IGF, Address addr, SILType T) const override {
-      return Strategy.checkHolder(IGF, addr, T);
+    llvm::Value *checkHolder_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
+      return Strategy.checkHolder_dmu_(IGF, addr, T);
     }
     void reexplode(IRGenFunction &IGF, Explosion &src,
                    Explosion &dest) const override {

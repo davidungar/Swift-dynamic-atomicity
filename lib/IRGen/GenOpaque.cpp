@@ -66,6 +66,14 @@ static llvm::Type *createWitnessType(IRGenModule &IGM, ValueWitness index) {
     return llvm::FunctionType::get(IGM.VoidTy, args, /*isVarArg*/ false)
       ->getPointerTo();
   }
+      
+  // llvm::Value* (*checkHolderInBuffer_dmu_)(B *buffer, M* self); // dmu blind clone
+  case ValueWitness::CheckHolderInBuffer_dmu_: {
+    llvm::Type *bufPtrTy = IGM.getFixedBufferTy()->getPointerTo(0);
+    llvm::Type *args[] = { bufPtrTy, IGM.TypeMetadataPtrTy };
+    return llvm::FunctionType::get(IGM.Int1Ty, args, /*isVarArg*/ false)
+    ->getPointerTo();
+  }
 
   // void (*destroy)(T *object, witness_t *self);
   case ValueWitness::Destroy: {
@@ -78,6 +86,13 @@ static llvm::Type *createWitnessType(IRGenModule &IGM, ValueWitness index) {
   case ValueWitness::VisitRefs_dmu_: {
     llvm::Type *args[] = { IGM.OpaquePtrTy, IGM.TypeMetadataPtrTy };
     return llvm::FunctionType::get(IGM.VoidTy, args, /*isVarArg*/ false)
+    ->getPointerTo();
+  }
+      
+  // llvm::Value *(*checkHolder_dmu_)(T *object, witness_t *self);
+  case ValueWitness::CheckHolder_dmu_: {
+    llvm::Type *args[] = { IGM.OpaquePtrTy, IGM.TypeMetadataPtrTy };
+    return llvm::FunctionType::get(IGM.Int1Ty, args, /*isVarArg*/ false)
     ->getPointerTo();
   }
 
@@ -293,6 +308,10 @@ static StringRef getValueWitnessLabel(ValueWitness index) {
     return "visitRefsInBuffer_dmu_";
   case ValueWitness::VisitRefsInArray_dmu_:
     return "visitRefsInArray_dmu_";
+  case ValueWitness::CheckHolder_dmu_:
+    return "checkHolder_dmu_";
+  case ValueWitness::CheckHolderInBuffer_dmu_:
+    return "checkHolderInBuffer_dmu_";
   }
   llvm_unreachable("bad value witness index");
 }
@@ -713,6 +732,17 @@ void irgen::emitVisitRefsCall_dmu_(IRGenFunction &IGF,
   setHelperAttributes(call);
 }
 
+llvm::Value *irgen::emitCheckHolderCall_dmu_(IRGenFunction &IGF, SILType T, Address holder) {
+  auto metadata = IGF.emitTypeMetadataRefForLayout(T);
+  llvm::Value *fn = IGF.emitValueWitnessForLayout(T,
+                                                  ValueWitness::CheckHolder_dmu_);
+  llvm::CallInst *call =
+  IGF.Builder.CreateCall(fn, {holder.getAddress(), metadata});
+  call->setCallingConv(IGF.IGM.DefaultCC);
+  setHelperAttributes(call);
+  return call;
+}
+
 
 /// Emit a call to do a 'destroyArray' operation.
 void irgen::emitDestroyArrayCall(IRGenFunction &IGF,
@@ -791,6 +821,30 @@ void irgen::emitVisitRefsInBuffer_dmu_Call(IRGenFunction &IGF, // dmu blind clon
   call->setCallingConv(IGF.IGM.DefaultCC);
   setHelperAttributes(call);
 }
+llvm::Value *irgen::emitCheckHolderInBuffer_dmu_Call(IRGenFunction &IGF, // dmu blind clone
+                                                     SILType T,
+                                                     Address buffer) {
+  auto metadata = IGF.emitTypeMetadataRefForLayout(T);
+  llvm::Value *fn = IGF.emitValueWitnessForLayout(T,
+                                                  ValueWitness::CheckHolderInBuffer_dmu_);
+  llvm::CallInst *call =
+  IGF.Builder.CreateCall(fn, {buffer.getAddress(), metadata});
+  call->setCallingConv(IGF.IGM.DefaultCC);
+  setHelperAttributes(call);
+  return call;
+}
+llvm::Value *irgen::emitCheckHolderInBuffer_dmu_Call(IRGenFunction &IGF, // dmu blind clone
+                                                     llvm::Value *metadata,
+                                                     Address buffer) {
+  auto fn = emitLoadOfValueWitnessFromMetadata(IGF, metadata,
+                                               ValueWitness::CheckHolderInBuffer_dmu_);
+  llvm::CallInst *call =
+  IGF.Builder.CreateCall(fn, {buffer.getAddress(), metadata});
+  call->setCallingConv(IGF.IGM.DefaultCC);
+  setHelperAttributes(call);
+  return call;
+}
+
 
 /// Emit a call to do a 'deallocateBuffer' operation.
 void irgen::emitDeallocateBufferCall(IRGenFunction &IGF,

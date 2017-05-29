@@ -304,11 +304,6 @@ namespace {
        IGF.emitNativeVisitRefInScalar_dmu_(context);
      }
    }
-   llvm::Value *checkHolder_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
-     return isPOD(ResilienceExpansion::Maximal)
-     ? llvm::Constant::getNullValue(IGF.IGM.Int1Ty)
-     : IGF.emitCheckHolderInScalar_dmu_(addr, ReferenceCounting::Native);
-   }
 
     void copy(IRGenFunction &IGF, Explosion &src,
               Explosion &dest, Atomicity atomicity) const override {
@@ -403,7 +398,7 @@ namespace {
       if (isPOD(ResilienceExpansion::Maximal))
         return llvm::Constant::getNullValue(IGF.IGM.Int1Ty);
       auto data = IGF.Builder.CreateLoad(projectData(IGF, addr));
-      return IGM.emitNativeCheckHolderInScalar_dmu(data);
+      return IGF.emitNativeCheckHolderInScalar_dmu_(data);
     }
 
 
@@ -528,6 +523,7 @@ namespace {
     }
     llvm::Value *checkHolder_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
       IGF.unimplemented(SourceLoc(), "visitRefs_dmu_ @block_storage");
+      return llvm::Constant::getNullValue(IGF.IGM.Int1Ty);
     }
   };
 } // end anonymous namespace

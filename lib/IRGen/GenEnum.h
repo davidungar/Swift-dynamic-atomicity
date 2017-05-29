@@ -413,8 +413,6 @@ public:
   
   virtual void genIRToVisitRefsInInitialValues_dmu_(IRGenFunction &IGF, Explosion &e) const = 0;
   
-  virtual llvm::Value *checkHolder_dmu_(IRGenFunction &IGF, Address addr, SILType T)  const = 0;
-  
   virtual void reexplode(IRGenFunction &IGF, Explosion &src,
                          Explosion &dest) const = 0;
   virtual void copy(IRGenFunction &IGF, Explosion &src,

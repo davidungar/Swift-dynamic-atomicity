@@ -76,6 +76,8 @@ const char *irgen::getValueWitnessName(ValueWitness witness) {
   CASE(VisitRefs_dmu_)
   CASE(VisitRefsInBuffer_dmu_)
   CASE(VisitRefsInArray_dmu_)
+  CASE(CheckHolder_dmu_)
+  CASE(CheckHolderInBuffer_dmu_)
 #undef CASE
   }
   llvm_unreachable("bad value witness kind");
@@ -352,6 +354,20 @@ static void emitDefaultVisitRefsInBuffer_dmu_(IRGenFunction &IGF,
   type.visitRefs_dmu_(IGF, object, T);
 }
 
+static llvm::Value *emitDefaultCheckHolderInBuffer_dmu_(IRGenFunction &IGF,
+                                                        Address buffer,
+                                                        SILType T,
+                                                        const TypeInfo &type,
+                                                        FixedPacking packing) {
+  // Special-case dynamic packing in order to thread the jumps.
+  if (packing == FixedPacking::Dynamic)
+    return emitForDynamicPacking(IGF, &emitDefaultCheckHolderInBuffer_dmu_,
+                                 T, type, buffer);
+  
+  Address object = emitDefaultProjectBuffer(IGF, buffer, T, type, packing);
+  return type.checkHolder_dmu_(IGF, object, T);
+}
+
 /// Emit an 'initializeBufferWithCopyOfBuffer' operation.
 /// Returns the address of the destination object.
 static Address
@@ -481,6 +497,8 @@ DEFINE_UNARY_BUFFER_OP(Address, allocateBuffer, AllocateBuffer)
 DEFINE_UNARY_BUFFER_OP(Address, projectBuffer, ProjectBuffer)
 DEFINE_UNARY_BUFFER_OP(void, destroyBuffer, DestroyBuffer)
 DEFINE_UNARY_BUFFER_OP(void, visitRefsInBuffer_dmu_, VisitRefsInBuffer_dmu_) // dmu TODO: (dmu) blind clone
+DEFINE_UNARY_BUFFER_OP(llvm::Value*, checkHolderInBuffer_dmu_, CheckHolderInBuffer_dmu_)
+
 DEFINE_UNARY_BUFFER_OP(void, deallocateBuffer, DeallocateBuffer)
 #undef DEFINE_UNARY_BUFFER_OP
 
@@ -665,6 +683,22 @@ static void buildValueWitnessFunction(IRGenModule &IGM,
     return;
   }
 
+  case ValueWitness::CheckHolder_dmu_: {
+    Address object = getArgAs(IGF, argv, type, "object");
+    getArgAsLocalSelfTypeMetadata(IGF, argv, abstractType);
+    auto value = type.checkHolder_dmu_(IGF, object, concreteType);
+    IGF.Builder.CreateRet(value);
+    return;
+  }
+    
+  case ValueWitness::CheckHolderInBuffer_dmu_: { // dmu clone TODO: (dmu) factor with destroyBuffer?
+    Address buffer = getArgAsBuffer(IGF, argv, "buffer");
+    getArgAsLocalSelfTypeMetadata(IGF, argv, abstractType);
+    auto value = emitCheckHolderInBuffer_dmu_(IGF, buffer, concreteType, type, packing);
+    IGF.Builder.CreateRet(value);
+    return;
+  }
+      
   case ValueWitness::VisitRefsInArray_dmu_: { // dmu clone TODO: (dmu) factor with destroyArray?
     Address array = getArgAs(IGF, argv, type, "array");
     llvm::Value *count = getArg(argv, "count");
@@ -961,6 +995,16 @@ static llvm::Constant *getReturnSelfFunction(IRGenModule &IGM) {
       });
 }
 
+static llvm::Constant *getReturnFalseFunction(IRGenModule &IGM) {
+  llvm::Type *argTys[] = { IGM.Int8PtrPtrTy, IGM.WitnessTablePtrTy };
+  return IGM.getOrCreateHelperFunction("__swift_noop_void_return",
+                                       IGM.VoidTy, argTys,
+                                       [&](IRGenFunction &IGF) {
+                                         IGF.Builder.CreateRet(llvm::Constant::getNullValue(IGM.Int1Ty));
+                                       });
+}
+
+
 /// Return a function which takes three pointer arguments and does a
 /// retaining assignWithCopy on the first two: it loads a pointer from
 /// the second, retains it, loads a pointer from the first, stores the
@@ -1048,7 +1092,7 @@ static llvm::Constant *getDestroyStrongFunction(IRGenModule &IGM) {
 /// TODO: (dmu) generializing, level shifts here
 static llvm::Constant *getVisitRefs_dmu_Function(IRGenModule &IGM) {
   llvm::Type *argTys[] = { IGM.Int8PtrPtrTy, IGM.WitnessTablePtrTy };
-  return IGM.getOrCreateHelperFunction("emitVisitNativeRefInScalar_dmu_",
+  return IGM.getOrCreateHelperFunction("emitNativeVisitRefInScalar_dmu_",
                                        IGM.VoidTy, argTys,
                                        [&](IRGenFunction &IGF) {
                                          Address arg(&*IGF.CurFn->arg_begin(), IGM.getPointerAlignment());
@@ -1056,6 +1100,19 @@ static llvm::Constant *getVisitRefs_dmu_Function(IRGenModule &IGM) {
                                          IGF.Builder.CreateRetVoid();
                                        });
 }
+
+
+static llvm::Constant *getCheckHolder_dmu_Function(IRGenModule &IGM) {
+  llvm::Type *argTys[] = { IGM.Int8PtrPtrTy, IGM.WitnessTablePtrTy };
+  return IGM.getOrCreateHelperFunction("emitNativeCheckHolderInScalar_dmu_",
+                                       IGM.VoidTy, argTys,
+                                       [&](IRGenFunction &IGF) {
+                                         Address arg(&*IGF.CurFn->arg_begin(), IGM.getPointerAlignment());
+                                         IGF.emitNativeCheckHolderInScalar_dmu_(IGF.Builder.CreateLoad(arg));
+                                         IGF.Builder.CreateRetVoid();
+                                       });
+}
+
 
 /// Return a function which takes two pointer arguments, memcpys
 /// from the second to the first, and returns the first argument.
@@ -1220,7 +1277,15 @@ static llvm::Constant *getValueWitness(IRGenModule &IGM,
     }
     goto standard;
       
-  case ValueWitness::VisitRefsInBuffer_dmu_:
+    case ValueWitness::CheckHolder_dmu_:
+      if (concreteTI.isPOD(ResilienceExpansion::Maximal)) {
+        return asOpaquePtr(IGM, getReturnFalseFunction(IGM));
+      } else if (concreteTI.isSingleSwiftRetainablePointer(ResilienceExpansion::Maximal)) {
+        return asOpaquePtr(IGM, getCheckHolder_dmu_Function(IGM));
+      }
+      goto standard;
+
+    case ValueWitness::VisitRefsInBuffer_dmu_:
     if (concreteTI.isPOD(ResilienceExpansion::Maximal)) {
       if (isNeverAllocated(packing))
         return asOpaquePtr(IGM, getNoOpVoidFunction(IGM));
@@ -1229,6 +1294,16 @@ static llvm::Constant *getValueWitness(IRGenModule &IGM,
       return asOpaquePtr(IGM, getVisitRefs_dmu_Function(IGM)); // dmu blind clone
     }
     goto standard;
+      
+    case ValueWitness::CheckHolderInBuffer_dmu_:
+      if (concreteTI.isPOD(ResilienceExpansion::Maximal)) {
+        if (isNeverAllocated(packing))
+          return asOpaquePtr(IGM, getReturnFalseFunction(IGM));
+      } else if (concreteTI.isSingleSwiftRetainablePointer(ResilienceExpansion::Maximal)) {
+        assert(isNeverAllocated(packing));
+        return asOpaquePtr(IGM, getCheckHolder_dmu_Function(IGM)); // dmu blind clone
+      }
+      goto standard;
     
   case ValueWitness::VisitRefsInArray_dmu_:
     if (concreteTI.isPOD(ResilienceExpansion::Maximal)) {

@@ -535,9 +535,6 @@ namespace {
     void genIRToVisitRefsInInitialValues_dmu_(IRGenFunction &IGF, Explosion &e) const override {
       (void)e.claimNext();
     }
-    llvm::Value *checkHolder(IRGenFunction &IGF, Address addr, SILType T) const override {
-      return llvm::Constant::getAllOnesValue(IGF.IGM.Int1Ty);
-    }
 
     
     void reexplode(IRGenFunction &IGF, Explosion &sourceExplosion,

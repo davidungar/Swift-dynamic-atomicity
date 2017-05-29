@@ -199,9 +199,11 @@ enum class ValueWitness : unsigned {
   VisitRefsInArray_dmu_,
   
   // Return a bool if the address is safe for concurrent access
-  // IsSafeForConcurrentAccess_dmu_,
+  CheckHolder_dmu_,
+  
+  CheckHolderInBuffer_dmu_,
 
-  Last_RequiredValueWitnessFunction = VisitRefsInArray_dmu_, // dmu was InitializeArrayWithTakeBackToFront
+  Last_RequiredValueWitnessFunction = CheckHolderInBuffer_dmu_, // dmu was InitializeArrayWithTakeBackToFront
   // Last_RequiredValueWitnessFunction = IsSafeForConcurrentAccess_dmu_, // dmu was InitializeArrayWithTakeBackToFront
 
   /// The offset at which type layout witnesses begin.

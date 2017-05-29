@@ -1218,6 +1218,7 @@ DEFINE_BINARY_OPERATION(WeakLoadStrong, llvm::Value *, Address, llvm::Type *)
 DEFINE_BINARY_OPERATION(WeakTakeStrong, llvm::Value *, Address, llvm::Type *)
 DEFINE_UNARY_OPERATION(WeakDestroy, void, Address)
 DEFINE_UNARY_OPERATION(WeakVisitRef_dmu_, void, Address)
+DEFINE_UNARY_OPERATION(WeakCheckHolder_dmu_, llvm::Value *, Address)
 
 DEFINE_BINARY_OPERATION(UnownedCopyInit, void, Address, Address)
 DEFINE_BINARY_OPERATION(UnownedTakeInit, void, Address, Address)
@@ -1229,6 +1230,7 @@ DEFINE_BINARY_OPERATION(UnownedLoadStrong, llvm::Value *, Address, llvm::Type *)
 DEFINE_BINARY_OPERATION(UnownedTakeStrong, llvm::Value *, Address, llvm::Type *)
 DEFINE_UNARY_OPERATION(UnownedDestroy, void, Address)
 DEFINE_UNARY_OPERATION(UnownedVisitRef_dmu_, void, Address)
+DEFINE_UNARY_OPERATION(UnownedCheckHolder_dmu_, llvm::Value *, Address)
 
 #undef DEFINE_UNARY_OPERATION
 #undef DEFINE_BINARY_OPERATION
@@ -1392,6 +1394,12 @@ void IRGenFunction::emitNativeUnownedVisitRef_dmu_(Address ref) {
   ref = Builder.CreateStructGEP(ref, 0, Size(0));
   llvm::Value *value = Builder.CreateLoad(ref);
   emitNativeVisitRefInScalar_dmu_(value);
+}
+
+llvm::Value *IRGenFunction::emitNativeUnownedCheckHolder_dmu_(Address ref) {
+  ref = Builder.CreateStructGEP(ref, 0, Size(0));
+  llvm::Value *value = Builder.CreateLoad(ref);
+  return emitNativeCheckHolderInScalar_dmu_(value);
 }
 
 void IRGenFunction::emitNativeUnownedCopyInit(Address dest, Address src) {
@@ -1946,9 +1954,13 @@ void IRGenFunction::emitNativeWeakVisitRef_dmu_(Address addr) {
 }
 DEFINE_ADDR_OP(NativeWeakBeSafeForConcurrentAccess_dmu_)
 
-llvm::Value *IRGenFunction::emitNativeWeakIsDestSafeForConcurrentAccess_dmu_(llvm::Value *dst) {
-  return emitIsDestSafeCall_dmu_(IGM.getNativeWeakIsDestSafeForConcurrentAccess_dmu_Fn(), dst);//5-15
+llvm::Value *IRGenFunction::emitNativeWeakCheckHolder_dmu_(Address addr) {
+  return emitNativeWeakIsDestSafeForConcurrentAccess_dmu_(addr); // level shift
 }
+llvm::Value* IRGenFunction::emitNativeWeakIsDestSafeForConcurrentAccess_dmu_(Address addr) {
+  return emitIsDestSafeCall_dmu_(IGM.getNativeWeakIsDestSafeForConcurrentAccess_dmu_Fn(), addr.getAddress());
+}
+
 
 
 DEFINE_COPY_OP(NativeWeakCopyInit)
@@ -1965,8 +1977,11 @@ void IRGenFunction::emitUnknownUnownedVisitRef_dmu_(Address addr) {
 }
 DEFINE_ADDR_OP(UnknownUnownedBeSafeForConcurrentAccess_dmu_)
 
-llvm::Value *IRGenFunction::emitUnknownUnownedIsDestSafeForConcurrentAccess_dmu_(llvm::Value *dst) {
-  return emitIsDestSafeCall_dmu_(IGM.getUnknownUnownedIsDestSafeForConcurrentAccess_dmu_Fn(), dst);//5-15
+llvm::Value *IRGenFunction::emitUnknownUnownedCheckHolder_dmu_(Address addr) {
+  return emitUnknownUnownedIsDestSafeForConcurrentAccess_dmu_(addr); // dmu level-shift
+}
+llvm::Value *IRGenFunction::emitUnknownUnownedIsDestSafeForConcurrentAccess_dmu_(Address addr) {
+  return emitIsDestSafeCall_dmu_(IGM.getUnknownUnownedIsDestSafeForConcurrentAccess_dmu_Fn(), addr.getAddress());//5-15
 }
 
 DEFINE_COPY_OP(UnknownUnownedCopyInit)
@@ -1979,10 +1994,18 @@ DEFINE_LOAD_WEAK_OP(UnknownWeakTakeStrong)
 DEFINE_STORE_WEAK_OP(UnknownWeakInit)
 DEFINE_STORE_WEAK_OP(UnknownWeakAssign)
 DEFINE_ADDR_OP(UnknownWeakDestroy)
+
 void IRGenFunction::emitUnknownWeakVisitRef_dmu_(Address addr) {
   emitUnknownWeakBeSafeForConcurrentAccess_dmu_(addr);// level shift
 }
 DEFINE_ADDR_OP(UnknownWeakBeSafeForConcurrentAccess_dmu_)
+
+llvm::Value *IRGenFunction::emitUnknownWeakCheckHolder_dmu_(Address addr) {
+  return emitUnknownWeakIsDestSafeForConcurrentAccess_dmu_(addr);// level shift
+}
+llvm::Value *IRGenFunction::emitUnknownWeakIsDestSafeForConcurrentAccess_dmu_(Address addr) {
+  return emitIsDestSafeCall_dmu_(IGM.getUnknownWeakIsDestSafeForConcurrentAccess_dmu_Fn(), addr.getAddress());
+}
 DEFINE_COPY_OP(UnknownWeakCopyInit)
 DEFINE_COPY_OP(UnknownWeakCopyAssign)
 DEFINE_COPY_OP(UnknownWeakTakeInit)

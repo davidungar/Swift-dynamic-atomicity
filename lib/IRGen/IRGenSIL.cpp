@@ -4895,7 +4895,8 @@ private:
     }
     auto fa = dyn_cast<SILFunctionArgument>(sa);
     if (     fa == nullptr
-        ||  !fa->getArgumentConvention().mayBeContainedInALargerInstance_dmu_()) {
+        ||  !fa->getArgumentConvention().mayBeContainedInALargerInstance_dmu_()
+        || true) { // 5-15
       if (trace) fprintf(stderr, "TRACE arg w/o agg %s: %d\n", __FILE__, __LINE__);
       return noOutermostAggregateExists;
     }

@@ -403,13 +403,14 @@ public:
   // Visit all the references in the value at this address
   virtual void visitRefs_dmu_(IRGenFunction &IGF, Address address, SILType T) const = 0;
   
-  // Return a bool if address is safe...
-  virtual llvm::Value *checkHolder_dmu_(IRGenFunction &IGF, Address addr, SILType T) const = 0;
-  
   // Defined via macros in GenValueWitness.cpp
   virtual void visitRefsInBuffer_dmu_(IRGenFunction &IGF, Address buffer, SILType T) const;
   virtual void visitRefsInArray_dmu_(IRGenFunction &IGF, Address base, llvm::Value *count, SILType T) const;
   
+  // Return a bool if address is safe...
+  virtual llvm::Value *checkHolder_dmu_(IRGenFunction &IGF, Address addr, SILType T) const = 0;
+  // Defined via macros in GenValueWitness.cpp
+  virtual llvm::Value *checkHolderInBuffer_dmu_(IRGenFunction &IGF, Address buffer, SILType T) const;
 
 
   /// Should optimizations be enabled which rely on the representation

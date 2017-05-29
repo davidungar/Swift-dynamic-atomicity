@@ -164,10 +164,6 @@ public:
     }
     asDerived().emitVisitRefInScalar_dmu_(IGF, src.claimNext());
   }
-  //5-15 NEED THIS???
-  llvm::Value *checkHolder_dmu_(IRGenFunction &IGF, Address addr, SILType) const override {
-    return asDerived().emitCheckHolderInScalar_dmu_(IGF, addr);
-  }
 
   void copy(IRGenFunction &IGF, Explosion &in, Explosion &out,
             Atomicity atomicity) const override {
@@ -203,7 +199,7 @@ public:
       asDerived().emitVisitRefInScalar_dmu_(IGF, value);
     }
   }
-  // 5-15 NOTICE project
+
   llvm::Value *checkHolder_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
     if (Derived::IsScalarPOD)
       return llvm::Constant::getNullValue(IGF.IGM.Int1Ty);

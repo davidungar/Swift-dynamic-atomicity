@@ -157,6 +157,10 @@ namespace irgen {
                               SILType T,
                               Address object);
 
+  llvm::Value *emitCheckHolderCall_dmu_(IRGenFunction &IGF,
+                                        SILType T,
+                                        Address object);
+
   /// Emit a call to do a 'destroyArray' operation.
   void emitDestroyArrayCall(IRGenFunction &IGF,
                             SILType T,
@@ -184,7 +188,15 @@ namespace irgen {
   void emitVisitRefsInBuffer_dmu_Call(IRGenFunction &IGF,
                                       SILType T,
                                       Address buffer);
+ 
+  llvm::Value *emitCheckHolderInBuffer_dmu_Call(IRGenFunction &IGF,
+                                        llvm::Value *metadata,
+                                        Address buffer);
   
+  llvm::Value * emitCheckHolderInBuffer_dmu_Call(IRGenFunction &IGF,
+                                        SILType T,
+                                        Address buffer);
+
   /// Emit a call to do a 'deallocateBuffer' operation.
   void emitDeallocateBufferCall(IRGenFunction &IGF,
                                 llvm::Value *metadata,

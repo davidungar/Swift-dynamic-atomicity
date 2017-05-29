@@ -516,7 +516,7 @@ public:
   void genIRToVisitRefsInInitialValues_dmu_(IRGenFunction &IGF, Explosion &myLoadedValues) const override {
     forAllFields_dmu_<&LoadableTypeInfo::genIRToVisitRefsInInitialValues_dmu_>(IGF, myLoadedValues);
   }
-  llvm::Value *checkHolder(IRGenFunction &IGF, Address addr, SILType T) const override {
+  llvm::Value *checkHolder_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
      return llvm::Constant::getNullValue(IGF.IGM.Int1Ty);
   }
 
