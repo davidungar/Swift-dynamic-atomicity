@@ -4888,19 +4888,18 @@ private:
     // static s = S(); s.m()
     //
     //
-    SILType type = sa->getType();
-    if (type.isReferenceCounted(M)) {
-      if (trace) fprintf(stderr,"TRACE ref counted arg %s: %d\n", __FILE__, __LINE__);
-      return foundIndirectOutermostAggregate;
-    }
     auto fa = dyn_cast<SILFunctionArgument>(sa);
-    if (     fa == nullptr
-        ||  !fa->getArgumentConvention().mayBeContainedInALargerInstance_dmu_()
-        || true) { // 5-15
-      if (trace) fprintf(stderr, "TRACE arg w/o agg %s: %d\n", __FILE__, __LINE__);
+    bool isOut = fa != nullptr  &&  fa->getArgumentConvention().mayBeContainedInALargerInstance_dmu_();
+    if (!isOut) {
+      if (trace) fprintf(stderr,"TRACE not out arg %s: %d\n", __FILE__, __LINE__);
+      SILType type = sa->getType();
+      return type.isReferenceCounted(M)  ?  foundIndirectOutermostAggregate  :  noOutermostAggregateExists;
+    }
+    bool hackToAvoidConservativeInOuts = true; // 5-15
+    if (hackToAvoidConservativeInOuts) {
+      if (trace) fprintf(stderr,"TRACE hack for inouts %s: %d\n", __FILE__, __LINE__);
       return noOutermostAggregateExists;
     }
-    
     diagnoseIndirectArgument(IGF, fa);
     if (trace) fprintf(stderr, "TRACE arg with conservative agg %s: %d\n", __FILE__, __LINE__);
     return outermostAggregateIsAccessedConcurrently; //5-15
