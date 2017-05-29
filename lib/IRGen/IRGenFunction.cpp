@@ -46,6 +46,9 @@ IRGenFunction::IRGenFunction(IRGenModule &IGM, llvm::Function *Fn,
     // after we're done with this function.
     IGM.DebugInfo->pushLoc();
   }
+        
+  static const char* fnToTrace_dmu_ = "_TTWCSo12NSOrderedSets8Sequence10FoundationFS0_12makeIteratorfT_wx8Iterator";
+  shouldTrace_dmu_ = Fn->getName().contains(StringRef(fnToTrace_dmu_));
 
   emitPrologue();
 }

@@ -639,12 +639,13 @@ private:
   ArchetypeAccessPaths;
   
 public:
+  bool shouldTrace_dmu_;
   void trace_dmu_(const char* function, const char* file, int line) const {
-    if (CurFn->getName().contains(StringRef("gazorp")))
+    if (shouldTrace_dmu_)
       fprintf(stderr, "TRACE: %s %s:%d\n", function, file, line);
   }
 };
-  // define as nothing to turn off
+// define as nothing to turn off
 # if 0
   # define TRACE_DMU_(IGF) (IGF).trace_dmu_(__FUNCTION__, __FILE__, __LINE__)
 # else

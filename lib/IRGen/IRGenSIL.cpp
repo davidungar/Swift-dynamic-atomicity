@@ -5084,7 +5084,7 @@ private:
   }
 public:
   static OutermostAggregateResult_dmu_ get(IRGenSILFunction& IGF, SILValue vArg) {
-    bool traceForDebugging = false; // XXXXXXXX IGF.CurFn->getName().contains(StringRef("createtask"));
+    bool traceForDebugging = IGF.shouldTrace_dmu_;
     OutermostAggregateResult_dmu_ oar = _get(IGF, vArg, traceForDebugging);
     if (traceForDebugging) {
       std::string result;
