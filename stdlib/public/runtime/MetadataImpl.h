@@ -178,7 +178,7 @@ struct NativeBox {
   static void visitRefsInArray_dmu_(T *array, size_t n) {}
   
   static bool checkHolder_dmu_(T *value) { return false; } // dmu 5-15 right?
-  static bool checkHoldlerInBuffer_dmu_(T *value) { return false; } // dmu 5-15 right?
+  static bool checkHolderInBuffer_dmu_(T *value) { return false; } // dmu 5-15 right?
 
 private:
   static T *next(T *ptr, size_t n = 1) {
@@ -314,7 +314,7 @@ struct SwiftUnownedRetainableBox :
     swift_unownedBeSafeForConcurrentAccess_dmu_(obj); // level-shift
   }
 
-  static bool visitCheckHolderInScalar_dmu_(HeapObject *obj) {
+  static bool checkHolderInScalar_dmu_(HeapObject *obj) {
     return swift_unownedIsDestSafeForConcurrentAccess_dmu_(obj); // level-shift
   }
 
@@ -439,6 +439,10 @@ struct ObjCRetainableBox : RetainableBoxBase<ObjCRetainableBox, void*> {
   }
   
   static void visitRefsInScalar_dmu_(void*) {
+  }
+  
+  static bool checkHolderInScalar_dmu_(void*) {
+    return true;
   }
 };
 

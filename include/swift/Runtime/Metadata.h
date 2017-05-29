@@ -621,7 +621,7 @@ typedef void visitRefsInArray_dmu_(OpaqueValue *array, size_t n,
 /// Check the isSafeForConcurrentAccess bit of the reference count (false for value types, true for ObjC)
 typedef bool checkHolder_dmu_(OpaqueValue *object,
                               const Metadata *self);
-typedef bool checkHolderInBuffer_dmu_(OpaqueValue *object,
+typedef bool checkHolderInBuffer_dmu_(ValueBuffer* buffer,
                                       const Metadata *self);
 
 /// Given a valid object of this enum type, extracts the tag value indicating

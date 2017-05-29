@@ -272,7 +272,7 @@ struct LLVM_LIBRARY_VISIBILITY ClassExistentialBoxBase
       
   template <class Container, class... A>
   static bool checkHolder_dmu_(Container *value, A... args) {
-    return swift_unknownIsDestSafewForConcurrentAccess_dmu_(*value->getValueSlot());
+    return swift_unknownIsDestSafeForConcurrentAccess_dmu_(*value->getValueSlot());
   }
   
   template <class Container, class... A>

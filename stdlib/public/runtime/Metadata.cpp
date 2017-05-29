@@ -653,7 +653,7 @@ static bool tuple_checkHolder_dmu_(OpaqueValue *tuple, const Metadata *_metadata
 }
 /// TODO: (dmu) explain
 template <bool IsPOD, bool IsInline>
-static void tuple_visitRefsInBuffer_dmu_(ValueBuffer *buffer, const Metadata *metatype) {
+static bool tuple_checkHolderInBuffer_dmu_(ValueBuffer *buffer, const Metadata *metatype) {
   return false;
 }
 
@@ -1232,6 +1232,7 @@ static OpaqueValue *pod_indirect_allocateBuffer(ValueBuffer *buffer,
 
 static void pod_noop(void *object, const Metadata *self) {
 }
+
 #define pod_direct_destroy \
   pointer_function_cast<value_witness_types::destroy>(pod_noop)
 #define pod_indirect_destroy pod_direct_destroy
@@ -1254,18 +1255,14 @@ pointer_function_cast<value_witness_types::visitRefsInBuffer_dmu_>(pod_noop)
 #define pod_indirect_visitRefsInBuffer_dmu_ \
 pod_direct_visitRefsInBuffer_dmu_
 
-
-#define pod_direct_checkHoldler_dmu_ \
-pointer_function_cast<value_witness_types::checkHolder_dmu_>(pod_noop)
+static bool pod_direct_checkHolder_dmu_(OpaqueValue*, const Metadata*) { return false; }
 
 #define pod_indirect_checkHolder_dmu_ \
 pod_direct_checkHolder_dmu_
 
+static bool pod_direct_checkHolderInBuffer_dmu_(ValueBuffer*, const Metadata*) { return false; }
 
-#define pod_direct_checkHolderInBuffer_dmu_ \
-pointer_function_cast<value_witness_types::checkHolderInBuffer_dmu_>(pod_noop)
-
-#define pod_indirect_checkHollderInBuffer_dmu_ \
+#define pod_indirect_checkHolderInBuffer_dmu_ \
 pod_direct_checkHolderInBuffer_dmu_
 
 
