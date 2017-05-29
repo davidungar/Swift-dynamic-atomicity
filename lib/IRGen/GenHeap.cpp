@@ -1135,23 +1135,21 @@ void IRGenFunction::emitVisitRefInScalar_dmu_(llvm::Value *objToSet,
 
 llvm::Value* IRGenFunction::emitCheckHolderInScalar_dmu_(llvm::Value *objToCheck,
                                                  ReferenceCounting refcounting) {
-  auto v = Builder.CreateBitCast(objToCheck, IGM.getReferenceType(refcounting));
-
   switch (refcounting) {
       // 5-15 each case
     case ReferenceCounting::Native:
-      return emitNativeCheckHolderInScalar_dmu_(v);
+      return emitNativeCheckHolderInScalar_dmu_(objToCheck);
 
     case ReferenceCounting::ObjC:
     case ReferenceCounting::Block:
       return llvm::Constant::getAllOnesValue(IGM.Int1Ty);
 
     case ReferenceCounting::Unknown:
-      return emitUnknownCheckHolderInScalar_dmu_(v);
+      return emitUnknownCheckHolderInScalar_dmu_(objToCheck);
     case ReferenceCounting::Bridge:
-      return emitBridgeCheckHolderInScalar_dmu_(v);
+      return emitBridgeCheckHolderInScalar_dmu_(objToCheck);
     case ReferenceCounting::Error:
-      return emitErrorCheckHolderInScalar_dmu_(v);
+      return emitErrorCheckHolderInScalar_dmu_(objToCheck);
   }
 }
 
@@ -1644,8 +1642,23 @@ emitIsUniqueCall(llvm::Value *value, SourceLoc loc, bool isNonNull,
   return call;
 }
 
-llvm::Value *IRGenFunction::emitIsDestSafeCall_dmu_(llvm::Constant *fn, llvm::Value *value) {
+llvm::Value *IRGenFunction::emitIsDestSafeCall_dmu_(llvm::Constant *fn,
+                                                    llvm::Value *value) {
+  auto cc = IGM.DefaultCC;
+  if (auto fun = dyn_cast<llvm::Function>(fn))
+    cc = fun->getCallingConv();
+  
+  // Instead of casting the input, we cast the function type.
+  // This tends to produce less IR, but might be evil.
+  if (value->getType() != getTypeOfFunction(fn)->getParamType(0)) {
+    llvm::FunctionType *fnType =
+    llvm::FunctionType::get(IGM.Int1Ty, value->getType(), false);
+    fn = llvm::ConstantExpr::getBitCast(fn, fnType->getPointerTo());
+  }
+  
+  // Emit the call.
   llvm::CallInst *call = Builder.CreateCall(fn, value);
+  call->setCallingConv(cc);
   call->setDoesNotThrow();
   return call;
 }
