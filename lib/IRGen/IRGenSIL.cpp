@@ -4895,7 +4895,7 @@ private:
       SILType type = sa->getType();
       return type.isReferenceCounted(M)  ?  foundIndirectOutermostAggregate  :  noOutermostAggregateExists;
     }
-    bool hackToAvoidConservativeInOuts = true; // 5-15
+    bool hackToAvoidConservativeInOuts = false; // 5-15
     if (hackToAvoidConservativeInOuts) {
       if (trace) fprintf(stderr,"TRACE hack for inouts %s: %d\n", __FILE__, __LINE__);
       return noOutermostAggregateExists;
