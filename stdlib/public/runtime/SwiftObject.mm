@@ -479,6 +479,7 @@ SWIFT_CC(DefaultCC_IMPL) {
   return
   dst == nullptr ? false
   : isObjCTaggedPointer(dst) ? true
+  : !usesNativeSwiftReferenceCounting_allocated(dst) ? true
   : swift_isDestSafeForConcurrentAccess_dmu_(static_cast<HeapObject *>(dst));
 }
 

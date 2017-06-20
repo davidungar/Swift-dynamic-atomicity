@@ -5002,7 +5002,6 @@ private:
                                                                  SILValue v,
                                                                  SILValue vArg,
                                                                  bool trace) {
-    SILModule &M = IGF.IGM.getSILModule();
     /*
      Could be global:
      // function_ref C.I.unsafeMutableAddressor
@@ -5010,10 +5009,15 @@ private:
      %5 = apply %4() : $@convention(thin) () -> Builtin.RawPointer, scope 16 // user: %6
      %6 = pointer_to_address %5 : $Builtin.RawPointer to [strict] $*Int, scope 16 // user: %7
      store %0 to %6 : $*Int, scope 16                // id: %7           */
-    if (v->getType().isReferenceCounted(M)) {
-      if (trace) fprintf(stderr, "TRACE PTA is counted %s: %d\n", __FILE__, __LINE__);
-      return OutermostAggregateResult_dmu_( vArg, foundOutermostAggregate, v);
-    }
+    
+    // This is too conservative, it messes up compilation of getNonVerbatimBridgedHeapBuffer,
+    // which coerces unknown things to AnyObject: (dmu 6-20/17)
+    
+    //    SILModule &M = IGF.IGM.getSILModule();
+    //    if (v->getType().isReferenceCounted(M)) {
+    //      if (trace) fprintf(stderr, "TRACE PTA is counted %s: %d\n", __FILE__, __LINE__);
+    //      return OutermostAggregateResult_dmu_( vArg, foundOutermostAggregate, v);
+    //    }
     
     PointerToAddressInst *PTAI = cast<PointerToAddressInst>(v);
     SILValue ptaiOp = PTAI->getOperand();
@@ -5146,7 +5150,10 @@ public:
 
 
 void IRGenSILFunction::emitStoreBarrier_dmu_( SILValue srcSILValue, SILValue dest,  bool isKnownToBeInitialization) {
-  
+  if (CurFn->getName().contains(StringRef("getNonVerbatimBridgedHeapBuffer"))) {
+    printf("GOT IT\n");
+  }
+
   TRACE_DMU_(*this);
   OutermostAggregateResult_dmu_ oar = OutermostAggregateResult_dmu_::get(*this, dest);
   switch (oar.kind) {
