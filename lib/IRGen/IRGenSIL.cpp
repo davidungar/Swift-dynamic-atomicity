@@ -1828,6 +1828,366 @@ void IRGenSILFunction::visitExistentialMetatypeInst(
   setLoweredExplosion(i, result);
 }
 
+
+struct OutermostAggregateResult_dmu_ {
+  enum Kind {
+    foundOutermostAggregate,
+    foundIndirectOutermostAggregate,
+    noOutermostAggregateExists,
+    outermostAggregateIsAccessedConcurrently,
+    dontKnowBecauseNotAnInstruction,
+    dontKnowBecauseNoOperands,
+    dontKnowBecauseNotDefinitelyReferenceCounted,
+    dontKnowWhatThisInstDoes
+  };
+  const SILValue startingValue;
+  const Kind kind;
+  const SILValue value; // last one examined
+  
+  explicit operator bool() const { return bool(startingValue); }
+  
+private:
+  OutermostAggregateResult_dmu_(SILValue start, Kind k, SILValue v) : startingValue(start), kind(k), value(v) {}
+  OutermostAggregateResult_dmu_() : startingValue(SILValue()), kind(dontKnowWhatThisInstDoes), value(SILValue()) {}
+  
+  static OutermostAggregateResult_dmu_ _get(IRGenSILFunction& IGF, SILValue vArg, bool trace) {
+    for ( SILValue v = vArg; ; ) {
+      // Can these be useful?
+      // unneeded LoweredValue& lv = IGF.getLoweredValue(v);
+      // unneeded SILType destSILType = v->getType();
+      // unneeded CanType destSwiftType = destSILType.getSwiftType();
+      
+      if (trace) {
+        fprintf(stderr, "%s: %d v: ", __FILE__, __LINE__);
+        v->print(llvm::errs());
+      }
+      
+      if (auto sa = dyn_cast<SILArgument>(v)) {
+        Kind k = kindForSILArgument(IGF, sa, trace);
+        return OutermostAggregateResult_dmu_(vArg, k, v);
+      }
+      if (!isa<SILInstruction>(v)) {
+        if (trace)
+          fprintf(stderr, "TRACE not an instruction %d\n", __LINE__);
+        return OutermostAggregateResult_dmu_(vArg, dontKnowBecauseNotAnInstruction, v);
+      }
+      switch (v->getKind()) {
+        case ValueKind::AllocStackInst:
+          //            auto k = cast<AllocStackInst>(v)->getElementType().isReferenceCounted(M)
+          //            ? foundOutermostAggregate : noOutermostAggregateExists;
+          // TODO: (dmu) is this too conservative? No if there is another use of this allocation in might not be
+          // YES, causes crash because newly allocated thing ref count is safe
+          // WHY?????
+          // Moving a ref to a garbage value on the stack: DON'T DO ANYTHING
+          if (trace) fprintf(stderr, "TRACE allocStackInst %s: %d\n", __FILE__, __LINE__);
+          return OutermostAggregateResult_dmu_(vArg, noOutermostAggregateExists, v);
+          
+        default: break;
+      }
+      if (cast<SILInstruction>(v)->getAllOperands().size() == 0) {
+        Kind k = kindForNoOperands(IGF, v, trace);
+        return OutermostAggregateResult_dmu_(vArg, k, v);
+      }
+      OutermostAggregateResult_dmu_ result = resultForValueWithOperands(IGF, v, vArg, trace);
+      if (bool(result))
+        return result;
+    }
+  }
+  
+  static Kind kindForSILArgument(IRGenSILFunction &IGF, SILArgument *sa, bool trace) {
+    SILModule &M = IGF.IGM.getSILModule();
+    // TODO: (dmu) urgent fix uses of isReferenceCounted below
+    // As I read instantiates using IsReferenceCounted in TypeLowering.cpp,
+    // it looks like I can get a 'yes' for unowneds and others, not just simple native
+    // refs.
+    
+    SILType type = sa->getType();
+    bool isReferenceCounted = type.isReferenceCounted(M);
+    if (isReferenceCounted)
+      return foundIndirectOutermostAggregate;
+    
+    // Be conservative about outs: Consider:
+    // struct S { let c = A_Class(); mutating func m() { self = S() } } // self is an INOUT
+    // static s = S(); s.m()
+    //
+    //
+    auto fa = dyn_cast<SILFunctionArgument>(sa);
+    bool isOut = fa != nullptr  &&  fa->getArgumentConvention().mayBeContainedInALargerInstance_dmu_();
+    if (!isOut) {
+      if (trace) fprintf(stderr,"TRACE not out arg %s: %d\n", __FILE__, __LINE__);
+      return noOutermostAggregateExists;
+    }
+    bool hackToAvoidConservativeInOuts = true; // 5-15
+    if (hackToAvoidConservativeInOuts) {
+      if (trace) fprintf(stderr,"TRACE hack for inouts %s: %d\n", __FILE__, __LINE__);
+      return noOutermostAggregateExists;
+    }
+    diagnoseIndirectArgument(IGF, fa);
+    if (trace) fprintf(stderr, "TRACE arg with conservative agg %s: %d\n", __FILE__, __LINE__);
+    return outermostAggregateIsAccessedConcurrently; //5-15
+  }
+  
+  static Kind kindForNoOperands(IRGenSILFunction &IGF, SILValue v, bool trace) {
+    SILModule &M = IGF.IGM.getSILModule();
+    switch (v->getKind()) {
+      case ValueKind::AllocBoxInst:
+        assert( cast<AllocBoxInst>(v)->getType().isReferenceCounted(M) && "boxes are reference-counted?!");
+        if (trace) fprintf(stderr, "TRACE no operands: allocBox found %s: %d\n", __FILE__, __LINE__);
+        return foundOutermostAggregate;
+        
+      case ValueKind::GlobalAddrInst:
+        diagnoseGlobal(IGF, cast<GlobalAddrInst>(v));
+        if (trace) fprintf(stderr, "TRACE no operands: allocBox global %s: %d\n", __FILE__, __LINE__);
+        return outermostAggregateIsAccessedConcurrently;
+        
+      default:
+        if (trace) fprintf(stderr, "TRACE no operands: conservative %s: %d\n", __FILE__, __LINE__);
+        return dontKnowBecauseNoOperands;
+    }
+  }
+  
+  static OutermostAggregateResult_dmu_ resultForValueWithOperands(IRGenSILFunction &IGF,
+                                                                  SILValue &v,
+                                                                  SILValue &vArg,
+                                                                  bool trace) {
+    SILModule &M = IGF.IGM.getSILModule();
+    
+    SILValue firstOperand = cast<SILInstruction>(v)->getAllOperands().data()[0].get();
+    
+    switch (v->getKind()) {
+        
+      case ValueKind::TupleElementAddrInst:
+      case ValueKind::StructElementAddrInst:
+      case ValueKind::MarkDependenceInst:
+      case ValueKind::InitEnumDataAddrInst:
+      case ValueKind::IndexAddrInst:
+      case ValueKind::ProjectBoxInst:
+      case ValueKind::InitExistentialAddrInst:
+        v = firstOperand;
+        if (trace) fprintf(stderr, "TRACE following first operand %s: %d\n", __FILE__, __LINE__);
+        return OutermostAggregateResult_dmu_();
+        
+      case ValueKind::RefTailAddrInst: {
+        if (trace) {
+          fprintf(stderr, "TRACE reftail %s: %d\n", __FILE__, __LINE__);
+          firstOperand->print(llvm::errs());
+        }
+        return OutermostAggregateResult_dmu_( vArg, foundOutermostAggregate, firstOperand);
+      }
+      case ValueKind::RefElementAddrInst: {
+        if (trace) {
+          fprintf(stderr, "TRACE RefElementAddrInst counted %s: %d\n", __FILE__, __LINE__);
+          firstOperand->print(llvm::errs());
+        }
+        return OutermostAggregateResult_dmu_( vArg, foundOutermostAggregate, firstOperand);
+      }
+        
+      case ValueKind::PointerToAddressInst:
+        return resultForPointerToAddress(IGF, v, vArg, trace);
+        
+      case ValueKind::AllocValueBufferInst:
+      case ValueKind::UncheckedTakeEnumDataAddrInst:
+      case ValueKind::ProjectExistentialBoxInst:
+      case ValueKind::UncheckedAddrCastInst:
+      {
+        auto k = v->getType().isReferenceCounted(M)
+        ? foundOutermostAggregate : noOutermostAggregateExists;
+        if (trace) {
+          fprintf(stderr, "TRACE my value %s: %d %d\n", __FILE__, __LINE__, v->getType().isReferenceCounted(M));
+          v->getType().print(llvm::errs());
+        }
+        return OutermostAggregateResult_dmu_( vArg, k, v);
+      }
+        
+      case ValueKind::ApplyInst:  {
+        auto k = cast<ApplyInst>(v)->getType().getObjectType().isReferenceCounted(M) // getObjectType after getValueType???
+        ? foundOutermostAggregate : noOutermostAggregateExists;
+        if (trace) {
+          fprintf(stderr, "TRACE ApplyInst %s: %d %d\n", __FILE__, __LINE__, k == foundOutermostAggregate);
+          cast<ApplyInst>(v)->getType().getObjectType().print(llvm::errs());
+        }
+        return OutermostAggregateResult_dmu_( vArg, k, v);
+      }
+        
+      case ValueKind::ProjectBlockStorageInst: // going into an ObjC block--just visit the source
+        if (trace) fprintf(stderr, "TRACE ProjectBlockStorageInst %s: %d\n", __FILE__, __LINE__);
+        return OutermostAggregateResult_dmu_(vArg, outermostAggregateIsAccessedConcurrently, v);
+        
+      default:
+        if (trace) fprintf(stderr, "TRACE dontKnowWhatThisInstDoes %s: %d\n", __FILE__, __LINE__);
+        return OutermostAggregateResult_dmu_(vArg, dontKnowWhatThisInstDoes, v);
+    }
+  }
+  
+  
+  static OutermostAggregateResult_dmu_ resultForPointerToAddress(IRGenSILFunction &IGF,
+                                                                 SILValue v,
+                                                                 SILValue vArg,
+                                                                 bool trace) {
+    /*
+     Could be global:
+     // function_ref C.I.unsafeMutableAddressor
+     %4 = function_ref @_TFC4main1Cau1ISi : $@convention(thin) () -> Builtin.RawPointer, scope 16 // user: %5
+     %5 = apply %4() : $@convention(thin) () -> Builtin.RawPointer, scope 16 // user: %6
+     %6 = pointer_to_address %5 : $Builtin.RawPointer to [strict] $*Int, scope 16 // user: %7
+     store %0 to %6 : $*Int, scope 16                // id: %7           */
+    
+    // This is too conservative, it messes up compilation of getNonVerbatimBridgedHeapBuffer,
+    // which coerces unknown things to AnyObject: (dmu 6-20/17)
+    
+    //    SILModule &M = IGF.IGM.getSILModule();
+    //    if (v->getType().isReferenceCounted(M)) {
+    //      if (trace) fprintf(stderr, "TRACE PTA is counted %s: %d\n", __FILE__, __LINE__);
+    //      return OutermostAggregateResult_dmu_( vArg, foundOutermostAggregate, v);
+    //    }
+    
+    PointerToAddressInst *PTAI = cast<PointerToAddressInst>(v);
+    SILValue ptaiOp = PTAI->getOperand();
+    if (ptaiOp->getKind() != ValueKind::ApplyInst) {
+      if (trace) {
+        fprintf(stderr, "TRACE PTA is not apply\n %s: %d\n", __FILE__, __LINE__);
+        ptaiOp->print(llvm::errs());
+      }
+      return OutermostAggregateResult_dmu_(vArg, noOutermostAggregateExists, ptaiOp); // right? WRONG!
+    }
+    
+    ApplyInst *AI = cast<ApplyInst>(ptaiOp);
+    SILValue callee = AI->getCallee();
+    const SILFunction *cf = AI->getCalleeFunction();
+    auto k = cf->isGlobalInit() ? outermostAggregateIsAccessedConcurrently : noOutermostAggregateExists;
+    if (trace) {
+      fprintf(stderr, "TRACE PTA isGlobal %s: %d %d\n", __FILE__, __LINE__, cf->isGlobalInit());
+      cf->print(llvm::errs());
+    }
+    return OutermostAggregateResult_dmu_(vArg, k, callee);
+  }
+  
+  static void diagnoseIndirectArgument(IRGenSILFunction& IGF, SILFunctionArgument *fa) {
+    SILModule &M = IGF.IGM.getSILModule();
+    auto p = std::make_pair(IGF.CurSILFn, fa);
+    if (!M.conservativeForIndirectArgumentReports_dmu_.lookup(p).empty())
+      return;
+    M.conservativeForIndirectArgumentReports_dmu_.insert( std::make_pair(p, StringRef("any non-empty string")));
+    StringRef fnName = StringRef(demangle_wrappers::demangleSymbolAsString(IGF.CurSILFn->getName()))
+    .copy(M.dynamicRCFunctionNames_dmu_);
+    DeclName argName = fa->getDecl() != nullptr  ?  fa->getDecl()->getFullName()  :  DeclName();
+    SourceLoc loc = IGF.CurSILFn->hasLocation()
+    ? IGF.CurSILFn->getLocation().getSourceLoc()
+    : SourceLoc();
+    
+    M.getASTContext().Diags.diagnose(
+                                     loc,
+                                     diag::conservative_for_indirect_argument_dmu_,
+                                     argName, fnName
+                                     );
+  }
+  
+  static void diagnoseGlobal(IRGenSILFunction& IGF, GlobalAddrInst *g) {
+    SILModule &M = IGF.IGM.getSILModule();
+    SILGlobalVariable *gv = g->getReferencedGlobal();
+    VarDecl *gvd = gv->getDecl();
+    if (M.escapingForGlobals_dmu_.lookup(gvd).empty()) {
+      Identifier gid = gvd->getName();
+      M.escapingForGlobals_dmu_.insert( std::make_pair(gvd, gid));
+      SourceLoc loc = gv->hasLocation() ? gv->getLocation().getSourceLoc() : g->getLoc().getSourceLoc();
+      M.getASTContext().Diags.diagnose( loc, diag::escaping_for_global_dmu_, gid );
+    }
+  }
+  
+public:
+  
+  StringRef const kindStringRef() const {
+    switch (kind) {
+      case foundOutermostAggregate:                       return StringRef("foundOutermostAggregate");
+      case foundIndirectOutermostAggregate:               return StringRef("foundIndirectOutermostAggregate");
+      case noOutermostAggregateExists:                    return StringRef("noOutermostAggregateExists");
+      case outermostAggregateIsAccessedConcurrently:      return StringRef("outermostAggregateIsAccessedConcurrently");
+      case dontKnowWhatThisInstDoes:                      return StringRef("dontKnowWhatThisInstDoes");
+      case dontKnowBecauseNoOperands:                     return StringRef("dontKnowBecauseNoOperands");
+      case dontKnowBecauseNotAnInstruction:               return StringRef("dontKnowBecauseNotAnInstruction");
+      case dontKnowBecauseNotDefinitelyReferenceCounted:  return StringRef("dontKnowBecauseNotDefinitelyReferenceCounted");
+    }
+  }
+public:
+  static OutermostAggregateResult_dmu_ get(IRGenSILFunction& IGF, SILValue vArg) {
+    bool traceForDebugging = IGF.shouldTrace_dmu_;
+    OutermostAggregateResult_dmu_ oar = _get(IGF, vArg, traceForDebugging);
+    if (traceForDebugging) {
+      std::string result;
+      llvm::raw_string_ostream out(result);
+      IGF.CurSILFn->print(out);
+      fprintf(stderr, "TRACE OutermostAggregateResult_dmu_::get %d\n%s\n\n", __LINE__, result.c_str());
+    }
+    else {
+      switch (oar.kind) {
+        case foundOutermostAggregate:
+        case foundIndirectOutermostAggregate:
+        case noOutermostAggregateExists:
+        case outermostAggregateIsAccessedConcurrently:
+          break;
+          
+        case dontKnowWhatThisInstDoes:
+        case dontKnowBecauseNoOperands:
+        case dontKnowBecauseNotAnInstruction:
+        case dontKnowBecauseNotDefinitelyReferenceCounted:
+          oar.printBacktrace(IGF);
+          break;
+      }
+    }
+    return oar;
+  }
+  
+  void printBacktrace(IRGenSILFunction &IGF) const {
+    //IGF.IGM;
+    SILModule &M = IGF.IGM.getSILModule();
+    ASTContext &ctx = M.getASTContext();
+    for (SILValue v = startingValue; ; ) {
+      SourceLoc loc = IGF.CurSILFn->hasLocation()
+      ? IGF.CurSILFn->getLocation().getSourceLoc()
+      : SourceLoc();
+      
+      // TODO: (dmu) move next few lines into a getAsString() for SIL*
+      std::string result;
+      llvm::raw_string_ostream out(result);
+      v->print(out);
+      StringRef vString = StringRef(result).copy(M.dynamicRCFunctionNames_dmu_);
+      
+      if (v == value) {
+        ctx.Diags.diagnose(loc, diag::store_barrier_backtracking_dmu_, kindStringRef(), vString);
+      }
+      else {
+        ctx.Diags.diagnose(loc, diag::preceding_backtraced_instruction_dmu_, vString);
+        
+      }
+      if (!isa<SILInstruction>(v))
+        return;
+      SILInstruction *I = cast<SILInstruction>(v);
+      auto ops = I->getAllOperands();
+      if (ops.size() == 0)
+        return;
+      v = ops.data()[0].get();
+    }
+  }
+};
+
+
+
+
+// Works because is only used when sv is NOT a reference-type
+class InOutStoreBarrierTracker_dmu_ {
+  SILValue argSILValue;
+public:
+  InOutStoreBarrierTracker_dmu_(SILValue sv) :
+  argSILValue(sv) {
+  }
+  
+  void visitIfNecessary(IRGenSILFunction& IGF) {
+    if (argSILValue->getType().isObject())
+      return; // ref types handled at callee
+    IGF.emitStoreBarrier_dmu_(argSILValue, argSILValue, false);
+  }
+};
+
 static void emitApplyArgument(IRGenSILFunction &IGF,
                               SILValue arg,
                               SILType paramType,
@@ -1839,7 +2199,10 @@ static void emitApplyArgument(IRGenSILFunction &IGF,
     // This address is of the substituted type.
     auto addr = IGF.getLoweredAddress(arg);
     
-    if (true ) {
+//    auto fa = dyn_cast<SILFunctionArgument>(arg);
+//    bool isOut = fa != nullptr  &&  fa->getArgumentConvention().mayBeContainedInALargerInstance_dmu_();
+
+    if ( true ) { // !isOut ) { // emitApplyArgument NOT called for self (_dmu_)
       // If a substitution is in play, just bitcast the address.
       if (isSubstituted) {
         auto origType = IGF.IGM.getStoragePointerType(paramType);
@@ -1849,6 +2212,7 @@ static void emitApplyArgument(IRGenSILFunction &IGF,
       out.add(addr.getAddress());
     }
     else {
+      abort();
       const auto &typeInfo = IGF.getTypeInfo(paramType);
       auto tempAddr = typeInfo.allocateStack(IGF, paramType, false, StringRef("anon_dmu_"));
       if (!isSubstituted) {
@@ -2137,7 +2501,9 @@ void IRGenSILFunction::visitFullApplySite(FullApplySite site) {
   auto args = site.getArguments();
   SILFunctionConventions origConv(origCalleeType, getSILModule());
   assert(origConv.getNumSILArguments() == args.size());
-
+  
+  InOutStoreBarrierTracker_dmu_ *selfTracker_dmu_ = nullptr;
+  
   // Extract 'self' if it needs to be passed as the context parameter.
   llvm::Value *selfValue = nullptr;
   if (origCalleeType->hasSelfParam() &&
@@ -2145,6 +2511,7 @@ void IRGenSILFunction::visitFullApplySite(FullApplySite site) {
     SILValue selfArg = args.back();
     args = args.drop_back();
 
+    selfTracker_dmu_ = new InOutStoreBarrierTracker_dmu_(selfArg);
     if (selfArg->getType().isObject()) {
       selfValue = getLoweredSingletonExplosion(selfArg);
     } else {
@@ -2164,10 +2531,14 @@ void IRGenSILFunction::visitFullApplySite(FullApplySite site) {
 
   // Lower the SIL arguments to IR arguments.
   
+  InOutStoreBarrierTracker_dmu_ *argTrackers_dmu_[args.size()];
+  for (unsigned long i = 0;  i < args.size();  ++i) argTrackers_dmu_[i] = nullptr;
+  
   // Turn the formal SIL parameters into IR-gen things.
   for (auto index : indices(args)) {
     emitApplyArgument(*this, args[index], origConv.getSILArgumentType(index),
                       llArgs);
+    argTrackers_dmu_[index] = new InOutStoreBarrierTracker_dmu_(args[index]);
   }
 
   // Pass the generic arguments.
@@ -2186,6 +2557,10 @@ void IRGenSILFunction::visitFullApplySite(FullApplySite site) {
   
   Explosion result;
   emission.emitToExplosion(result);
+  
+  if (auto p = selfTracker_dmu_) p->visitIfNecessary(*this);
+  for (unsigned long i = 0;  i < args.size();  ++i)
+    argTrackers_dmu_[i]->visitIfNecessary(*this);
 
   if (isa<ApplyInst>(i)) {
     setLoweredExplosion(i, result);
@@ -2232,6 +2607,10 @@ void IRGenSILFunction::visitFullApplySite(FullApplySite site) {
       Builder.SetInsertPoint(origBB);
     }
   }
+  
+  if (auto p = selfTracker_dmu_) delete p;
+  for (unsigned long i = 0;  i < args.size();  ++i)
+    if (auto p = argTrackers_dmu_[i]) delete p;
 }
 
 /// If the value is a @convention(witness_method) function, the context
@@ -4810,350 +5189,9 @@ void IRGenSILFunction::setAllocatedAddressForBuffer(SILValue v,
   }
 }
 
-struct OutermostAggregateResult_dmu_ {
-  enum Kind {
-    foundOutermostAggregate,
-    foundIndirectOutermostAggregate,
-    noOutermostAggregateExists,
-    outermostAggregateIsAccessedConcurrently,
-    dontKnowBecauseNotAnInstruction,
-    dontKnowBecauseNoOperands,
-    dontKnowBecauseNotDefinitelyReferenceCounted,
-    dontKnowWhatThisInstDoes
-  };
-  const SILValue startingValue;
-  const Kind kind;
-  const SILValue value; // last one examined
-  
-  explicit operator bool() const { return bool(startingValue); }
-  
-private:
-  OutermostAggregateResult_dmu_(SILValue start, Kind k, SILValue v) : startingValue(start), kind(k), value(v) {}
-  OutermostAggregateResult_dmu_() : startingValue(SILValue()), kind(dontKnowWhatThisInstDoes), value(SILValue()) {}
-
-  static OutermostAggregateResult_dmu_ _get(IRGenSILFunction& IGF, SILValue vArg, bool trace) {
-    for ( SILValue v = vArg; ; ) {
-      // Can these be useful?
-      // unneeded LoweredValue& lv = IGF.getLoweredValue(v);
-      // unneeded SILType destSILType = v->getType();
-      // unneeded CanType destSwiftType = destSILType.getSwiftType();
-      
-      if (trace) {
-        fprintf(stderr, "%s: %d v: ", __FILE__, __LINE__);
-        v->print(llvm::errs());
-      }
-      
-      if (auto sa = dyn_cast<SILArgument>(v)) {
-        Kind k = kindForSILArgument(IGF, sa, trace);
-        return OutermostAggregateResult_dmu_(vArg, k, v);
-      }
-      if (!isa<SILInstruction>(v)) {
-        if (trace)
-          fprintf(stderr, "TRACE not an instruction %d\n", __LINE__);
-        return OutermostAggregateResult_dmu_(vArg, dontKnowBecauseNotAnInstruction, v);
-      }
-      switch (v->getKind()) {
-        case ValueKind::AllocStackInst:
-          //            auto k = cast<AllocStackInst>(v)->getElementType().isReferenceCounted(M)
-          //            ? foundOutermostAggregate : noOutermostAggregateExists;
-          // TODO: (dmu) is this too conservative? No if there is another use of this allocation in might not be
-          // YES, causes crash because newly allocated thing ref count is safe
-          // WHY?????
-          // Moving a ref to a garbage value on the stack: DON'T DO ANYTHING
-          if (trace) fprintf(stderr, "TRACE allocStackInst %s: %d\n", __FILE__, __LINE__);
-          return OutermostAggregateResult_dmu_(vArg, noOutermostAggregateExists, v);
-
-        default: break;
-      }
-      if (cast<SILInstruction>(v)->getAllOperands().size() == 0) {
-        Kind k = kindForNoOperands(IGF, v, trace);
-        return OutermostAggregateResult_dmu_(vArg, k, v);
-      }
-    OutermostAggregateResult_dmu_ result = resultForValueWithOperands(IGF, v, vArg, trace);
-    if (bool(result))
-      return result;
-    }
-  }
-  
-  static Kind kindForSILArgument(IRGenSILFunction &IGF, SILArgument *sa, bool trace) {
-    SILModule &M = IGF.IGM.getSILModule();
-    // TODO: (dmu) urgent fix uses of isReferenceCounted below
-    // As I read instantiates using IsReferenceCounted in TypeLowering.cpp,
-    // it looks like I can get a 'yes' for unowneds and others, not just simple native
-    // refs.
-    
-    
-    // Be conservative about outs: Consider:
-    // struct S { let c = A_Class(); mutating func m() { self = S() } } // self is an INOUT
-    // static s = S(); s.m()
-    //
-    //
-    auto fa = dyn_cast<SILFunctionArgument>(sa);
-    bool isOut = fa != nullptr  &&  fa->getArgumentConvention().mayBeContainedInALargerInstance_dmu_();
-    if (!isOut) {
-      if (trace) fprintf(stderr,"TRACE not out arg %s: %d\n", __FILE__, __LINE__);
-      SILType type = sa->getType();
-      return type.isReferenceCounted(M)  ?  foundIndirectOutermostAggregate  :  noOutermostAggregateExists;
-    }
-    bool hackToAvoidConservativeInOuts = true; // 5-15
-    if (hackToAvoidConservativeInOuts) {
-      if (trace) fprintf(stderr,"TRACE hack for inouts %s: %d\n", __FILE__, __LINE__);
-      return noOutermostAggregateExists;
-    }
-    diagnoseIndirectArgument(IGF, fa);
-    if (trace) fprintf(stderr, "TRACE arg with conservative agg %s: %d\n", __FILE__, __LINE__);
-    return outermostAggregateIsAccessedConcurrently; //5-15
-  }
-  
-  static Kind kindForNoOperands(IRGenSILFunction &IGF, SILValue v, bool trace) {
-    SILModule &M = IGF.IGM.getSILModule();
-    switch (v->getKind()) {
-      case ValueKind::AllocBoxInst:
-        assert( cast<AllocBoxInst>(v)->getType().isReferenceCounted(M) && "boxes are reference-counted?!");
-        if (trace) fprintf(stderr, "TRACE no operands: allocBox found %s: %d\n", __FILE__, __LINE__);
-        return foundOutermostAggregate;
-        
-      case ValueKind::GlobalAddrInst:
-        diagnoseGlobal(IGF, cast<GlobalAddrInst>(v));
-        if (trace) fprintf(stderr, "TRACE no operands: allocBox global %s: %d\n", __FILE__, __LINE__);
-        return outermostAggregateIsAccessedConcurrently;
-        
-      default:
-        if (trace) fprintf(stderr, "TRACE no operands: conservative %s: %d\n", __FILE__, __LINE__);
-        return dontKnowBecauseNoOperands;
-    }
-  }
-  
-  static OutermostAggregateResult_dmu_ resultForValueWithOperands(IRGenSILFunction &IGF,
-                                                                  SILValue &v,
-                                                                  SILValue &vArg,
-                                                                  bool trace) {
-    SILModule &M = IGF.IGM.getSILModule();
-    
-    SILValue firstOperand = cast<SILInstruction>(v)->getAllOperands().data()[0].get();
-    
-    switch (v->getKind()) {
-        
-      case ValueKind::TupleElementAddrInst:
-      case ValueKind::StructElementAddrInst:
-      case ValueKind::MarkDependenceInst:
-      case ValueKind::InitEnumDataAddrInst:
-      case ValueKind::IndexAddrInst:
-      case ValueKind::ProjectBoxInst:
-      case ValueKind::InitExistentialAddrInst:
-        v = firstOperand;
-        if (trace) fprintf(stderr, "TRACE following first operand %s: %d\n", __FILE__, __LINE__);
-        return OutermostAggregateResult_dmu_();
-        
-      case ValueKind::RefTailAddrInst: {
-        if (trace) {
-          fprintf(stderr, "TRACE reftail %s: %d\n", __FILE__, __LINE__);
-          firstOperand->print(llvm::errs());
-        }
-        return OutermostAggregateResult_dmu_( vArg, foundOutermostAggregate, firstOperand);
-      }
-      case ValueKind::RefElementAddrInst: {
-         if (trace) {
-          fprintf(stderr, "TRACE RefElementAddrInst counted %s: %d\n", __FILE__, __LINE__);
-          firstOperand->print(llvm::errs());
-        }
-        return OutermostAggregateResult_dmu_( vArg, foundOutermostAggregate, firstOperand);
-      }
-        
-      case ValueKind::PointerToAddressInst:
-        return resultForPointerToAddress(IGF, v, vArg, trace);
-        
-      case ValueKind::AllocValueBufferInst:
-      case ValueKind::UncheckedTakeEnumDataAddrInst:
-      case ValueKind::ProjectExistentialBoxInst:
-      case ValueKind::UncheckedAddrCastInst:
-      {
-        auto k = v->getType().isReferenceCounted(M)
-        ? foundOutermostAggregate : noOutermostAggregateExists;
-        if (trace) {
-          fprintf(stderr, "TRACE my value %s: %d %d\n", __FILE__, __LINE__, v->getType().isReferenceCounted(M));
-          v->getType().print(llvm::errs());
-        }
-        return OutermostAggregateResult_dmu_( vArg, k, v);
-      }
-        
-      case ValueKind::ApplyInst:  {
-        auto k = cast<ApplyInst>(v)->getType().getObjectType().isReferenceCounted(M) // getObjectType after getValueType???
-          ? foundOutermostAggregate : noOutermostAggregateExists;
-        if (trace) {
-          fprintf(stderr, "TRACE ApplyInst %s: %d %d\n", __FILE__, __LINE__, k == foundOutermostAggregate);
-          cast<ApplyInst>(v)->getType().getObjectType().print(llvm::errs());
-        }
-        return OutermostAggregateResult_dmu_( vArg, k, v);
-      }
-        
-      case ValueKind::ProjectBlockStorageInst: // going into an ObjC block--just visit the source
-        if (trace) fprintf(stderr, "TRACE ProjectBlockStorageInst %s: %d\n", __FILE__, __LINE__);
-        return OutermostAggregateResult_dmu_(vArg, outermostAggregateIsAccessedConcurrently, v);
-        
-      default:
-        if (trace) fprintf(stderr, "TRACE dontKnowWhatThisInstDoes %s: %d\n", __FILE__, __LINE__);
-        return OutermostAggregateResult_dmu_(vArg, dontKnowWhatThisInstDoes, v);
-    }
-  }
-
-
-  static OutermostAggregateResult_dmu_ resultForPointerToAddress(IRGenSILFunction &IGF,
-                                                                 SILValue v,
-                                                                 SILValue vArg,
-                                                                 bool trace) {
-    /*
-     Could be global:
-     // function_ref C.I.unsafeMutableAddressor
-     %4 = function_ref @_TFC4main1Cau1ISi : $@convention(thin) () -> Builtin.RawPointer, scope 16 // user: %5
-     %5 = apply %4() : $@convention(thin) () -> Builtin.RawPointer, scope 16 // user: %6
-     %6 = pointer_to_address %5 : $Builtin.RawPointer to [strict] $*Int, scope 16 // user: %7
-     store %0 to %6 : $*Int, scope 16                // id: %7           */
-    
-    // This is too conservative, it messes up compilation of getNonVerbatimBridgedHeapBuffer,
-    // which coerces unknown things to AnyObject: (dmu 6-20/17)
-    
-    //    SILModule &M = IGF.IGM.getSILModule();
-    //    if (v->getType().isReferenceCounted(M)) {
-    //      if (trace) fprintf(stderr, "TRACE PTA is counted %s: %d\n", __FILE__, __LINE__);
-    //      return OutermostAggregateResult_dmu_( vArg, foundOutermostAggregate, v);
-    //    }
-    
-    PointerToAddressInst *PTAI = cast<PointerToAddressInst>(v);
-    SILValue ptaiOp = PTAI->getOperand();
-    if (ptaiOp->getKind() != ValueKind::ApplyInst) {
-      if (trace) {
-        fprintf(stderr, "TRACE PTA is not apply\n %s: %d\n", __FILE__, __LINE__);
-        ptaiOp->print(llvm::errs());
-      }
-      return OutermostAggregateResult_dmu_(vArg, noOutermostAggregateExists, ptaiOp); // right?
-    }
-    
-    ApplyInst *AI = cast<ApplyInst>(ptaiOp);
-    SILValue callee = AI->getCallee();
-    const SILFunction *cf = AI->getCalleeFunction();
-    auto k = cf->isGlobalInit() ? outermostAggregateIsAccessedConcurrently : noOutermostAggregateExists;
-    if (trace) {
-      fprintf(stderr, "TRACE PTA isGlobal %s: %d %d\n", __FILE__, __LINE__, cf->isGlobalInit());
-      cf->print(llvm::errs());
-    }
-    return OutermostAggregateResult_dmu_(vArg, k, callee);
-  }
-
-  static void diagnoseIndirectArgument(IRGenSILFunction& IGF, SILFunctionArgument *fa) {
-    SILModule &M = IGF.IGM.getSILModule();
-    auto p = std::make_pair(IGF.CurSILFn, fa);
-    if (!M.conservativeForIndirectArgumentReports_dmu_.lookup(p).empty())
-      return;
-    M.conservativeForIndirectArgumentReports_dmu_.insert( std::make_pair(p, StringRef("any non-empty string")));
-    StringRef fnName = StringRef(demangle_wrappers::demangleSymbolAsString(IGF.CurSILFn->getName()))
-    .copy(M.dynamicRCFunctionNames_dmu_);
-    DeclName argName = fa->getDecl() != nullptr  ?  fa->getDecl()->getFullName()  :  DeclName();
-    SourceLoc loc = IGF.CurSILFn->hasLocation()
-    ? IGF.CurSILFn->getLocation().getSourceLoc()
-    : SourceLoc();
-    
-    M.getASTContext().Diags.diagnose(
-                                     loc,
-                                     diag::conservative_for_indirect_argument_dmu_,
-                                     argName, fnName
-                                     );
-  }
-  
-  static void diagnoseGlobal(IRGenSILFunction& IGF, GlobalAddrInst *g) {
-    SILModule &M = IGF.IGM.getSILModule();
-    SILGlobalVariable *gv = g->getReferencedGlobal();
-    VarDecl *gvd = gv->getDecl();
-    if (M.escapingForGlobals_dmu_.lookup(gvd).empty()) {
-      Identifier gid = gvd->getName();
-      M.escapingForGlobals_dmu_.insert( std::make_pair(gvd, gid));
-      SourceLoc loc = gv->hasLocation() ? gv->getLocation().getSourceLoc() : g->getLoc().getSourceLoc();
-      M.getASTContext().Diags.diagnose( loc, diag::escaping_for_global_dmu_, gid );
-    }
-  }
-  
-  public:
-  
-    StringRef const kindStringRef() const {
-      switch (kind) {
-        case foundOutermostAggregate:                       return StringRef("foundOutermostAggregate");
-        case foundIndirectOutermostAggregate:               return StringRef("foundIndirectOutermostAggregate");
-        case noOutermostAggregateExists:                    return StringRef("noOutermostAggregateExists");
-        case outermostAggregateIsAccessedConcurrently:      return StringRef("outermostAggregateIsAccessedConcurrently");
-        case dontKnowWhatThisInstDoes:                      return StringRef("dontKnowWhatThisInstDoes");
-        case dontKnowBecauseNoOperands:                     return StringRef("dontKnowBecauseNoOperands");
-        case dontKnowBecauseNotAnInstruction:               return StringRef("dontKnowBecauseNotAnInstruction");
-        case dontKnowBecauseNotDefinitelyReferenceCounted:  return StringRef("dontKnowBecauseNotDefinitelyReferenceCounted");
-      }
-  }
-public:
-  static OutermostAggregateResult_dmu_ get(IRGenSILFunction& IGF, SILValue vArg) {
-    bool traceForDebugging = IGF.shouldTrace_dmu_;
-    OutermostAggregateResult_dmu_ oar = _get(IGF, vArg, traceForDebugging);
-    if (traceForDebugging) {
-      std::string result;
-      llvm::raw_string_ostream out(result);
-      IGF.CurSILFn->print(out);
-      fprintf(stderr, "TRACE OutermostAggregateResult_dmu_::get %d\n%s\n\n", __LINE__, result.c_str());
-    }
-    else {
-      switch (oar.kind) {
-        case foundOutermostAggregate:
-        case foundIndirectOutermostAggregate:
-        case noOutermostAggregateExists:
-        case outermostAggregateIsAccessedConcurrently:
-          break;
-          
-        case dontKnowWhatThisInstDoes:
-        case dontKnowBecauseNoOperands:
-        case dontKnowBecauseNotAnInstruction:
-        case dontKnowBecauseNotDefinitelyReferenceCounted:
-          oar.printBacktrace(IGF);
-          break;
-      }
-    }
-    return oar;
-  }
-  
-  void printBacktrace(IRGenSILFunction &IGF) const {
-    //IGF.IGM;
-    SILModule &M = IGF.IGM.getSILModule();
-    ASTContext &ctx = M.getASTContext();
-    for (SILValue v = startingValue; ; ) {
-      SourceLoc loc = IGF.CurSILFn->hasLocation()
-        ? IGF.CurSILFn->getLocation().getSourceLoc()
-        : SourceLoc();
-      
-      // TODO: (dmu) move next few lines into a getAsString() for SIL*
-      std::string result;
-      llvm::raw_string_ostream out(result);
-      v->print(out);
-      StringRef vString = StringRef(result).copy(M.dynamicRCFunctionNames_dmu_);
-      
-      if (v == value) {
-        ctx.Diags.diagnose(loc, diag::store_barrier_backtracking_dmu_, kindStringRef(), vString);
-      }
-      else {
-        ctx.Diags.diagnose(loc, diag::preceding_backtraced_instruction_dmu_, vString);
-
-      }
-      if (!isa<SILInstruction>(v))
-        return;
-      SILInstruction *I = cast<SILInstruction>(v);
-      auto ops = I->getAllOperands();
-      if (ops.size() == 0)
-        return;
-      v = ops.data()[0].get();
-    }
-  }
-};
 
 
 void IRGenSILFunction::emitStoreBarrier_dmu_( SILValue srcSILValue, SILValue dest,  bool isKnownToBeInitialization) {
-  if (CurFn->getName().contains(StringRef("getNonVerbatimBridgedHeapBuffer"))) {
-    printf("GOT IT\n");
-  }
-
   TRACE_DMU_(*this);
   OutermostAggregateResult_dmu_ oar = OutermostAggregateResult_dmu_::get(*this, dest);
   switch (oar.kind) {
