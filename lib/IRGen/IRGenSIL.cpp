@@ -1963,6 +1963,11 @@ private:
       case ValueKind::IndexAddrInst:
       case ValueKind::ProjectBoxInst:
       case ValueKind::InitExistentialAddrInst:
+      case ValueKind::TupleExtractInst:
+      case ValueKind::StructExtractInst:
+      case ValueKind::ProjectValueBufferInst:
+      case ValueKind::OpenExistentialAddrInst:
+      case ValueKind::UncheckedEnumDataInst:
         v = firstOperand;
         if (trace) fprintf(stderr, "TRACE following first operand %s: %d\n", __FILE__, __LINE__);
         return OutermostAggregateResult_dmu_();
@@ -1983,7 +1988,12 @@ private:
       }
         
       case ValueKind::PointerToAddressInst:
-        return resultForPointerToAddress(IGF, v, vArg, trace);
+        // return resultForPointerToAddress(IGF, v, vArg, trace);
+        if (IGF.CurFn->getName().contains(StringRef("getNonVerbatimBridgedHeapBuffer"))) {
+          printf("GOT IT\n");
+        }
+        v = firstOperand;
+        return OutermostAggregateResult_dmu_();
         
       case ValueKind::AllocValueBufferInst:
       case ValueKind::UncheckedTakeEnumDataAddrInst:
@@ -2000,18 +2010,40 @@ private:
       }
         
       case ValueKind::ApplyInst:  {
-        auto k = cast<ApplyInst>(v)->getType().getObjectType().isReferenceCounted(M) // getObjectType after getValueType???
-        ? foundOutermostAggregate : noOutermostAggregateExists;
-        if (trace) {
-          fprintf(stderr, "TRACE ApplyInst %s: %d %d\n", __FILE__, __LINE__, k == foundOutermostAggregate);
-          cast<ApplyInst>(v)->getType().getObjectType().print(llvm::errs());
+        ApplyInst *AI = cast<ApplyInst>(v);
+        
+        auto isReferenceCounted = AI->getType().getObjectType().isReferenceCounted(M); // getObjectType after getValueType???
+        if (isReferenceCounted)
+          return OutermostAggregateResult_dmu_( vArg, foundOutermostAggregate, v);
+        
+        SILValue callee = AI->getCallee();
+        const SILFunction *cf = AI->getCalleeFunction();
+        if (cf == nullptr)
+          return OutermostAggregateResult_dmu_(vArg, noOutermostAggregateExists, v);
+        
+        auto isGlobal = cf->isGlobalInit();
+        if (isGlobal)
+          return OutermostAggregateResult_dmu_( vArg, outermostAggregateIsAccessedConcurrently, v);
+
+//       TODO: (dmu) awful hack!!! demangling
+        if (demangle_wrappers::demangleSymbolAsString(cf->getName()).find("materializeForSet")  !=  std::string::npos) {
+          v = AI->getArgument(AI->getNumArguments() - 1);
+          return OutermostAggregateResult_dmu_();
         }
-        return OutermostAggregateResult_dmu_( vArg, k, v);
+        return OutermostAggregateResult_dmu_( vArg, noOutermostAggregateExists, v);
       }
         
       case ValueKind::ProjectBlockStorageInst: // going into an ObjC block--just visit the source
         if (trace) fprintf(stderr, "TRACE ProjectBlockStorageInst %s: %d\n", __FILE__, __LINE__);
         return OutermostAggregateResult_dmu_(vArg, outermostAggregateIsAccessedConcurrently, v);
+        
+      case ValueKind::LoadInst: {
+        auto k = v->getType().isReferenceCounted(M) ? foundOutermostAggregate : noOutermostAggregateExists;
+        return OutermostAggregateResult_dmu_(vArg, k, v);
+      }
+        
+      case ValueKind::IndexRawPointerInst:
+        return OutermostAggregateResult_dmu_(vArg, noOutermostAggregateExists, v);
         
       default:
         if (trace) fprintf(stderr, "TRACE dontKnowWhatThisInstDoes %s: %d\n", __FILE__, __LINE__);
@@ -2035,7 +2067,7 @@ private:
     // This is too conservative, it messes up compilation of getNonVerbatimBridgedHeapBuffer,
     // which coerces unknown things to AnyObject: (dmu 6-20/17)
     
-    //    SILModule &M = IGF.IGM.getSILModule();
+      //  SILModule &M = IGF.IGM.getSILModule();
     //    if (v->getType().isReferenceCounted(M)) {
     //      if (trace) fprintf(stderr, "TRACE PTA is counted %s: %d\n", __FILE__, __LINE__);
     //      return OutermostAggregateResult_dmu_( vArg, foundOutermostAggregate, v);
