@@ -106,12 +106,10 @@ public:
   void emitVisitRefInScalar_dmu_(IRGenFunction &IGF, llvm::Value *objToSet) const {
     IGF.emitVisitRefInScalar_dmu_(objToSet, asDerived().getReferenceCounting());
   }
+  
   llvm::Value *emitCheckHolderInScalar_dmu_(IRGenFunction &IGF,
-                                     llvm::Value *objToCheck) const {
+                                            llvm::Value *objToCheck) const {
     TRACE_DMU_(IGF);
-    if (IGF.shouldTrace_dmu_)
-      fprintf(stderr, "really trace me\n");
-
     return IGF.emitCheckHolderInScalar_dmu_(objToCheck, asDerived().getReferenceCounting());
   }
   

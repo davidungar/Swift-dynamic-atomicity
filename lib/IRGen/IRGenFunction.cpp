@@ -28,8 +28,6 @@
 #include "Linking.h"
 #include "LoadableTypeInfo.h"
 
-#include "swift/Basic/DemangleWrappers.h" // dmu
-
 using namespace swift;
 using namespace irgen;
 
@@ -49,15 +47,12 @@ IRGenFunction::IRGenFunction(IRGenModule &IGM, llvm::Function *Fn,
     IGM.DebugInfo->pushLoc();
   }
         
-  static const char* fnToTrace_dmu_ = "makeIterator";
-        //"gazorp"; //"_TTWCSo12NSOrderedSets8Sequence10FoundationFS0_12makeIteratorfT_wx8Iterator";
-  // Fn->getName().contains(StringRef(fnToTrace_dmu_));
+  static const char* fnToTrace_dmu_ = "whatever";
         
-// shouldTrace_dmu_ = StringRef(
-//                              demangle_wrappers::demangleSymbolAsString(Fn->getName()).c_str()
-//                              )
-//                              .contains(
-//                                        StringRef("Swift.Sequence.makeIterator () -> A.Iterator in conformance __ObjC.NSOrderedSet"));
+//        shouldTrace_dmu_ = StringRef( Fn->getName() )
+//          .contains(
+//                  StringRef("Swift.Sequence.makeIterator () -> A.Iterator in conformance __ObjC.NSOrderedSet"));
+//
   shouldTrace_dmu_ = false;
   emitPrologue();
 }

@@ -1140,7 +1140,8 @@ void IRGenFunction::emitVisitRefInScalar_dmu_(llvm::Value *objToSet,
 llvm::Value* IRGenFunction::emitCheckHolderInScalar_dmu_(llvm::Value *objToCheck,
                                                  ReferenceCounting refcounting) {
   if (shouldTrace_dmu_) {
-    fprintf(stderr, "about to check %hhu\n", refcounting);
+    TRACE_DMU_(*this);
+    fprintf(stderr, "TRACE: refcounting %hhu\n", refcounting);
   }
   switch (refcounting) {
       // 5-15 each case
