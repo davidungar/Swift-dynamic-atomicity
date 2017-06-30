@@ -395,6 +395,7 @@ namespace {
     }
                          
     llvm::Value *checkHolder_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
+      TRACE_DMU_(IGF);
       if (isPOD(ResilienceExpansion::Maximal))
         return llvm::Constant::getNullValue(IGF.IGM.Int1Ty);
       auto data = IGF.Builder.CreateLoad(projectData(IGF, addr));

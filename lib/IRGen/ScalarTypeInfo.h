@@ -201,6 +201,7 @@ public:
   }
 
   llvm::Value *checkHolder_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
+    TRACE_DMU_(IGF);
     if (Derived::IsScalarPOD)
       return llvm::Constant::getNullValue(IGF.IGM.Int1Ty);
     Address scalarAddr = asDerived().projectScalar(IGF, addr);
@@ -265,6 +266,7 @@ private:
                                   llvm::Value *objToSet) const {}
   llvm::Value *emitCheckHolderInScalar_dmu_(IRGenFunction &IGF, // dmu
                                     llvm::Value *objToCheck) const {
+    TRACE_DMU_(IGF);
     return llvm::Constant::getNullValue(IGF.IGM.Int1Ty);
   }
 };

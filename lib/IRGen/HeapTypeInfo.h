@@ -108,6 +108,10 @@ public:
   }
   llvm::Value *emitCheckHolderInScalar_dmu_(IRGenFunction &IGF,
                                      llvm::Value *objToCheck) const {
+    TRACE_DMU_(IGF);
+    if (IGF.shouldTrace_dmu_)
+      fprintf(stderr, "really trace me\n");
+
     return IGF.emitCheckHolderInScalar_dmu_(objToCheck, asDerived().getReferenceCounting());
   }
   

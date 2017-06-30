@@ -416,6 +416,7 @@ namespace {
     }
     
     llvm::Value *checkHolder_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
+      TRACE_DMU_(IGF);
       return llvm::Constant::getNullValue(IGF.IGM.Int1Ty);
     }
 
@@ -564,6 +565,7 @@ namespace {
     }
     
     llvm::Value *checkHolder_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
+      TRACE_DMU_(IGF);
       return llvm::Constant::getAllOnesValue(IGF.IGM.Int1Ty);
     }
 

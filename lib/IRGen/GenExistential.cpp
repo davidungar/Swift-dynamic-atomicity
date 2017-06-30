@@ -380,6 +380,7 @@ public:
   }
                
   llvm::Value *checkHolder_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
+    TRACE_DMU_(IGF);
     return emitCheckHolderInExistentialValue_dmu_(IGF, addr, getLayout()); //5-15
   }
 
@@ -468,6 +469,7 @@ public:
   }
 
   llvm::Value *checkHolder_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
+    TRACE_DMU_(IGF);
     return asDerived().emitValueCheckHolder_dmu_(IGF, addr); // 5-15
   }
 
@@ -553,6 +555,7 @@ public:
   }
                                                      
   llvm::Value *emitValueCheckHolder_dmu_(IRGenFunction &IGF, Address addr) const {
+    TRACE_DMU_(IGF);
     return IGF.emitWeakCheckHolder_dmu_(addr, Refcounting);
   }
 
@@ -651,6 +654,7 @@ public:
   }
                                                      
   llvm::Value *emitValueCheckHolder_dmu_(IRGenFunction &IGF, Address addr) const {
+    TRACE_DMU_(IGF);
     return IGF.emitUnownedCheckHolder_dmu_(addr, Refcounting);
   }
                                                      
@@ -900,6 +904,7 @@ public:
 
   llvm::Value *checkHolder_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
     llvm::Value *value = asDerived().loadValue(IGF, addr);
+    TRACE_DMU_(IGF);
     return asDerived().emitValueCheckHolderInScalar_dmu_(IGF, value);
   }
 

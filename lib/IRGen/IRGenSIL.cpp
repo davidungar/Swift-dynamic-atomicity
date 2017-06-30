@@ -1903,8 +1903,6 @@ private:
     
     SILType type = sa->getType();
     bool isReferenceCounted = type.isReferenceCounted(M);
-    if (isReferenceCounted)
-      return foundIndirectOutermostAggregate;
     
     // Be conservative about outs: Consider:
     // struct S { let c = A_Class(); mutating func m() { self = S() } } // self is an INOUT
@@ -1912,10 +1910,16 @@ private:
     //
     //
     auto fa = dyn_cast<SILFunctionArgument>(sa);
-    bool isOut = fa != nullptr  &&  fa->getArgumentConvention().mayBeContainedInALargerInstance_dmu_();
-    if (!isOut) {
-      if (trace) fprintf(stderr,"TRACE not out arg %s: %d\n", __FILE__, __LINE__);
+    if (fa == nullptr) {
+      if (trace) fprintf(stderr,"TRACE not SIL arg, %s: %d\n", __FILE__, __LINE__);
       return noOutermostAggregateExists;
+    }
+    if (fa->getArgumentConvention().isIndirectInOut_dmu_()) {
+      if (isReferenceCounted) {
+        if (trace) fprintf(stderr,"TRACE ref-counted inout (not handled at call site) %s: %d\n", __FILE__, __LINE__);
+        return foundIndirectOutermostAggregate;
+      }
+      if (trace) fprintf(stderr, "TRACE not ref-counted in (handled at call site) %s: %d\n", __FILE__, __LINE__);
     }
     bool hackToAvoidConservativeInOuts = true; // 5-15
     if (hackToAvoidConservativeInOuts) {
@@ -2039,6 +2043,8 @@ private:
         
       case ValueKind::LoadInst: {
         auto k = v->getType().isReferenceCounted(M) ? foundOutermostAggregate : noOutermostAggregateExists;
+        if (trace)
+          fprintf(stderr, "TRACE LoadInst %s: %d\n", __FILE__, __LINE__);
         return OutermostAggregateResult_dmu_(vArg, k, v);
       }
         
@@ -2144,11 +2150,15 @@ public:
   static OutermostAggregateResult_dmu_ get(IRGenSILFunction& IGF, SILValue vArg) {
     bool traceForDebugging = IGF.shouldTrace_dmu_;
     OutermostAggregateResult_dmu_ oar = _get(IGF, vArg, traceForDebugging);
-    if (traceForDebugging) {
+    static int printCount = 0;
+    if (traceForDebugging  &&  printCount++ == 0) {
       std::string result;
       llvm::raw_string_ostream out(result);
       IGF.CurSILFn->print(out);
       fprintf(stderr, "TRACE OutermostAggregateResult_dmu_::get %d\n%s\n\n", __LINE__, result.c_str());
+    }
+    else if (traceForDebugging) {
+      fprintf(stderr, "TRACE OutermostAggregateResult_dmu_::get again %d %d\n", __LINE__, printCount++);
     }
     else {
       switch (oar.kind) {
@@ -2216,6 +2226,7 @@ public:
   void visitIfNecessary(IRGenSILFunction& IGF) {
     if (argSILValue->getType().isObject())
       return; // ref types handled at callee
+    TRACE_DMU_(IGF);
     IGF.emitStoreBarrier_dmu_(argSILValue, argSILValue, false);
   }
 };
@@ -2534,6 +2545,9 @@ void IRGenSILFunction::visitFullApplySite(FullApplySite site) {
   SILFunctionConventions origConv(origCalleeType, getSILModule());
   assert(origConv.getNumSILArguments() == args.size());
   
+  if (shouldTrace_dmu_) {
+    fprintf(stderr, "visitFullApplySite");
+  }
   InOutStoreBarrierTracker_dmu_ *selfTracker_dmu_ = nullptr;
   
   // Extract 'self' if it needs to be passed as the context parameter.
@@ -3710,6 +3724,10 @@ void IRGenSILFunction::visitLoadInst(swift::LoadInst *i) {
 void IRGenSILFunction::visitStoreInst(swift::StoreInst *i) {
   // before now, stores have been processed to that we don't know for sure what is init, and what is assignment
   TRACE_DMU_(*this);
+  if (shouldTrace_dmu_) {
+    i->dump();
+    fprintf(stderr, "\n");
+  }
   emitStoreBarrier_dmu_(i->getSrc(), i->getDest(), false);
   
   Explosion source = getLoweredExplosion(i->getSrc());
@@ -3764,8 +3782,9 @@ llvm::Value *IRGenSILFunction::emitAddressContainedIn_dmu_(llvm::Value *v) {
   return Builder.CreateLoad(destRefCountPtrPtr);
 }
 
+
 // Return non-zero if the reference count has the atomic bit set
-void IRGenSILFunction::emitVisitRefsInValuesAssignedTo_dmu_(SILValue const &srcSILValue,
+void IRGenSILFunction::emitVisitRefsInValuesAssignedTo_dmu_(SILValue const  &srcSILValue,
                                                             SILValue const &destSILValue,
                                                             bool isDestIndirect)  {
   
@@ -3780,6 +3799,9 @@ void IRGenSILFunction::emitVisitRefsInValuesAssignedTo_dmu_(SILValue const &srcS
 
   ConditionalDominanceScope condition(*this); // a shot in the dark
 
+  TRACE_DMU_(*this);
+  if (shouldTrace_dmu_)
+    fprintf(stderr, "trace me\n");
   llvm::Value *cond = destTI.checkHolder_dmu_(*this, Address(destAddress, Alignment(8)), destType); // need destType??
 
   
@@ -3795,9 +3817,6 @@ void IRGenSILFunction::emitVisitRefsInValuesAssignedTo_dmu_(SILValue const &srcS
   Builder.CreateBr(safeOrNot);
   Builder.emitBlock(safeOrNot);
 }
-
-
-
 
 
 void IRGenSILFunction::visitStoreBarrier_dmu_Inst(StoreBarrier_dmu_Inst *i) { //dmu

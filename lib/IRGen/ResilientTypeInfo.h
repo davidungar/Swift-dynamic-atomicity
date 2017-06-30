@@ -147,6 +147,7 @@ public:
   }
   
   llvm::Value *checkHolder_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
+    TRACE_DMU_(IGF);
     return emitCheckHolderCall_dmu_(IGF, T, addr);
   }
 

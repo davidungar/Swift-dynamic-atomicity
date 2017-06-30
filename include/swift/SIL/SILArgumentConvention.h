@@ -107,16 +107,16 @@ struct SILArgumentConvention {
     llvm_unreachable("covered switch isn't covered?!");
   }
   
-  bool mayBeContainedInALargerInstance_dmu_() {
+  bool isIndirectInOut_dmu_() {
     // conservative: registers ins, too: return isIndirectConvention();
     switch (Value) {
         case Indirect_In:
         case Indirect_In_Guaranteed:
+        case Indirect_Out: // no initialized count to check
         return false;
         
         case Indirect_Inout:
         case Indirect_InoutAliasable:
-        case Indirect_Out:
         return true;
         
         case Direct_Owned:

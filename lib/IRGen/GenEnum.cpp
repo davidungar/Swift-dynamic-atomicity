@@ -519,6 +519,7 @@ namespace {
     }
     
     llvm::Value *checkHolder_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
+      TRACE_DMU_(IGF);
       return llvm::Constant::getNullValue(IGF.IGM.Int1Ty);
     }
 
@@ -890,6 +891,7 @@ namespace {
     
     llvm::Value *emitCheckHolderInScalar_dmu_(IRGenFunction &IGF,
                                               llvm::Value *objToCheck) const {
+      TRACE_DMU_(IGF);
       return llvm::Constant::getNullValue(IGM.Int1Ty);
     }
 
@@ -1335,6 +1337,7 @@ namespace {
     }
     
     llvm::Value *checkHolder_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
+      TRACE_DMU_(IGF);
       return llvm::Constant::getNullValue(IGF.IGM.Int1Ty); // Enums are on stack
     }
   private:
@@ -2532,6 +2535,7 @@ namespace {
     }
     
     llvm::Value *checkHolder_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
+      TRACE_DMU_(IGF);
       return llvm::Constant::getNullValue(IGF.IGM.Int1Ty);
     }
 
@@ -4577,6 +4581,7 @@ namespace {
     }
     
     llvm::Value *checkHolder_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
+      TRACE_DMU_(IGF);
       return llvm::Constant::getNullValue(IGF.IGM.Int1Ty);
     }
 
@@ -5080,6 +5085,7 @@ namespace {
     }
     
     llvm::Value *checkHolder_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
+      TRACE_DMU_(IGF);
       return llvm::Constant::getNullValue(IGF.IGM.Int1Ty);
     }
 
@@ -5453,6 +5459,7 @@ namespace {
       Strategy.visitRefs_dmu_(IGF, addr, T);
     }
     llvm::Value *checkHolder_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
+      TRACE_DMU_(IGF);
       return Strategy.checkHolder_dmu_(IGF, addr, T);
     }
 
@@ -5565,6 +5572,7 @@ namespace {
       return Strategy.genIRToVisitRefsInInitialValues_dmu_(IGF, e);
     }
     llvm::Value *checkHolder_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
+      TRACE_DMU_(IGF);
       return Strategy.checkHolder_dmu_(IGF, addr, T);
     }
     void reexplode(IRGenFunction &IGF, Explosion &src,

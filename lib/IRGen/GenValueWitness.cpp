@@ -359,6 +359,7 @@ static llvm::Value *emitDefaultCheckHolderInBuffer_dmu_(IRGenFunction &IGF,
                                                         SILType T,
                                                         const TypeInfo &type,
                                                         FixedPacking packing) {
+  TRACE_DMU_(IGF);
   // Special-case dynamic packing in order to thread the jumps.
   if (packing == FixedPacking::Dynamic)
     return emitForDynamicPacking(IGF, &emitDefaultCheckHolderInBuffer_dmu_,
@@ -687,6 +688,7 @@ static void buildValueWitnessFunction(IRGenModule &IGM,
     Address object = getArgAs(IGF, argv, type, "object");
     getArgAsLocalSelfTypeMetadata(IGF, argv, abstractType);
     auto value = type.checkHolder_dmu_(IGF, object, concreteType);
+    TRACE_DMU_(IGF);
     IGF.Builder.CreateRet(value);
     return;
   }

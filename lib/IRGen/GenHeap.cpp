@@ -489,6 +489,7 @@ namespace {
     }
     llvm::Value *emitCheckHolderInScalar_dmu_(IRGenFunction &IGF,
                                        llvm::Value *objToCheck) const {
+      TRACE_DMU_(IGF);
       return IGF.emitCheckHolderInScalar_dmu_(objToCheck, ReferenceCounting::Native);
     }
     
@@ -565,6 +566,7 @@ namespace {
     }
                                 
     llvm::Value *checkHolder_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
+      TRACE_DMU_(IGF);
       return IGF.emitNativeWeakCheckHolder_dmu_(addr);
     }
 
@@ -731,6 +733,7 @@ namespace {
     }
         
     llvm::Value *checkHolder_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
+      TRACE_DMU_(IGF);
       return IGF.emitUnknownUnownedCheckHolder_dmu_(addr);
     }
 
@@ -811,6 +814,7 @@ namespace {
     }
                                 
     llvm::Value *checkHolder_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
+      TRACE_DMU_(IGF);
       return IGF.emitUnknownWeakCheckHolder_dmu_(addr);
     }
                                 
@@ -1135,6 +1139,9 @@ void IRGenFunction::emitVisitRefInScalar_dmu_(llvm::Value *objToSet,
 
 llvm::Value* IRGenFunction::emitCheckHolderInScalar_dmu_(llvm::Value *objToCheck,
                                                  ReferenceCounting refcounting) {
+  if (shouldTrace_dmu_) {
+    fprintf(stderr, "about to check %hhu\n", refcounting);
+  }
   switch (refcounting) {
       // 5-15 each case
     case ReferenceCounting::Native:
@@ -1396,6 +1403,7 @@ void IRGenFunction::emitNativeUnownedVisitRef_dmu_(Address ref) {
 }
 
 llvm::Value *IRGenFunction::emitNativeUnownedCheckHolder_dmu_(Address ref) {
+  TRACE_DMU_(*this);
   ref = Builder.CreateStructGEP(ref, 0, Size(0));
   llvm::Value *value = Builder.CreateLoad(ref);
   return emitNativeCheckHolderInScalar_dmu_(value);
@@ -1969,6 +1977,7 @@ void IRGenFunction::emitNativeWeakVisitRef_dmu_(Address addr) {
 DEFINE_ADDR_OP(NativeWeakBeSafeForConcurrentAccess_dmu_)
 
 llvm::Value *IRGenFunction::emitNativeWeakCheckHolder_dmu_(Address addr) {
+  TRACE_DMU_(*this);
   return emitNativeWeakIsDestSafeForConcurrentAccess_dmu_(addr); // level shift
 }
 llvm::Value* IRGenFunction::emitNativeWeakIsDestSafeForConcurrentAccess_dmu_(Address addr) {
@@ -1992,6 +2001,7 @@ void IRGenFunction::emitUnknownUnownedVisitRef_dmu_(Address addr) {
 DEFINE_ADDR_OP(UnknownUnownedBeSafeForConcurrentAccess_dmu_)
 
 llvm::Value *IRGenFunction::emitUnknownUnownedCheckHolder_dmu_(Address addr) {
+  TRACE_DMU_(*this);
   return emitUnknownUnownedIsDestSafeForConcurrentAccess_dmu_(addr); // dmu level-shift
 }
 llvm::Value *IRGenFunction::emitUnknownUnownedIsDestSafeForConcurrentAccess_dmu_(Address addr) {
@@ -2015,6 +2025,7 @@ void IRGenFunction::emitUnknownWeakVisitRef_dmu_(Address addr) {
 DEFINE_ADDR_OP(UnknownWeakBeSafeForConcurrentAccess_dmu_)
 
 llvm::Value *IRGenFunction::emitUnknownWeakCheckHolder_dmu_(Address addr) {
+  TRACE_DMU_(*this);
   return emitUnknownWeakIsDestSafeForConcurrentAccess_dmu_(addr);// level shift
 }
 llvm::Value *IRGenFunction::emitUnknownWeakIsDestSafeForConcurrentAccess_dmu_(Address addr) {
