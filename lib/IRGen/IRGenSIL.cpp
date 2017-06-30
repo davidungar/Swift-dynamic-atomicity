@@ -1894,21 +1894,12 @@ private:
     }
   }
   
+  // Non-reference-types in/outs are handled at the call site, not in the callee. (_dmu_)
   static Kind kindForSILArgument(IRGenSILFunction &IGF, SILArgument *sa, bool trace) {
     SILModule &M = IGF.IGM.getSILModule();
-    // TODO: (dmu) urgent fix uses of isReferenceCounted below
-    // As I read instantiates using IsReferenceCounted in TypeLowering.cpp,
-    // it looks like I can get a 'yes' for unowneds and others, not just simple native
-    // refs.
     
     SILType type = sa->getType();
     bool isReferenceCounted = type.isReferenceCounted(M);
-    
-    // Be conservative about outs: Consider:
-    // struct S { let c = A_Class(); mutating func m() { self = S() } } // self is an INOUT
-    // static s = S(); s.m()
-    //
-    //
     auto fa = dyn_cast<SILFunctionArgument>(sa);
     if (fa == nullptr) {
       if (trace) fprintf(stderr,"TRACE not SIL arg, %s: %d\n", __FILE__, __LINE__);
@@ -1921,14 +1912,8 @@ private:
       }
       if (trace) fprintf(stderr, "TRACE not ref-counted in (handled at call site) %s: %d\n", __FILE__, __LINE__);
     }
-    bool hackToAvoidConservativeInOuts = true; // 5-15
-    if (hackToAvoidConservativeInOuts) {
-      if (trace) fprintf(stderr,"TRACE hack for inouts %s: %d\n", __FILE__, __LINE__);
-      return noOutermostAggregateExists;
-    }
-    diagnoseIndirectArgument(IGF, fa);
-    if (trace) fprintf(stderr, "TRACE arg with conservative agg %s: %d\n", __FILE__, __LINE__);
-    return outermostAggregateIsAccessedConcurrently; //5-15
+    if (trace) fprintf(stderr,"TRACE inouts %s: %d\n", __FILE__, __LINE__);
+    return noOutermostAggregateExists;
   }
   
   static Kind kindForNoOperands(IRGenSILFunction &IGF, SILValue v, bool trace) {
@@ -2056,26 +2041,6 @@ private:
     }
   }
   
-  
-  static void diagnoseIndirectArgument(IRGenSILFunction& IGF, SILFunctionArgument *fa) {
-    SILModule &M = IGF.IGM.getSILModule();
-    auto p = std::make_pair(IGF.CurSILFn, fa);
-    if (!M.conservativeForIndirectArgumentReports_dmu_.lookup(p).empty())
-      return;
-    M.conservativeForIndirectArgumentReports_dmu_.insert( std::make_pair(p, StringRef("any non-empty string")));
-    StringRef fnName = StringRef(demangle_wrappers::demangleSymbolAsString(IGF.CurSILFn->getName()))
-    .copy(M.dynamicRCFunctionNames_dmu_);
-    DeclName argName = fa->getDecl() != nullptr  ?  fa->getDecl()->getFullName()  :  DeclName();
-    SourceLoc loc = IGF.CurSILFn->hasLocation()
-    ? IGF.CurSILFn->getLocation().getSourceLoc()
-    : SourceLoc();
-    
-    M.getASTContext().Diags.diagnose(
-                                     loc,
-                                     diag::conservative_for_indirect_argument_dmu_,
-                                     argName, fnName
-                                     );
-  }
   
   static void diagnoseGlobal(IRGenSILFunction& IGF, GlobalAddrInst *g) {
     SILModule &M = IGF.IGM.getSILModule();

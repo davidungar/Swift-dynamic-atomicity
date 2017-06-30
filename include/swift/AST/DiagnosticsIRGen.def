@@ -74,10 +74,6 @@ WARNING(not_handling_inout_to_non_Swift_dmu_,none,
 "not handling inout parameter passed to non-Swift callee '%0'",
 (StringRef))
 
-NOTE(conservative_for_indirect_argument_dmu_,none,
-"being conservative for indirect argument %0 of %1",
-(DeclName, StringRef))
-
 NOTE(conservative_for_argument_of_nonSwift_dmu_,none,
 "being conservative for indirect argument at call site of non-swift %0",
 (StringRef))

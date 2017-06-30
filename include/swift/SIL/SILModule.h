@@ -134,7 +134,6 @@ public:
   llvm::SmallDenseMap<VarDecl*, Identifier> escapingForGlobals_dmu_;
   llvm::BumpPtrAllocator dynamicRCFunctionNames_dmu_;
   llvm::SmallDenseMap<SILFunction*,StringRef> dynamicRCFunctionsWithInOuts_dmu_;
-  llvm::SmallDenseMap<std::pair<SILFunction*, SILFunctionArgument*>, StringRef> conservativeForIndirectArgumentReports_dmu_;
   
 private:
   /// Lookup table for SIL vtables from class decls.
