@@ -42,10 +42,6 @@ extension NSSet : Sequence {
   public func makeIterator() -> NSFastEnumerationIterator {
     return NSFastEnumerationIterator(self)
   }
-  
-  public func gazorp() -> NSFastEnumerationIterator {
-    return NSFastEnumerationIterator(self)
-  }
 }
 
 extension NSOrderedSet : Sequence {

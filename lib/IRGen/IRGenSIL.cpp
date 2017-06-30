@@ -2198,35 +2198,14 @@ static void emitApplyArgument(IRGenSILFunction &IGF,
   if (paramType.isAddress()) {
     // This address is of the substituted type.
     auto addr = IGF.getLoweredAddress(arg);
-    
-//    auto fa = dyn_cast<SILFunctionArgument>(arg);
-//    bool isOut = fa != nullptr  &&  fa->getArgumentConvention().mayBeContainedInALargerInstance_dmu_();
 
-    if ( true ) { // !isOut ) { // emitApplyArgument NOT called for self (_dmu_)
-      // If a substitution is in play, just bitcast the address.
-      if (isSubstituted) {
-        auto origType = IGF.IGM.getStoragePointerType(paramType);
-        addr = IGF.Builder.CreateBitCast(addr, origType);
-      }
-      
-      out.add(addr.getAddress());
+    // If a substitution is in play, just bitcast the address.
+    if (isSubstituted) {
+      auto origType = IGF.IGM.getStoragePointerType(paramType);
+      addr = IGF.Builder.CreateBitCast(addr, origType);
     }
-    else {
-      abort();
-      const auto &typeInfo = IGF.getTypeInfo(paramType);
-      auto tempAddr = typeInfo.allocateStack(IGF, paramType, false, StringRef("anon_dmu_"));
-      if (!isSubstituted) {
-//        typeInfo.initializeWithCopy(IGF, tempAddr, arg, paramType);
-//        typeInfo.assign(IGF, sourceExplosion, tempAddr);
-//        IGF.getLoweredExplosion( tempAddr, out);
-        return;
-      }
       
-//      emitDebugInfoForAllocStack(i, type, addr.getAddress().getAddress());
-//      
-//      setLoweredStackAddress(i, addr);
-
-    }
+    out.add(addr.getAddress());
     return;
   }
 
@@ -2535,7 +2514,8 @@ void IRGenSILFunction::visitFullApplySite(FullApplySite site) {
   // Lower the SIL arguments to IR arguments.
   
   InOutStoreBarrierTracker_dmu_ *argTrackers_dmu_[args.size()];
-  for (unsigned long i = 0;  i < args.size();  ++i) argTrackers_dmu_[i] = nullptr;
+  for (unsigned long i = 0;  i < args.size();  ++i)
+    argTrackers_dmu_[i] = nullptr;
   
   // Turn the formal SIL parameters into IR-gen things.
   for (auto index : indices(args)) {
@@ -2561,9 +2541,17 @@ void IRGenSILFunction::visitFullApplySite(FullApplySite site) {
   Explosion result;
   emission.emitToExplosion(result);
   
-  if (auto p = selfTracker_dmu_) p->visitIfNecessary(*this);
-  for (unsigned long i = 0;  i < args.size();  ++i)
-    argTrackers_dmu_[i]->visitIfNecessary(*this);
+  if (auto p = selfTracker_dmu_) {
+    p->visitIfNecessary(*this);
+    delete p;
+    p = nullptr;
+  }
+  for (unsigned long i = 0;  i < args.size();  ++i) {
+    InOutStoreBarrierTracker_dmu_ **p = &argTrackers_dmu_[i];
+    (*p)->visitIfNecessary(*this);
+    delete *p;
+    p = nullptr;
+  }
 
   if (isa<ApplyInst>(i)) {
     setLoweredExplosion(i, result);
@@ -2610,11 +2598,8 @@ void IRGenSILFunction::visitFullApplySite(FullApplySite site) {
       Builder.SetInsertPoint(origBB);
     }
   }
-  
-  if (auto p = selfTracker_dmu_) delete p;
-  for (unsigned long i = 0;  i < args.size();  ++i)
-    if (auto p = argTrackers_dmu_[i]) delete p;
 }
+
 
 /// If the value is a @convention(witness_method) function, the context
 /// is the witness table that must be passed to the call.
@@ -3757,8 +3742,7 @@ void IRGenSILFunction::emitVisitRefsInValuesAssignedTo_dmu_(SILValue const  &src
   ConditionalDominanceScope condition(*this); // a shot in the dark
 
   TRACE_DMU_(*this);
-  if (shouldTrace_dmu_)
-    fprintf(stderr, "trace me\n");
+
   llvm::Value *cond = destTI.checkHolder_dmu_(*this, Address(destAddress, Alignment(8)), destType); // need destType??
 
   
@@ -3768,7 +3752,6 @@ void IRGenSILFunction::emitVisitRefsInValuesAssignedTo_dmu_(SILValue const  &src
   Builder.CreateCondBr(cond, isSafe, safeOrNot);
   Builder.emitBlock(isSafe);
   
-  TRACE_DMU_(*this);
   emitVisitRefsInInitialValues_dmu_(srcSILValue);
   
   Builder.CreateBr(safeOrNot);
