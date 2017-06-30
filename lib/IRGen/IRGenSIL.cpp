@@ -1992,7 +1992,6 @@ private:
       }
         
       case ValueKind::PointerToAddressInst:
-        // return resultForPointerToAddress(IGF, v, vArg, trace);
         if (IGF.CurFn->getName().contains(StringRef("getNonVerbatimBridgedHeapBuffer"))) {
           printf("GOT IT\n");
         }
@@ -2057,48 +2056,6 @@ private:
     }
   }
   
-  
-  static OutermostAggregateResult_dmu_ resultForPointerToAddress(IRGenSILFunction &IGF,
-                                                                 SILValue v,
-                                                                 SILValue vArg,
-                                                                 bool trace) {
-    /*
-     Could be global:
-     // function_ref C.I.unsafeMutableAddressor
-     %4 = function_ref @_TFC4main1Cau1ISi : $@convention(thin) () -> Builtin.RawPointer, scope 16 // user: %5
-     %5 = apply %4() : $@convention(thin) () -> Builtin.RawPointer, scope 16 // user: %6
-     %6 = pointer_to_address %5 : $Builtin.RawPointer to [strict] $*Int, scope 16 // user: %7
-     store %0 to %6 : $*Int, scope 16                // id: %7           */
-    
-    // This is too conservative, it messes up compilation of getNonVerbatimBridgedHeapBuffer,
-    // which coerces unknown things to AnyObject: (dmu 6-20/17)
-    
-      //  SILModule &M = IGF.IGM.getSILModule();
-    //    if (v->getType().isReferenceCounted(M)) {
-    //      if (trace) fprintf(stderr, "TRACE PTA is counted %s: %d\n", __FILE__, __LINE__);
-    //      return OutermostAggregateResult_dmu_( vArg, foundOutermostAggregate, v);
-    //    }
-    
-    PointerToAddressInst *PTAI = cast<PointerToAddressInst>(v);
-    SILValue ptaiOp = PTAI->getOperand();
-    if (ptaiOp->getKind() != ValueKind::ApplyInst) {
-      if (trace) {
-        fprintf(stderr, "TRACE PTA is not apply\n %s: %d\n", __FILE__, __LINE__);
-        ptaiOp->print(llvm::errs());
-      }
-      return OutermostAggregateResult_dmu_(vArg, noOutermostAggregateExists, ptaiOp); // right? WRONG!
-    }
-    
-    ApplyInst *AI = cast<ApplyInst>(ptaiOp);
-    SILValue callee = AI->getCallee();
-    const SILFunction *cf = AI->getCalleeFunction();
-    auto k = cf->isGlobalInit() ? outermostAggregateIsAccessedConcurrently : noOutermostAggregateExists;
-    if (trace) {
-      fprintf(stderr, "TRACE PTA isGlobal %s: %d %d\n", __FILE__, __LINE__, cf->isGlobalInit());
-      cf->print(llvm::errs());
-    }
-    return OutermostAggregateResult_dmu_(vArg, k, callee);
-  }
   
   static void diagnoseIndirectArgument(IRGenSILFunction& IGF, SILFunctionArgument *fa) {
     SILModule &M = IGF.IGM.getSILModule();
