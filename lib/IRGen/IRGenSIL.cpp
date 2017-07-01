@@ -2396,40 +2396,45 @@ void IRGenSILFunction::visitTryApplyInst(swift::TryApplyInst *i) {
   visitFullApplySite(i);
 }
 
-void IRGenSILFunction::makeArgumentsOfNonSwiftCalleeSafeForConcurrentAccess_dmu_(
-      FullApplySite site)
-{
-  auto args = site.getArguments();
-  
-  // TODO: (dmu) in-outs this para may be redundant
-  auto origCalleeType = site.getOrigCalleeType();
-  if (origCalleeType->hasSelfParam() &&
-      isSelfContextParameter(origCalleeType->getSelfParameter())) {
-    SILValue selfArg = args.back();
-    TRACE_DMU_(*this);
-    // MISSING WARNING (dmu)
-    emitVisitRefsInInitialValues_dmu_(selfArg);
-  }
-  
+static void diagnoseConservativeArgumentsToNonSwiftCallees_dmu_(IRGenSILFunction& IGF,
+                                                                FullApplySite site) {
   SILFunction *fn = site.getCalleeFunction();
-  SILModule &M = IGM.getSILModule();
+  SILModule &M = IGF.IGM.getSILModule();
+  auto args = site.getArguments();
+
   if (fn && M.dynamicRCFunctionsWithInOuts_dmu_.lookup(fn).empty()) {
     StringRef fnName = fn == nullptr ? StringRef("<anon>") : StringRef(demangle_wrappers::demangleSymbolAsString(fn->getName())).copy(M.dynamicRCFunctionNames_dmu_);
     M.dynamicRCFunctionsWithInOuts_dmu_.insert( std::make_pair( fn, fnName ));
     const SourceLoc &sl = site.getLoc().getSourceLoc();
-    for (auto index : indices(args))
+    for (auto index : indices(args)) {
+      if (args[index]->getType().isTrivial(M))
+        continue;
       // NOTE: isIndirectConvention tests for more than just Out
       if (site.getArgumentConvention(index).isIndirectConvention())
-        IGM.getSwiftModule()->getASTContext().Diags.diagnose(sl, diag::not_handling_inout_to_non_Swift_dmu_, fnName);
+        IGF.IGM.getSwiftModule()->getASTContext().Diags.diagnose(sl, diag::not_handling_inout_to_non_Swift_dmu_, fnName);
       else
-        IGM.getSwiftModule()->getASTContext().Diags.diagnose(sl, diag::conservative_for_argument_of_nonSwift_dmu_, fnName);
+        IGF.IGM.getSwiftModule()->getASTContext().Diags.diagnose(sl, diag::conservative_for_argument_of_nonSwift_dmu_, fnName);
+    }
   }
-  for (auto index : indices(args))
+}
+
+void IRGenSILFunction::makeArgumentsOfNonSwiftCalleeSafeForConcurrentAccess_dmu_(
+      FullApplySite site)
+{
+  diagnoseConservativeArgumentsToNonSwiftCallees_dmu_(*this, site);
+  
+  auto args = site.getArguments();
+  SILModule &M = IGM.getSILModule();
+  
+  for (auto index : indices(args)) {
+    if (args[index]->getType().isTrivial(M))
+      continue;
     if (site.getArgumentConvention(index).isIndirectConvention())
       ; // dmu TODO: dpg.  5-15 Actually hande this correctly. With new work extending emitStoreBarrier_dmu_ to more cases, should be easy
     else {
       emitVisitRefsInInitialValues_dmu_(args[index]);
     }
+  }
 }
 
 void IRGenSILFunction::visitFullApplySite(FullApplySite site) {
