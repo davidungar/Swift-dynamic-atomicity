@@ -1144,7 +1144,6 @@ llvm::Value* IRGenFunction::emitCheckHolderInScalar_dmu_(llvm::Value *objToCheck
     fprintf(stderr, "TRACE: refcounting %hhu\n", refcounting);
   }
   switch (refcounting) {
-      // 5-15 each case
     case ReferenceCounting::Native:
       return emitNativeCheckHolderInScalar_dmu_(objToCheck);
 
@@ -1332,9 +1331,9 @@ llvm::Value *IRGenFunction::emitNativeIsDestSafeForConcurrentAccess_dmu_(llvm::V
   if (doesNotRequireRefCounting(objToCheck)) {
     return llvm::Constant::getNullValue(IGM.Int1Ty);
   }
-  bool optimize_dmu_ = false; // 5-15
-  // true fails because pointer may be null
-  if (!optimize_dmu_) {
+  bool optimize_with_inline_code_but_does_not_work_yet_because_ptr_may_be_null_dmu_ = false; // 5-15
+  // TODO: (dmu) opportunity for optimization
+  if (!optimize_with_inline_code_but_does_not_work_yet_because_ptr_may_be_null_dmu_) {
     auto r = emitIsDestSafeCall_dmu_(IGM.getIsDestSafeForConcurrentAccess_dmu_Fn(), objToCheck);
     return r;
   }
@@ -2006,7 +2005,7 @@ llvm::Value *IRGenFunction::emitUnknownUnownedCheckHolder_dmu_(Address addr) {
   return emitUnknownUnownedIsDestSafeForConcurrentAccess_dmu_(addr); // dmu level-shift
 }
 llvm::Value *IRGenFunction::emitUnknownUnownedIsDestSafeForConcurrentAccess_dmu_(Address addr) {
-  return emitIsDestSafeCall_dmu_(IGM.getUnknownUnownedIsDestSafeForConcurrentAccess_dmu_Fn(), addr.getAddress());//5-15
+  return emitIsDestSafeCall_dmu_(IGM.getUnknownUnownedIsDestSafeForConcurrentAccess_dmu_Fn(), addr.getAddress());
 }
 
 DEFINE_COPY_OP(UnknownUnownedCopyInit)

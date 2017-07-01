@@ -177,8 +177,8 @@ struct NativeBox {
   
   static void visitRefsInArray_dmu_(T *array, size_t n) {}
   
-  static bool checkHolder_dmu_(T *value) { return false; } // dmu 5-15 right?
-  static bool checkHolderInBuffer_dmu_(T *value) { return false; } // dmu 5-15 right?
+  static bool checkHolder_dmu_(T *value) { return false; }
+  static bool checkHolderInBuffer_dmu_(T *value) { return false; }
 
 private:
   static T *next(T *ptr, size_t n = 1) {

@@ -381,7 +381,7 @@ public:
                
   llvm::Value *checkHolder_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
     TRACE_DMU_(IGF);
-    return emitCheckHolderInExistentialValue_dmu_(IGF, addr, getLayout()); //5-15
+    return emitCheckHolderInExistentialValue_dmu_(IGF, addr, getLayout());
   }
 
 };
@@ -470,7 +470,7 @@ public:
 
   llvm::Value *checkHolder_dmu_(IRGenFunction &IGF, Address addr, SILType T) const override {
     TRACE_DMU_(IGF);
-    return asDerived().emitValueCheckHolder_dmu_(IGF, addr); // 5-15
+    return asDerived().emitValueCheckHolder_dmu_(IGF, addr);
   }
 
   /// Given an explosion with multiple pointer elements in them, pack them
@@ -1374,7 +1374,7 @@ public:
    // do nothing
   }
                                            
-  llvm::Value *emitValueCheckHolderInScalar_dmu_(IRGenFunction &IGF, llvm::Value *dst) const {// 5-15
+  llvm::Value *emitValueCheckHolderInScalar_dmu_(IRGenFunction &IGF, llvm::Value *dst) const {
     return llvm::Constant::getNullValue(IGF.IGM.Int1Ty);
   }
 

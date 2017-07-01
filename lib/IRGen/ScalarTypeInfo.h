@@ -205,9 +205,9 @@ public:
     if (Derived::IsScalarPOD)
       return llvm::Constant::getNullValue(IGF.IGM.Int1Ty);
     Address scalarAddr = asDerived().projectScalar(IGF, addr);
-    // 5-15 right??
-//    llvm::Value *value = IGF.Builder.CreateLoad(scalarAddr, "toVisit");
-//    return asDerived().emitCheckHolderInScalar_dmu_(IGF, value);
+    // TODO: (dmu) check this; Is it right??
+    //    llvm::Value *value = IGF.Builder.CreateLoad(scalarAddr, "toVisit");
+    //    return asDerived().emitCheckHolderInScalar_dmu_(IGF, value);
     return asDerived().emitCheckHolderInScalar_dmu_(IGF, scalarAddr.getAddress());
   }
 
