@@ -2421,7 +2421,6 @@ static void diagnoseConservativeArgumentsToNonSwiftCallees_dmu_(IRGenSILFunction
 void IRGenSILFunction::makeArgumentsOfNonSwiftCalleeSafeForConcurrentAccess_dmu_(
       FullApplySite site)
 {
-  diagnoseConservativeArgumentsToNonSwiftCallees_dmu_(*this, site);
   
   auto args = site.getArguments();
   SILModule &M = IGM.getSILModule();
@@ -2429,13 +2428,8 @@ void IRGenSILFunction::makeArgumentsOfNonSwiftCalleeSafeForConcurrentAccess_dmu_
   for (auto index : indices(args)) {
     if (args[index]->getType().isTrivial(M))
       continue;
-      if (site.getArgumentConvention(index).isIndirectConvention()) {
-        // dmu TODO: dpg.  5-15 Actually hande this correctly. With new work extending emitStoreBarrier_dmu_ to more cases, should be easy
-        // TODO: (dmu) fix this
-      }
-    else {
-      emitVisitRefsInInitialValues_dmu_(args[index]);
-    }
+    emitVisitRefsInInitialValues_dmu_(args[index]);
+    diagnoseConservativeArgumentsToNonSwiftCallees_dmu_(*this, site);
   }
 }
 
