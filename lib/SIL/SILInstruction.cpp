@@ -1034,6 +1034,96 @@ bool SILInstruction::mayTrap() const {
   }
 }
 
+static const char* raw_whiteList_dmu_[] = {
+  "_swift_stdlib_malloc_size",
+  "abort"
+  "_swift_stdlib_strtof_clocale",
+  "_swift_stdlib_strtod_clocale",
+  "_swift_stdlib_strtold_clocale",
+  "_swift_stdlib_remainder",
+  "_swift_stdlib_squareRoot",
+  "_swift_stdlib_remainderl",
+  "_swift_stdlib_squareRootl",
+  "_swift_stdlib_remainderf",
+  "_swift_stdlib_squareRootf",
+  "_swift_stdlib_reportFatalErrorInFile",
+  "_swift_stdlib_reportFatalError",
+  "_swift_stdlib_reportUnimplementedInitializerInFile",
+  "_swift_stdlib_reportUnimplementedInitializer",
+  "_swift_stdlib_getUnsafeArgvArgc",
+  "_swift_stdlib_free",
+  "_swift_stdlib_putchar_unlocked",
+  "_swift_stdlib_memcmp",
+  "_swift_stdlib_strlen_unsigned",
+  "_swift_stdlib_strlen",
+  
+  "dispatch_assert_queue",
+  "dispatch_assert_queue_barrier",
+  "dispatch_assert_queue_not",
+  
+  "CGColorEqualToColor",
+  "CGColorGetComponents"
+  "CGColorGetConstantColor",
+  "CGColorSpaceGetColorTableCount",
+  "CGContextAddArc",
+  "CGContextAddArcToPoint",
+  "CGContextAddCurveToPoint",
+  "CGContextAddLineToPoint",
+  "CGContextSetLineDash",
+  "CGContextMoveToPoint",
+  "CGContextAddQuadCurveToPoint",
+  "CGContextAddRects",
+  "CGContextAddLines",
+  "CGContextFillRects",
+  "CGContextStrokeLineSegments",
+  "CGContextClipToRects",
+  "CGContextDrawImage",
+  "CGContextDrawTiledImage",
+  "CGContextGetTextPosition",
+  "CGContextSetTextPosition",
+  "CGContextShowGlyphsAtPositions",
+  "CGContextFillPath",
+  "CGContextEOFillPath",
+  "CGContextClip",
+  "CGContextEOClip",
+  "CGContextDrawLayerInRect",
+  "CGContextDrawLayerAtPoint",
+  
+  "CGPathAddArc",
+  "CGPathAddArcToPoint",
+  "CGPathAddCurveToPoint",
+  "CGPathAddEllipseInRect",
+  "CGPathAddLineToPoint",
+  "CGPathAddLines",
+  "CGPathAddPath",
+  "CGPathAddQuadCurveToPoint",
+  "CGPathAddRect",
+  "CGPathAddRects",
+  "CGPathAddRelativeArc",
+  "CGPathCreateCopyByDashingPath",
+  "CGPathCreateCopyByStrokingPath",
+  "CGPathEqualToPath",
+  "CGPathMoveToPoint",
+  "CGPointMakeWithDictionaryRepresentation",
+  "CGRectMakeWithDictionaryRepresentation",
+  "CGSizeMakeWithDictionaryRepresentation",
+  
+  "_XCTRunThrowableBlockBridge",
+  
+  // guesses
+  "_swift_os_log",
+  "_swift_stdlib_CFStringCreateCopy",
+  "_swift_stdlib_CFStringCreateWithSubstring",
+  "_swift_stdlib_CFStringGetCStringPtr",
+  "_swift_stdlib_CFStringGetCharacterAtIndex",
+  "_swift_stdlib_CFStringGetCharacters",
+  "_swift_stdlib_CFStringGetCharactersPtr",
+  "_swift_stdlib_CFStringGetLength",
+  
+  
+  "_swift_stdlib_objcDebugDescription"
+};
+
 
 // true if the target function is non-Swift
 bool ApplySite::isNonSwift_dmu_() const {
@@ -1051,36 +1141,6 @@ bool ApplySite::isNonSwift_dmu_() const {
       return false;
   }
   // TODO: (dmu) use a hash table of some sort, or a trie
-  static const char* whiteList[] = {
-    "_swift_stdlib_malloc_size",
-    "abort"
-    "_swift_stdlib_strtof_clocale",
-    "_swift_stdlib_strtod_clocale",
-    "_swift_stdlib_strtold_clocale",
-    "_swift_stdlib_remainder",
-    "_swift_stdlib_squareRoot",
-    "_swift_stdlib_remainderl",
-    "_swift_stdlib_squareRootl",
-    "_swift_stdlib_remainderf",
-    "_swift_stdlib_squareRootf",
-    "_swift_stdlib_reportFatalErrorInFile",
-    "_swift_stdlib_reportFatalError",
-    "_swift_stdlib_reportUnimplementedInitializerInFile",
-    "_swift_stdlib_reportUnimplementedInitializer",
-    "_swift_stdlib_getUnsafeArgvArgc",
-    "_swift_stdlib_free",
-    "_swift_stdlib_putchar_unlocked",
-//    "_swift_stdlib_CFStringCreateWithSubstring",
-//    "_swift_stdlib_CFStringGetCharacterAtIndex",
-//    "_swift_stdlib_CFStringGetCStringPtr",
-//    "_swift_stdlib_CFStringCreateCopy",
-//    "_swift_stdlib_CFStringGetLength",
-//    "_swift_stdlib_CFStringGetCharactersPtr",
-//    "_swift_stdlib_CFStringGetCharacters",
-    "_swift_stdlib_memcmp",
-    "_swift_stdlib_strlen_unsigned",
-    "_swift_stdlib_strlen"
-  };
   auto fn = getCalleeFunction();
   if (fn == nullptr)
     return true;
