@@ -1977,9 +1977,6 @@ private:
       }
         
       case ValueKind::PointerToAddressInst:
-        if (IGF.CurFn->getName().contains(StringRef("getNonVerbatimBridgedHeapBuffer"))) {
-          printf("GOT IT\n");
-        }
         v = firstOperand;
         return OutermostAggregateResult_dmu_();
         
