@@ -2431,7 +2431,7 @@ void IRGenSILFunction::makeArgumentsOfNonSwiftCalleeSafeForConcurrentAccess_dmu_
 }
 
 void IRGenSILFunction::visitFullApplySite(FullApplySite site) {
-  if (site.isNonSwift_dmu_()) {
+  if (site.isNonSwiftThatMayCauseThreadEscapes_dmu_()) {
     makeArgumentsOfNonSwiftCalleeSafeForConcurrentAccess_dmu_(site);
   }
   

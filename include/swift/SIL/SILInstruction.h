@@ -5494,7 +5494,7 @@ public:
   }
 
   // true if the target function is non-Swift
-  bool isNonSwift_dmu_() const;
+  bool isNonSwiftThatMayCauseThreadEscapes_dmu_() const;
   
   /// True if this application has generic substitutions.
   bool hasSubstitutions() const {
