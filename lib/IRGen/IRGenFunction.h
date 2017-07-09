@@ -316,6 +316,7 @@ public:
   void emitNativeBeSafeForConcurrentAccess_dmu_(llvm::Value *objToSet);
   llvm::Value* emitNativeCheckHolderInScalar_dmu_(llvm::Value *objToCheck);
   llvm::Value* emitNativeIsDestSafeForConcurrentAccess_dmu_(llvm::Value *objToCheck);
+  llvm::Value* emitInlinedNativeIsDestSafeForConcurrentAccess_dmu_(llvm::Value *objToCheck);
   //   - unowned references
   void emitNativeUnownedRetain(llvm::Value *value);
   void emitNativeUnownedRelease(llvm::Value *value);

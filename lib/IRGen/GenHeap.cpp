@@ -1327,30 +1327,81 @@ llvm::Value *IRGenFunction::emitNativeCheckHolderInScalar_dmu_(llvm::Value *objT
 
 #include <../stdlib/public/SwiftShims/RefCount.h> // blecch! TODO: (dmu) clean this up!
 
+// TODO: (dmu) Is Value the right return type? Maybe "returning" basic blocks could be more efficient? See Condition.h for a possibility.
 llvm::Value *IRGenFunction::emitNativeIsDestSafeForConcurrentAccess_dmu_(llvm::Value *objToCheck) {
   if (doesNotRequireRefCounting(objToCheck)) {
     return llvm::Constant::getNullValue(IGM.Int1Ty);
   }
-  bool optimize_with_inline_code_but_does_not_work_yet_because_ptr_may_be_null_dmu_ = false; // 5-15
+  bool optimize_with_inline_code_but_does_not_work_yet_because_ptr_may_be_null_dmu_ = true; // 5-15
   // TODO: (dmu) opportunity for optimization
-  if (!optimize_with_inline_code_but_does_not_work_yet_because_ptr_may_be_null_dmu_) {
-    auto r = emitIsDestSafeCall_dmu_(IGM.getIsDestSafeForConcurrentAccess_dmu_Fn(), objToCheck);
-    return r;
-  }
-  llvm::Value *destRefCountPtr = Builder.CreateBitCast(objToCheck, IGM.RefCountedPtrTy);
-//    Builder.CreateICmpEQ(destRefCountPtr, IGM.RefCountedNull);
+  return optimize_with_inline_code_but_does_not_work_yet_because_ptr_may_be_null_dmu_
+  ? emitInlinedNativeIsDestSafeForConcurrentAccess_dmu_(objToCheck)
+  : emitIsDestSafeCall_dmu_(IGM.getIsDestSafeForConcurrentAccess_dmu_Fn(), objToCheck);
+}
+
+
+llvm::Value *IRGenFunction::emitInlinedNativeIsDestSafeForConcurrentAccess_dmu_(llvm::Value *objToCheck) {
+  // auto *bb = llvm::BasicBlock::Create(IGM.getLLVMContext());
+  //    Builder.CreateICmpEQ(destRefCountPtr, IGM.RefCountedNull);
+  // br if false
+  // see code for ?
+  // GenMeta.cpp 1117
+  /*
+   +0x00	testq               %rdi, %rdi
+   +0x03	je                  "_swift_isDestSafeForConcurrentAccess_dmu__+0x0f"
+   +0x05	movl                8(%rdi), %eax
+   +0x08	andl                $4, %eax
+   +0x0b	shrl                $2, %eax
+   +0x0e	retq
+   +0x0f	xorl                %eax, %eax
+   +0x11	retq
+   +0x12	nopw                %cs:(%rax,%rax)
+   */
+  
+  auto resultType = IGM.Int1Ty;
+  auto refCountType = IGM.RefCountedPtrTy;
+  
+  auto isNullBB = createBasicBlock("ptrIsNull");
+  auto notNullBB = createBasicBlock("ptrIsNotNull");
+  auto isOrIsNotNullBB = createBasicBlock("ptrIsOrIsNotNull");
+
+  llvm::Value *destRefCountPtr = Builder.CreateBitCast(objToCheck, refCountType);
+  
+  llvm::Constant *null = llvm::ConstantPointerNull::get( cast<llvm::PointerType>(refCountType) );
+  llvm::Value *comparison = Builder.CreateICmpEQ(destRefCountPtr, null);
+  Builder.CreateCondBr(comparison, isNullBB, notNullBB);
+  
+  Builder.emitBlock(isNullBB);
+  
+  bool reuseRegisterButTypeCastFails_dmu_ = false;
+  
+  llvm::Value *isNull1BitValue = reuseRegisterButTypeCastFails_dmu_
+  ? Builder.CreateTruncOrBitCast(destRefCountPtr, resultType)
+  : llvm::ConstantInt::getNullValue(resultType);
+ 
+  Builder.CreateBr(isOrIsNotNullBB);
+
+  
+  Builder.emitBlock(notNullBB);
   Address refCountAddr = Builder.CreateStructGEP(
                                                  Address(destRefCountPtr, Alignment(4)), // TODO: (dmu) 4?!
                                                  1,
                                                  IGM.DataLayout.getStructLayout(IGM.RefCountedStructTy),
                                                  Twine("refCount"));
-  
   llvm::LoadInst *refCount = Builder.CreateLoad(refCountAddr);
   llvm::Value *safeBit = Builder.CreateAnd(refCount, StrongRefCount::might_be_concurrently_accessed_mask__dmu_);
+  llvm::Value *notNull32BitValue = Builder.CreateLShr(safeBit, llvm::ConstantInt::get(IGM.Int32Ty, 2));
+  llvm::Value *notNull1BitValue = Builder.CreateTrunc(notNull32BitValue, resultType);
+  Builder.CreateBr(isOrIsNotNullBB);
   
-  return Builder.CreateICmpNE(safeBit, llvm::ConstantInt::get(IGM.Int32Ty, 0));
-}
+  Builder.emitBlock(isOrIsNotNullBB);
+  
+  auto phi = Builder.CreatePHI(IGM.Int1Ty, 2);
+  phi->addIncoming(notNull1BitValue, notNullBB);
+  phi->addIncoming( isNull1BitValue,  isNullBB);
 
+  return phi;
+}
 
 
 void IRGenFunction::emitNativeUnownedInit(llvm::Value *value,
