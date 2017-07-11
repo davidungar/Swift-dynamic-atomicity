@@ -1643,7 +1643,7 @@ SILGlobalVariableAddresses_dmu_ IRGenModule::getAddrsOfSILGlobalVariable_dmu_(SI
   Size fixedSize;
   Alignment fixedAlignment;
   
-  llvm::Type* storageTypeHoldingThreadID_dmu_ = VoidTy->getPointerTo(0); // TODO (dmu): define a new Ty in IRGenModule
+  llvm::Type* storageTypeHoldingThreadID_dmu_ = GlobalThreadIDTy_dmu_;
   Size sizeOfThreadID_dmu_ = Size(DataLayout.getTypeAllocSize(storageTypeHoldingThreadID_dmu_));
   Alignment alignmentOfThreadID_dmu_ = Alignment(DataLayout.getABITypeAlignment(storageTypeHoldingThreadID_dmu_));
 
@@ -1711,7 +1711,7 @@ SILGlobalVariableAddresses_dmu_ IRGenModule::getAddrsOfSILGlobalVariable_dmu_(SI
   LinkInfo linkForThreadID_dmu_ = LinkInfo::get(*this, entityHoldingThreadID_dmu_, forDefinition);
   auto DbgTyForThreadID_dmu_ =
   DebugTypeInfo::getGlobal(var, storageTypeHoldingThreadID_dmu_, sizeOfThreadID_dmu_, alignmentOfThreadID_dmu_);
-  gvarHoldingThreadID_dmu_ = link.createVariable(*this, storageTypeHoldingThreadID_dmu_, alignmentOfThreadID_dmu_,
+  gvarHoldingThreadID_dmu_ = linkForThreadID_dmu_.createVariable(*this, storageTypeHoldingThreadID_dmu_, alignmentOfThreadID_dmu_,
                              DbgTyForThreadID_dmu_, SILLocation(var->getDecl()));
   
   // Set the alignment; TODO: (dmu): Is this trip necessary?

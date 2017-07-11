@@ -587,7 +587,9 @@ public:
   }
 
   SILGlobalVariable *getSILGlobalVariable() const {
-    assert(getKind() == Kind::SILGlobalVariable);
+    assert(getKind() == Kind::SILGlobalVariable
+           // TODO: (dmu) needed for "is it OK or cheesy to reuse the mangling below?" in getAddrsOfSILGlobalVariable_dmu_
+           ||  getKind() == Kind::SILGlobalVariable_ThreadID_dmu_);
     return reinterpret_cast<SILGlobalVariable*>(Pointer);
   }
   

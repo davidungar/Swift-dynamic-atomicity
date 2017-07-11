@@ -410,6 +410,7 @@ public:
     llvm::IntegerType *MetadataKindTy;
     llvm::IntegerType *OnceTy;
     llvm::IntegerType *FarRelativeAddressTy;
+    llvm::IntegerType *GlobalThreadIDTy_dmu_;
   };
   llvm::IntegerType *ObjCBoolTy;       /// i8 or i1
   union {
