@@ -216,10 +216,8 @@ class LinkEntity {
     /// A reflection metadata descriptor for a struct, enum, class or protocol.
     ReflectionFieldDescriptor,
     
-    
     /// A SIL global variable thread ID. The pointer is a SILGlobalVariable*.
     SILGlobalVariable_ThreadID_dmu_,
-
   };
   friend struct llvm::DenseMapInfo<LinkEntity>;
 

@@ -107,6 +107,9 @@ public:
   /// Get this function's linkage attribute.
   SILLinkage getLinkage() const { return SILLinkage(Linkage); }
   void setLinkage(SILLinkage linkage) { Linkage = unsigned(linkage); }
+  
+  /// The threadID must be as visible as the global
+  SILLinkage getLinkageForThreadID_dmu_() const { return getLinkage(); }
 
   /// Get this global variable's fragile attribute.
   bool isFragile() const { return Fragile != 0; }

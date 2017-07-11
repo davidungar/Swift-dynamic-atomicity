@@ -1684,8 +1684,9 @@ void IRGenSILFunction::visitAllocGlobalInst(AllocGlobalInst *i) {
   // buffer.
   SILGlobalVariableAddresses_dmu_ addrs = IGM.getAddrsOfSILGlobalVariable_dmu_(var, ti,
                                                 NotForDefinition);
-#error up to here
-  (void) ti.allocateBuffer(*this, addr, loweredTy);
+
+  (void) ti.allocateBuffer(*this, addrs.gvAddr, loweredTy);
+  // ThreadID is always already allocated
 }
 
 void IRGenSILFunction::visitGlobalAddrInst(GlobalAddrInst *i) {
@@ -1703,9 +1704,10 @@ void IRGenSILFunction::visitGlobalAddrInst(GlobalAddrInst *i) {
     return;
   }
 
-  SILGlobalVariableAddresses_dmu addrs = IGM.getAddrsOfSILGlobalVariable_dmu_(var, ti,
+  SILGlobalVariableAddresses_dmu_ addrs = IGM.getAddrsOfSILGlobalVariable_dmu_(var, ti,
                                                 NotForDefinition);
-#error up to here
+
+  auto addr = addrs.gvAddr;
 
   // If the global is fixed-size in all resilience domains that can see it,
   // we allocated storage for it statically, and there's nothing to do.
@@ -2003,7 +2005,6 @@ private:
         if (isReferenceCounted)
           return OutermostAggregateResult_dmu_( vArg, foundOutermostAggregate, v);
         
-        SILValue callee = AI->getCallee();
         const SILFunction *cf = AI->getCalleeFunction();
         if (cf == nullptr)
           return OutermostAggregateResult_dmu_(vArg, noOutermostAggregateExists, v);
