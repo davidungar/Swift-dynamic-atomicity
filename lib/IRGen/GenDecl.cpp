@@ -1709,10 +1709,10 @@ SILGlobalVariableAddresses_dmu_ IRGenModule::getAddrsOfSILGlobalVariable_dmu_(SI
   
 
   LinkInfo linkForThreadID_dmu_ = LinkInfo::get(*this, entityHoldingThreadID_dmu_, forDefinition);
-  auto DbgTyForThreadID_dmu_ =
-  DebugTypeInfo::getGlobal(var, storageTypeHoldingThreadID_dmu_, sizeOfThreadID_dmu_, alignmentOfThreadID_dmu_);
-  gvarHoldingThreadID_dmu_ = linkForThreadID_dmu_.createVariable(*this, storageTypeHoldingThreadID_dmu_, alignmentOfThreadID_dmu_,
-                             DbgTyForThreadID_dmu_, SILLocation(var->getDecl()));
+//  auto DbgTyForThreadID_dmu_ =
+//  DebugTypeInfo::getGlobal(var, storageTypeHoldingThreadID_dmu_, sizeOfThreadID_dmu_, alignmentOfThreadID_dmu_);
+  gvarHoldingThreadID_dmu_ = linkForThreadID_dmu_.createVariable(*this, storageTypeHoldingThreadID_dmu_, alignmentOfThreadID_dmu_);
+                             //, DbgTyForThreadID_dmu_, SILLocation(var->getDecl()));
   
   // Set the alignment; TODO: (dmu): Is this trip necessary?
   Address gvarAddrOfThreadID_dmu_ = Address(gvarHoldingThreadID_dmu_, alignmentOfThreadID_dmu_);
