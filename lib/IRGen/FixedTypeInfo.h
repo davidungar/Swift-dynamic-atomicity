@@ -30,6 +30,13 @@ namespace llvm {
 
 namespace swift {
 namespace irgen {
+  
+// Holding the address of the variable AND the address of the threadIDHolder
+struct SILGlobalVariableAddresses_dmu_ {
+  Address gvAddr;
+  Address threadIDAddr;
+};
+
 
 /// FixedTypeInfo - An abstract class designed for use when
 /// implementing a type that has a statically known layout.

@@ -113,6 +113,7 @@ namespace Lowering {
 
 namespace irgen {
   class Address;
+  class SILGlobalVariableAddresses_dmu_;
   class ClangTypeConverter;
   class DebugTypeInfo;
   class EnumImplStrategy;
@@ -132,7 +133,6 @@ namespace irgen {
   enum class ReferenceCounting : unsigned char;
 
 class IRGenModule;
-
 
 /// A type descriptor for a field type accessor.
 class FieldTypeInfo {

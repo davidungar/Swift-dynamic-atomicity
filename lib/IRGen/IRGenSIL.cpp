@@ -1682,8 +1682,9 @@ void IRGenSILFunction::visitAllocGlobalInst(AllocGlobalInst *i) {
 
   // Otherwise, the static storage for the global consists of a fixed-size
   // buffer.
-  Address addr = IGM.getAddrOfSILGlobalVariable(var, ti,
+  SILGlobalVariableAddresses_dmu_ addrs = IGM.getAddrsOfSILGlobalVariable_dmu_(var, ti,
                                                 NotForDefinition);
+#error up to here
   (void) ti.allocateBuffer(*this, addr, loweredTy);
 }
 
@@ -1702,8 +1703,9 @@ void IRGenSILFunction::visitGlobalAddrInst(GlobalAddrInst *i) {
     return;
   }
 
-  Address addr = IGM.getAddrOfSILGlobalVariable(var, ti,
+  SILGlobalVariableAddresses_dmu addrs = IGM.getAddrsOfSILGlobalVariable_dmu_(var, ti,
                                                 NotForDefinition);
+#error up to here
 
   // If the global is fixed-size in all resilience domains that can see it,
   // we allocated storage for it statically, and there's nothing to do.
