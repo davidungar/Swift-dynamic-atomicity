@@ -305,6 +305,11 @@ std::string LinkEntity::mangleOld() const {
     mangler.appendSymbol(getSILGlobalVariable()->getName());
     return mangler.finalize();
 
+  case Kind::SILGlobalVariable_ThreadID_dmu_:
+    mangler.appendSymbol(getSILGlobalVariable()->getName());
+    mangler.append("_ThID"); // TODO: (dmu) unique? demangling??
+    return mangler.finalize();
+
   case Kind::ReflectionBuiltinDescriptor:
     mangler.append("_TMRb");
     mangler.mangleType(getType(), getUncurryLevel());
@@ -505,6 +510,10 @@ std::string LinkEntity::mangleNew() const {
       return getSILFunction()->getName();
     case Kind::SILGlobalVariable:
       return getSILGlobalVariable()->getName();
+
+    case Kind::SILGlobalVariable_ThreadID_dmu_:
+      return mangler.mangleSILGlobalVariable_ThreadID_dmu_( getSILGlobalVariable()->getName() );
+      
 
     case Kind::ReflectionBuiltinDescriptor:
       return mangler.mangleReflectionBuiltinDescriptor(getType());

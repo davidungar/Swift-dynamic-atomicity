@@ -1687,6 +1687,11 @@ Address IRGenModule::getAddrOfSILGlobalVariable(SILGlobalVariable *var,
   Address gvarAddr = Address(gvar, fixedAlignment);
   gvar->setAlignment(fixedAlignment.getValue());
   
+  // Create the LLVM global to hold the thread ID
+  LinkEntity entityForThreadID_dmu_ = LinkEntity::forSILGlobalVariable_ThreadID_dmu_(var);
+  // TODO: (dmu) is it OK or cheesy to reuse the mangling below?
+  Module.getGlobalVariable(entityForThreadID_dmu_.mangleAsString(), /*allowInternal*/ true);
+  
   return gvarAddr;
 }
 

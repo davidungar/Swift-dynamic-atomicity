@@ -129,6 +129,13 @@ public:
     appendOperator("WT");
     return finalize();
   }
+  
+  std::string mangleSILGlobalVariable_ThreadID_dmu_(StringRef globalName) {
+    beginMangling();
+    appendIdentifier(globalName);
+    appendOperator("TI"); // TODO: (dmu) right?
+    return finalize();
+  }
 
   std::string mangleReflectionBuiltinDescriptor(Type type) {
     return mangleTypeSymbol(type, "MB");
