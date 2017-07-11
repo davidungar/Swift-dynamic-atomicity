@@ -130,6 +130,14 @@ public:
 
   bool isValid() const { return Addr.isValid(); }
 };
+  
+  
+// Holding the address of the variable AND the address of the threadIDHolder
+struct SILGlobalVariableAddresses_dmu_ {
+  Address gvAddr;
+  Address threadIDAddr;
+};
+
 
 } // end namespace irgen
 } // end namespace swift

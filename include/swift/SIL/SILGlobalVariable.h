@@ -32,6 +32,7 @@ class SILInstruction;
 class SILModule;
 class VarDecl;
   
+  
 /// A global variable that has been referenced in SIL.
 class SILGlobalVariable
   : public llvm::ilist_node<SILGlobalVariable>,

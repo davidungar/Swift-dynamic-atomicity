@@ -50,10 +50,10 @@ Address IRGenModule::emitSILGlobalVariable(SILGlobalVariable *var) {
   }
 
   /// Get the global variable.
-  Address addr = getAddrOfSILGlobalVariable(var, ti,
+  std::pair<Address, Address> addrs = getAddrOfSILGlobalVariableAndThreadID_dmu_(var, ti,
                      var->isDefinition() ? ForDefinition : NotForDefinition);
   
-  /// Add a zero initializer.
+  /// Add zero initializers.
   if (var->isDefinition()) {
     auto gvar = cast<llvm::GlobalVariable>(addr.getAddress());
     gvar->setInitializer(llvm::Constant::getNullValue(gvar->getValueType()));

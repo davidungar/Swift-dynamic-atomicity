@@ -1384,7 +1384,10 @@ getIRLinkage(IRGenModule &IGM, SILLinkage linkage, bool isFragile,
 /// forward-declaration of it, update its linkage.
 static void updateLinkageForDefinition(IRGenModule &IGM,
                                        llvm::GlobalValue *global,
-                                       const LinkEntity &entity) {
+                                       const LinkEntity &entity,
+                                       llvm::GlobalValue* threadID_dmu_,
+                                       const LinkEntity &entityHoldingThreadID_dmu_) {
+#error up to here
   // TODO: there are probably cases where we can avoid redoing the
   // entire linkage computation.
   auto linkage =
@@ -1611,9 +1614,10 @@ void IRGenModule::emitGlobalDecl(Decl *D) {
   llvm_unreachable("bad decl kind!");
 }
 
-Address IRGenModule::getAddrOfSILGlobalVariable(SILGlobalVariable *var,
-                                                const TypeInfo &ti,
-                                                ForDefinition_t forDefinition) {
+// replaces getAddrOfSILGlobalVariable
+SILGlobalVariableAddresses_dmu_ IRGenModule::getAddrsOfSILGlobalVariable_dmu_(SILGlobalVariable *var,
+                                                                              const TypeInfo &ti,
+                                                                              ForDefinition_t forDefinition) {
   if (auto clangDecl = var->getClangDecl()) {
     auto addr = getAddrOfClangGlobalDecl(cast<clang::VarDecl>(clangDecl),
                                          forDefinition);
@@ -1627,15 +1631,20 @@ Address IRGenModule::getAddrOfSILGlobalVariable(SILGlobalVariable *var,
 
     auto alignment =
       Alignment(getClangASTContext().getDeclAlign(clangDecl).getQuantity());
-    return Address(addr, alignment);
+    return { Address(addr, alignment), Address() };
   }
 
-  LinkEntity entity = LinkEntity::forSILGlobalVariable(var);
+  LinkEntity entity                     = LinkEntity::forSILGlobalVariable(var);
+  LinkEntity entityHoldingThreadID_dmu_ = LinkEntity::forSILGlobalVariable_ThreadID_dmu_(var);
   ResilienceExpansion expansion = getResilienceExpansionForLayout(var);
 
   llvm::Type *storageType;
   Size fixedSize;
   Alignment fixedAlignment;
+  
+  const llvm::Type* storageTypeHoldingThreadID_dmu_ = VoidTy->getPointerTo(0); // TODO (dmu): define a new Ty in IRGenModule
+  const Size sizeOfThreadID_dmu_ = Size(DataLayout.getTypeAllocSize(storageTypeHoldingThreadID_dmu_));
+  const Alignment alignmentOfThreadID_dmu_ = Alignment(DataLayout.getABITypeAlignment(storageTypeHoldingThreadID_dmu_));
 
   // If the type has a fixed size, allocate static storage. Otherwise, allocate
   // a fixed-size buffer and possibly heap-allocate a payload at runtime if the
@@ -1655,16 +1664,24 @@ Address IRGenModule::getAddrOfSILGlobalVariable(SILGlobalVariable *var,
   // Check whether we've created the global variable already.
   // FIXME: We should integrate this into the LinkEntity cache more cleanly.
   auto gvar = Module.getGlobalVariable(var->getName(), /*allowInternal*/ true);
+  // TODO: (dmu) is it OK or cheesy to reuse the mangling below?
+  auto gvarHoldingThreadID_dmu_ = Module.getGlobalVariable(entityHoldingThreadID_dmu_.mangleAsString(), /*allowInternal*/ true);
+
   if (gvar) {
+    assert(gvarHoldingThreadID_dmu_ != nullptr  &&  "should be created at same time");
     if (forDefinition)
-      updateLinkageForDefinition(*this, gvar, entity);
+      updateLinkageForDefinition(*this, gvar, entity, gvarHoldingThreadID_dmu_, entityHoldingThreadID_dmu_);
 
     llvm::Constant *addr = gvar;
+    llvm::Constant *addrOfThreadID_dmu_ = gvarHoldingThreadID_dmu_;
     if (storageType != gvar->getType()->getElementType()) {
       auto *expectedTy = storageType->getPointerTo();
       addr = llvm::ConstantExpr::getBitCast(addr, expectedTy);
     }
-    return Address(addr, Alignment(gvar->getAlignment()));
+    return {
+      Address(addr,                Alignment(gvar                    ->getAlignment())),
+      Address(addrOfThreadID_dmu_, Alignment(gvarHoldingThreadID_dmu_->getAlignment())))
+    };
   }
 
   LinkInfo link = LinkInfo::get(*this, entity, forDefinition);
@@ -1687,12 +1704,19 @@ Address IRGenModule::getAddrOfSILGlobalVariable(SILGlobalVariable *var,
   Address gvarAddr = Address(gvar, fixedAlignment);
   gvar->setAlignment(fixedAlignment.getValue());
   
-  // Create the LLVM global to hold the thread ID
-  LinkEntity entityForThreadID_dmu_ = LinkEntity::forSILGlobalVariable_ThreadID_dmu_(var);
-  // TODO: (dmu) is it OK or cheesy to reuse the mangling below?
-  Module.getGlobalVariable(entityForThreadID_dmu_.mangleAsString(), /*allowInternal*/ true);
+
+  LinkInfo linkForThreadID_dmu_ = LinkInfo::get(*this, entityHoldingThreadID_dmu_, forDefinition);
+  auto DbgTyForThreadID_dmu_ =
+  DebugTypeInfo::getGlobal(var, storageTypeHoldingThreadID_dmu_, sizeOfThreadID_dmu_, alignmentOfThreadID_dmu_);
+  gvarHoldingThreadID_dmu_ = link.createVariable(*this, storageTypeHoldingThreadID_dmu_, alignmentOfThreadID_dmu_,
+                             DbgTyForThreadID_dmu_, loc);
   
-  return gvarAddr;
+  // Set the alignment; TODO: (dmu): Is this trip necessary?
+  Address gvarAddrOfThreadID_dmu_ = Address(gvarOfThreadID_dmu_, alignmentOfThreadID_dmu_);
+  gvarAddrOfThreadID_dmu_->setAlignment(alignmentOfThreadID_dmu_.getValue());
+  
+ 
+  return { gvarAddr, gvarAddrOfThreadID_dmu_ };
 }
 
 /// Return True if the function \p f is a 'readonly' function. Checking

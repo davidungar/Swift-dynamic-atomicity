@@ -133,6 +133,7 @@ namespace irgen {
 
 class IRGenModule;
 
+
 /// A type descriptor for a field type accessor.
 class FieldTypeInfo {
   llvm::PointerIntPair<CanType, 2, unsigned> Info;
@@ -940,9 +941,11 @@ public:
                                            ForDefinition_t forDefinition);
   llvm::Function *getAddrOfSILFunction(SILFunction *f,
                                        ForDefinition_t forDefinition);
-  Address getAddrOfSILGlobalVariable(SILGlobalVariable *var,
-                                     const TypeInfo &ti,
-                                     ForDefinition_t forDefinition);
+  
+  SILGlobalVariableAddresses_dmu_
+                  getAddrsOfSILGlobalVariable_dmu_(SILGlobalVariable *var,
+                                                   const TypeInfo &ti,
+                                                   ForDefinition_t forDefinition);
   llvm::Function *getAddrOfWitnessTableAccessFunction(
                                            const NormalProtocolConformance *C,
                                                ForDefinition_t forDefinition);
