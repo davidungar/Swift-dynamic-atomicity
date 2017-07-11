@@ -52,14 +52,16 @@ Address IRGenModule::emitSILGlobalVariable(SILGlobalVariable *var) {
   /// Get the global variable.
   SILGlobalVariableAddresses_dmu_ addrs = getAddrsOfSILGlobalVariable_dmu_(var, ti,
                      var->isDefinition() ? ForDefinition : NotForDefinition);
-#error up to here do both
   /// Add zero initializers.
   if (var->isDefinition()) {
-    auto gvar = cast<llvm::GlobalVariable>(addr.getAddress());
+    auto gvar = cast<llvm::GlobalVariable>(addrs.gvAddr.getAddress());
     gvar->setInitializer(llvm::Constant::getNullValue(gvar->getValueType()));
+    
+    auto threadIDHolder = cast<llvm::GlobalVariable>(addrs.threadIDAddr.getAddress());
+    threadIDHolder->setInitializer(llvm::Constant::getNullValue(threadIDHolder->getValueType()));
   }
 
-  return addr;
+  return addrs.gvAddr;
 }
 
 StackAddress FixedTypeInfo::allocateStack(IRGenFunction &IGF, SILType T,

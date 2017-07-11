@@ -32,7 +32,8 @@ namespace swift {
 namespace irgen {
   
 // Holding the address of the variable AND the address of the threadIDHolder
-struct SILGlobalVariableAddresses_dmu_ {
+class SILGlobalVariableAddresses_dmu_ {
+public:
   Address gvAddr;
   Address threadIDAddr;
 };

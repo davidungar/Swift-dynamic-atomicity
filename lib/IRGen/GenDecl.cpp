@@ -1149,6 +1149,9 @@ SILLinkage LinkEntity::getLinkage(IRGenModule &IGM,
       
   case Kind::SILGlobalVariable:
     return getSILGlobalVariable()->getLinkage();
+      
+  case Kind::SILGlobalVariable_ThreadID_dmu_:
+    return getSILGlobalVariable()->getLinkageForThreadID_dmu_();
 
   case Kind::ReflectionBuiltinDescriptor:
   case Kind::ReflectionFieldDescriptor:
@@ -1229,6 +1232,7 @@ bool LinkEntity::isAvailableExternally(IRGenModule &IGM) const {
   case Kind::GenericProtocolWitnessTableInstantiationFunction:
   case Kind::SILFunction:
   case Kind::SILGlobalVariable:
+  case Kind::SILGlobalVariable_ThreadID_dmu_:
   case Kind::ReflectionBuiltinDescriptor:
   case Kind::ReflectionFieldDescriptor:
   case Kind::ReflectionAssociatedTypeDescriptor:
@@ -1384,10 +1388,7 @@ getIRLinkage(IRGenModule &IGM, SILLinkage linkage, bool isFragile,
 /// forward-declaration of it, update its linkage.
 static void updateLinkageForDefinition(IRGenModule &IGM,
                                        llvm::GlobalValue *global,
-                                       const LinkEntity &entity,
-                                       llvm::GlobalValue* threadID_dmu_,
-                                       const LinkEntity &entityHoldingThreadID_dmu_) {
-#error up to here
+                                       const LinkEntity &entity) {
   // TODO: there are probably cases where we can avoid redoing the
   // entire linkage computation.
   auto linkage =
@@ -1642,9 +1643,9 @@ SILGlobalVariableAddresses_dmu_ IRGenModule::getAddrsOfSILGlobalVariable_dmu_(SI
   Size fixedSize;
   Alignment fixedAlignment;
   
-  const llvm::Type* storageTypeHoldingThreadID_dmu_ = VoidTy->getPointerTo(0); // TODO (dmu): define a new Ty in IRGenModule
-  const Size sizeOfThreadID_dmu_ = Size(DataLayout.getTypeAllocSize(storageTypeHoldingThreadID_dmu_));
-  const Alignment alignmentOfThreadID_dmu_ = Alignment(DataLayout.getABITypeAlignment(storageTypeHoldingThreadID_dmu_));
+  llvm::Type* storageTypeHoldingThreadID_dmu_ = VoidTy->getPointerTo(0); // TODO (dmu): define a new Ty in IRGenModule
+  Size sizeOfThreadID_dmu_ = Size(DataLayout.getTypeAllocSize(storageTypeHoldingThreadID_dmu_));
+  Alignment alignmentOfThreadID_dmu_ = Alignment(DataLayout.getABITypeAlignment(storageTypeHoldingThreadID_dmu_));
 
   // If the type has a fixed size, allocate static storage. Otherwise, allocate
   // a fixed-size buffer and possibly heap-allocate a payload at runtime if the
@@ -1669,8 +1670,10 @@ SILGlobalVariableAddresses_dmu_ IRGenModule::getAddrsOfSILGlobalVariable_dmu_(SI
 
   if (gvar) {
     assert(gvarHoldingThreadID_dmu_ != nullptr  &&  "should be created at same time");
-    if (forDefinition)
-      updateLinkageForDefinition(*this, gvar, entity, gvarHoldingThreadID_dmu_, entityHoldingThreadID_dmu_);
+    if (forDefinition) {
+      updateLinkageForDefinition(*this, gvar,                     entity);
+      updateLinkageForDefinition(*this, gvarHoldingThreadID_dmu_, entityHoldingThreadID_dmu_);
+    }
 
     llvm::Constant *addr = gvar;
     llvm::Constant *addrOfThreadID_dmu_ = gvarHoldingThreadID_dmu_;
@@ -1680,7 +1683,7 @@ SILGlobalVariableAddresses_dmu_ IRGenModule::getAddrsOfSILGlobalVariable_dmu_(SI
     }
     return {
       Address(addr,                Alignment(gvar                    ->getAlignment())),
-      Address(addrOfThreadID_dmu_, Alignment(gvarHoldingThreadID_dmu_->getAlignment())))
+      Address(addrOfThreadID_dmu_, Alignment(gvarHoldingThreadID_dmu_->getAlignment()))
     };
   }
 
@@ -1709,13 +1712,12 @@ SILGlobalVariableAddresses_dmu_ IRGenModule::getAddrsOfSILGlobalVariable_dmu_(SI
   auto DbgTyForThreadID_dmu_ =
   DebugTypeInfo::getGlobal(var, storageTypeHoldingThreadID_dmu_, sizeOfThreadID_dmu_, alignmentOfThreadID_dmu_);
   gvarHoldingThreadID_dmu_ = link.createVariable(*this, storageTypeHoldingThreadID_dmu_, alignmentOfThreadID_dmu_,
-                             DbgTyForThreadID_dmu_, loc);
+                             DbgTyForThreadID_dmu_, SILLocation(var->getDecl()));
   
   // Set the alignment; TODO: (dmu): Is this trip necessary?
-  Address gvarAddrOfThreadID_dmu_ = Address(gvarOfThreadID_dmu_, alignmentOfThreadID_dmu_);
-  gvarAddrOfThreadID_dmu_->setAlignment(alignmentOfThreadID_dmu_.getValue());
+  Address gvarAddrOfThreadID_dmu_ = Address(gvarHoldingThreadID_dmu_, alignmentOfThreadID_dmu_);
+  gvarHoldingThreadID_dmu_->setAlignment(alignmentOfThreadID_dmu_.getValue());
   
- 
   return { gvarAddr, gvarAddrOfThreadID_dmu_ };
 }
 
