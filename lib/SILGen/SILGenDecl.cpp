@@ -1040,6 +1040,7 @@ InitializationPtr SILGenFunction::emitInitializationForVarDecl(VarDecl *vd) {
     auto *silG = SGM.getSILGlobalVariable(vd, NotForDefinition);
     B.createAllocGlobal(vd, silG);
     SILValue addr = B.createGlobalAddr(vd, silG);
+//#error up to here
     if (isUninitialized)
       addr = B.createMarkUninitializedVar(vd, addr);
 
@@ -1078,7 +1079,26 @@ void SILGenFunction::visitPatternBindingDecl(PatternBindingDecl *PBD) {
   // Allocate the variables and build up an Initialization over their
   // allocated storage.
   for (unsigned i : indices(PBD->getPatternList())) {
-    emitPatternBinding(PBD, i);
+    // was: emitPatternBinding(PBD, i);
+
+    // Preparing for load barrier on globals: (_dmu_)
+    // Send this case through the same path as for SILGen{Module,Extension,PatternBindingDecl}::visitPatternBindingDecl
+    // emitPatternBinding(PBD, i);
+    
+    // shunt globals through global initialization to be consistent about on-demand initialization
+    /*
+     PatternBindingEntry &entry = PBD->getPatternList()[i];
+     Pattern *pattern = entry.getPattern();
+     pattern is NamedPattern?
+     SGF.emitInitializationForVarDecl(P->getDecl()
+     vd->getDeclContext()->isLocalContext()
+     */
+//    if (PBD->getDeclContext()->isLocalContext())
+      emitPatternBinding(PBD, i);
+//    else
+//      SGM.emitGlobalInitialization(PBD, i);
+    
+    // TODO: (dmu) factor this with the other defs of visitPatternBindingDecl
   }
 }
 
