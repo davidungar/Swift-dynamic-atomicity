@@ -622,7 +622,7 @@ public:
   void bindVariable(SILLocation loc, VarDecl *var, ManagedValue value,
                     CanType formalValueType, SILGenFunction &SGF) {
     // Initialize the variable value.
-    InitializationPtr init = SGF.emitInitializationForVarDecl(var);
+    InitializationPtr init = SGF.emitInitializationForVarDecl(var, false);
     RValue(SGF, loc, formalValueType, value).forwardInto(SGF, loc, init.get());
   }
 
@@ -926,9 +926,11 @@ struct InitializationForPattern
   /// This is the place that should be jumped to if the pattern fails to match.
   /// This is invalid for irrefutable pattern initializations.
   JumpDest patternFailDest;
+  
+  bool forLazyGlobalInitializer;
 
-  InitializationForPattern(SILGenFunction &SGF, JumpDest patternFailDest)
-    : SGF(SGF), patternFailDest(patternFailDest) {}
+  InitializationForPattern(SILGenFunction &SGF, JumpDest patternFailDest, bool forLazyGlobalInitializer)
+    : SGF(SGF), patternFailDest(patternFailDest), forLazyGlobalInitializer(forLazyGlobalInitializer) {}
 
   // Paren, Typed, and Var patterns are noops, just look through them.
   InitializationPtr visitParenPattern(ParenPattern *P) {
@@ -956,7 +958,7 @@ struct InitializationForPattern
       return InitializationPtr(new BlackHoleInitialization());
     }
 
-    return SGF.emitInitializationForVarDecl(P->getDecl());
+    return SGF.emitInitializationForVarDecl(P->getDecl(), forLazyGlobalInitializer);
   }
 
   // Bind a tuple pattern by aggregating the component variables into a
@@ -1001,7 +1003,7 @@ struct InitializationForPattern
 
 } // end anonymous namespace
 
-InitializationPtr SILGenFunction::emitInitializationForVarDecl(VarDecl *vd) {
+InitializationPtr SILGenFunction::emitInitializationForVarDecl(VarDecl *vd, bool forLazyGlobalInitializer) {
   // If this is a computed variable, we don't need to do anything here.
   // We'll generate the getter and setter when we see their FuncDecls.
   if (!vd->hasStorage())
@@ -1037,6 +1039,7 @@ InitializationPtr SILGenFunction::emitInitializationForVarDecl(VarDecl *vd) {
   // cleanups.
   InitializationPtr Result;
   if (!vd->getDeclContext()->isLocalContext()) {
+    assert(forLazyGlobalInitializer && "all global initialization must be lazy, even in main for thread-biasing");
     auto *silG = SGM.getSILGlobalVariable(vd, NotForDefinition);
     B.createAllocGlobal(vd, silG);
     SILValue addr = B.createGlobalAddr(vd, silG);
@@ -1058,10 +1061,12 @@ InitializationPtr SILGenFunction::emitInitializationForVarDecl(VarDecl *vd) {
 }
 
 void SILGenFunction::emitPatternBinding(PatternBindingDecl *PBD,
-                                        unsigned pbdEntry) {
+                                        unsigned pbdEntry,
+                                        bool forLazyGlobalInitializer) {
   auto &entry = PBD->getPatternList()[pbdEntry];
   auto initialization = emitPatternBindingInitialization(entry.getPattern(),
-                                                         JumpDest::invalid());
+                                                         JumpDest::invalid(),
+                                                         forLazyGlobalInitializer);
 
   // If an initial value expression was specified by the decl, emit it into
   // the initialization. Otherwise, mark it uninitialized for DI to resolve.
@@ -1077,8 +1082,12 @@ void SILGenFunction::visitPatternBindingDecl(PatternBindingDecl *PBD) {
 
   // Allocate the variables and build up an Initialization over their
   // allocated storage.
+  bool isGlobalInMain = PBD->getDeclContext()->getContextKind() == DeclContextKind::TopLevelCodeDecl;
   for (unsigned i : indices(PBD->getPatternList())) {
-      emitPatternBinding(PBD, i);
+      if (isGlobalInMain)
+        SGM.emitGlobalInitialization(PBD, i); // use lazy initialization, even for globals in main
+      else
+     emitPatternBinding(PBD, i, false);
   }
 }
 
@@ -1141,7 +1150,7 @@ void SILGenFunction::emitStmtCondition(StmtCondition Cond,
     switch (elt.getKind()) {
     case StmtConditionElement::CK_PatternBinding: {
       InitializationPtr initialization =
-      InitializationForPattern(*this, FailDest).visit(elt.getPattern());
+      InitializationForPattern(*this, FailDest, false).visit(elt.getPattern());
 
       // Emit the initial value into the initialization.
       FullExpr Scope(Cleanups, CleanupLocation(elt.getInitializer()));
@@ -1194,8 +1203,9 @@ void SILGenFunction::emitStmtCondition(StmtCondition Cond,
 
 InitializationPtr
 SILGenFunction::emitPatternBindingInitialization(Pattern *P,
-                                                 JumpDest failureDest) {
-  return InitializationForPattern(*this, failureDest).visit(P);
+                                                 JumpDest failureDest,
+                                                 bool forLazyGlobalInitializer) {
+  return InitializationForPattern(*this, failureDest, forLazyGlobalInitializer).visit(P);
 }
 
 /// Enter a cleanup to deallocate the given location.

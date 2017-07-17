@@ -248,7 +248,7 @@ void SILGenModule::emitGlobalInitialization(PatternBindingDecl *pd,
     NewMangling::ASTMangler NewMangler;
     std::string New = NewMangler.mangleGlobalInit(varDecl, counter, true);
     onceFuncBuffer = NewMangling::selectMangling(Old, New);
-}
+  }
 
   SILFunction *onceFunc = emitLazyGlobalInitializer(onceFuncBuffer, pd,
                                                     pbdEntry);
@@ -266,7 +266,7 @@ void SILGenFunction::emitLazyGlobalInitializer(PatternBindingDecl *binding,
     Scope scope(Cleanups, binding);
 
     // Emit the initialization sequence.
-    emitPatternBinding(binding, pbdEntry);
+    emitPatternBinding(binding, pbdEntry, true);
   }
 
   // Return void.

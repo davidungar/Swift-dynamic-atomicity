@@ -1180,7 +1180,7 @@ void PatternMatchEmission::bindVariable(SILLocation loc, VarDecl *var,
     var->setLet(true);
   
   // Initialize the variable value.
-  InitializationPtr init = SGF.emitInitializationForVarDecl(var);
+  InitializationPtr init = SGF.emitInitializationForVarDecl(var, false);
 
   RValue rv(SGF, loc, formalValueType, value.getFinalManagedValue());
   if (shouldTake(value, isIrrefutable)) {
@@ -2029,12 +2029,12 @@ void PatternMatchEmission::emitSharedCaseBlocks() {
         if (V->isLet()) {
           // Just emit a let with cleanup.
           SGF.VarLocs[V].value = caseBB->getArgument(argIndex++);
-          SGF.emitInitializationForVarDecl(V)->finishInitialization(SGF);
+          SGF.emitInitializationForVarDecl(V, false)->finishInitialization(SGF);
         } else {
           // The pattern variables were all emitted as lets and one got passed in,
           // now we finally alloc a box for the var and forward in the chosen value.
           SGF.VarLocs.erase(V);
-          auto newVar = SGF.emitInitializationForVarDecl(V);
+          auto newVar = SGF.emitInitializationForVarDecl(V, false);
           auto loc = SGF.CurrentSILLoc;
           auto value =
               ManagedValue::forUnmanaged(caseBB->getArgument(argIndex++));

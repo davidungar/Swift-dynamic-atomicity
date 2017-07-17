@@ -800,7 +800,7 @@ void StmtEmitter::visitForEachStmt(ForEachStmt *S) {
       // fail (because this is a 'for case' pattern with a refutable pattern,
       // the code should jump to the continue block.
       InitializationPtr initLoopVars
-        = SGF.emitPatternBindingInitialization(S->getPattern(), loopDest);
+        = SGF.emitPatternBindingInitialization(S->getPattern(), loopDest, false);
       ManagedValue val;
 
       // If we had a loadable "next" generator value, we know it is present.
