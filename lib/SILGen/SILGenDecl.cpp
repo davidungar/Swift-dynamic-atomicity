@@ -1082,7 +1082,7 @@ void SILGenFunction::visitPatternBindingDecl(PatternBindingDecl *PBD) {
 
   // Allocate the variables and build up an Initialization over their
   // allocated storage.
-  bool isGlobalInMain = PBD->getDeclContext()->getContextKind() == DeclContextKind::TopLevelCodeDecl;
+  bool isGlobalInMain = PBD->getDeclContext()->isLocalContext();
   for (unsigned i : indices(PBD->getPatternList())) {
       if (isGlobalInMain)
         SGM.emitGlobalInitialization(PBD, i); // use lazy initialization, even for globals in main
