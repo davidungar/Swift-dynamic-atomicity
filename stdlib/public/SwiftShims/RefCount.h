@@ -69,7 +69,7 @@ extern struct DynamicAtomicityInstrumentation_dmu_ {
 # endif
   };
   // TODO: (dmu) factor these
-  Counter incrNA, incrAt, incrNNA, incrNAt, tryIncrAndPinNA, tryIncrAndPinAt, tryIncrNA, tryIncrAt, decrUnpinShouldDNA, decrUnpinShouldDAt, decrShouldDNA, decrShouldDAt, decrShouldDNNA, decrShouldDNAt, decrFromOneAndDNA, isSafeT, isSafeF, beSafe;
+  Counter incrNA, incrAt, incrNNA, incrNAt, tryIncrAndPinNA, tryIncrAndPinAt, tryIncrNA, tryIncrAt, decrUnpinShouldDNA, decrUnpinShouldDAt, decrShouldDNA, decrShouldDAt, decrShouldDNNA, decrShouldDNAt, decrFromOneAndDNA, isSafeToUseNAT, isSafeToUseNAF, isSafeForCAT, isSafeForCAF, beSafe;
 } dynamicAtomicityInstrumentation_dmu_;
 
 
@@ -129,7 +129,7 @@ private:
         r =  !(__atomic_load_n(&refCount, __ATOMIC_RELAXED)  &  RC_MIGHT_BE_CONCURRENTLY_ACCESSED_FLAG_dmu_);
         break;
     }
-    (r ? &dynamicAtomicityInstrumentation_dmu_.isSafeT : &dynamicAtomicityInstrumentation_dmu_.isSafeF)
+    (r ? &dynamicAtomicityInstrumentation_dmu_.isSafeToUseNAT : &dynamicAtomicityInstrumentation_dmu_.isSafeToUseNAF)
       ->bump();
     return r;
   }
@@ -440,14 +440,16 @@ private:
   }
 
   bool isSafeForConcurrentAccess_dmu_() {
-    dynamicAtomicityInstrumentation_dmu_.isSafe.bump();
-    return expectedStateOfConcurrentlyAccessibleFlagWhenInAtomicVariant_dmu_<false>()
+    bool r = expectedStateOfConcurrentlyAccessibleFlagWhenInAtomicVariant_dmu_<false>()
           ==   (__atomic_load_n(&refCount, __ATOMIC_RELAXED)  &  RC_MIGHT_BE_CONCURRENTLY_ACCESSED_FLAG_dmu_);
+    (r ? &dynamicAtomicityInstrumentation_dmu_.isSafeForCAT : &dynamicAtomicityInstrumentation_dmu_.isSafeForCAF)
+    ->bump();
+    return r;
   }
   // When something in the heap can be accessed by >1 thread, the bit must be set
   // Need not be atomic because this must happen BEFORE the object gets shared by another thread
   void beSafeForConcurrentAccess() {
-    dynamicAtomicityInstrumentation_dmu_.isSafe.bump();
+    dynamicAtomicityInstrumentation_dmu_.beSafe.bump();
     startingNonatomicCount_dmu_();
     uint32_t oldval = __atomic_load_n(&refCount, __ATOMIC_RELAXED);
     // Make sure that other threads see this:
