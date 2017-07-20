@@ -901,3 +901,5 @@ template<> const void *StrongRefCount::nonatomicallyCounting_dmu_ = nullptr;
 template<> const void *StrongRefCount::atomicallyCounting_dmu_ = nullptr;
 template<> const void *StrongRefCount::culprit_dmu_ = nullptr;
 template<> const char *StrongRefCount::message_dmu_ = nullptr;
+
+DynamicAtomicityInstrumentation_dmu_ dynamicAtomicityInstrumentation_dmu_;
