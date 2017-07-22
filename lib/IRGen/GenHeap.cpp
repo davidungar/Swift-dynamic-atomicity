@@ -1332,7 +1332,7 @@ llvm::Value *IRGenFunction::emitNativeIsDestSafeForConcurrentAccess_dmu_(llvm::V
   if (doesNotRequireRefCounting(objToCheck)) {
     return llvm::Constant::getNullValue(IGM.Int1Ty);
   }
-  bool optimize_with_inline_code_dmu_ = true; // 5-15
+  bool optimize_with_inline_code_dmu_ = false; // 5-15
   // TODO: (dmu) opportunity for optimization
   return optimize_with_inline_code_dmu_
   ? emitInlinedNativeIsDestSafeForConcurrentAccess_dmu_(objToCheck)

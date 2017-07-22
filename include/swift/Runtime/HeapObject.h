@@ -1318,8 +1318,14 @@ static inline void swift_unknownUnownedTakeAssign(UnownedReference *dest,
 /// Return the name of a Swift type represented by a metadata object.
 SWIFT_CC(swift) SWIFT_RUNTIME_EXPORT
 TwoWordPair<const char *, uintptr_t>::Return
-swift_getTypeName(const Metadata *type, bool qualified);  
-
+swift_getTypeName(const Metadata *type, bool qualified);
 } // end namespace swift
+
+
+SWIFT_RUNTIME_EXPORT int* swift_getDynamicAtomicityValues();
+SWIFT_RUNTIME_EXPORT int  swift_getBytesPerDynamicAtomicityValue();
+SWIFT_RUNTIME_EXPORT int  swift_getNumberOfDynamicAtomicityValues();
+
+
 
 #endif /* SWIFT_RUNTIME_ALLOC_H */

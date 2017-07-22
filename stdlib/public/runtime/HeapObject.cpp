@@ -903,3 +903,13 @@ template<> const void *StrongRefCount::culprit_dmu_ = nullptr;
 template<> const char *StrongRefCount::message_dmu_ = nullptr;
 
 DynamicAtomicityInstrumentation_dmu_ dynamicAtomicityInstrumentation_dmu_;
+
+SWIFT_RUNTIME_EXPORT DynamicAtomicityInstrumentation_dmu_::Value_t* swift_getDynamicAtomicityValues() {
+  return dynamicAtomicityInstrumentation_dmu_.asInts();
+}
+SWIFT_RUNTIME_EXPORT DynamicAtomicityInstrumentation_dmu_::Value_t swift_getBytesPerDynamicAtomicityValue() {
+  return dynamicAtomicityInstrumentation_dmu_.bytesPerValue();
+}
+SWIFT_RUNTIME_EXPORT DynamicAtomicityInstrumentation_dmu_::Value_t swift_getNumberOfDynamicAtomicityValues() {
+  return dynamicAtomicityInstrumentation_dmu_.numberOfValues();
+}

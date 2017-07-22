@@ -59,9 +59,10 @@ enum NonatomicBenchmarkOptions_dmu_ {
 
 
 extern struct DynamicAtomicityInstrumentation_dmu_ {
+  typedef int64_t Value_t;
   struct Counter {
     Counter(): value(0) {}
-    int value;
+    Value_t value;
 # if 1 // counting
     void bump() { ++value; }
 # else
@@ -70,6 +71,22 @@ extern struct DynamicAtomicityInstrumentation_dmu_ {
   };
   // TODO: (dmu) factor these
   Counter incrNA, incrAt, incrNNA, incrNAt, tryIncrAndPinNA, tryIncrAndPinAt, tryIncrNA, tryIncrAt, decrUnpinShouldDNA, decrUnpinShouldDAt, decrShouldDNA, decrShouldDAt, decrShouldDNNA, decrShouldDNAt, decrFromOneAndDNA, isSafeToUseNAT, isSafeToUseNAF, isSafeForCAT, isSafeForCAF, beSafe;
+  
+  // TODO: (dmu) blech!! Paper deadline. Use FUNC so caller can know which is which
+  Value_t *asInts() {
+    assert((Value_t*)this == (Value_t*)&incrNA.value);
+    assert((Value_t*)this + 1  ==  (Value_t*)&incrAt.value);
+    // check even when not debugging
+    if  (     (Value_t*)this == &incrNA.value
+         &&   (Value_t*)this + 1  ==  &incrAt.value
+         &&  *(Value_t*)this == incrNA.value)
+      ;
+    else abort();
+    
+    return (Value_t*)this;
+  }
+  Value_t bytesPerValue() { return sizeof(Counter); }
+  Value_t numberOfValues() { return sizeof(*this) / sizeof(Counter); }
 } dynamicAtomicityInstrumentation_dmu_;
 
 
