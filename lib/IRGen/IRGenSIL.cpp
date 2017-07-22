@@ -1957,6 +1957,7 @@ private:
       case ValueKind::ProjectValueBufferInst:
       case ValueKind::OpenExistentialAddrInst:
       case ValueKind::UncheckedEnumDataInst:
+      case ValueKind::PointerToAddressInst:
         v = firstOperand;
         if (trace) fprintf(stderr, "TRACE following first operand %s: %d\n", __FILE__, __LINE__);
         return OutermostAggregateResult_dmu_();
@@ -1975,10 +1976,6 @@ private:
         }
         return OutermostAggregateResult_dmu_( vArg, foundOutermostAggregate, firstOperand);
       }
-        
-      case ValueKind::PointerToAddressInst:
-        v = firstOperand;
-        return OutermostAggregateResult_dmu_();
         
       case ValueKind::AllocValueBufferInst:
       case ValueKind::UncheckedTakeEnumDataAddrInst:
