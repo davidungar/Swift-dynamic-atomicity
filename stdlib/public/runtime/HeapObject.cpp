@@ -310,9 +310,14 @@ extern "C"
 void SWIFT_RT_ENTRY_IMPL(swift_beSafeForConcurrentAccess_dmu_)(HeapObject *object) {
   if (object == nullptr)
     return; // TODO: (dmu) Can this check be optimized out by using compile-time type info?
+
+  dynamicAtomicityInstrumentation_dmu_.swift_beSafeForConcurrentAccess_dmu_entry.bump();
   if (object->refCount.isSafeForConcurrentAccess_dmu_()) {
     return; // halt recursion,
   }
+    
+  dynamicAtomicityInstrumentation_dmu_.swift_beSafeForConcurrentAccess_dmu_recursion.bump();
+
   object->refCount.beSafeForConcurrentAccess(); // must set this first to break the recursion
   const HeapMetadata *md = object->metadata; // extra var for debugging
   const FullMetadata<HeapMetadata> *fmd = asFullMetadata(md); // extra var for debugging
