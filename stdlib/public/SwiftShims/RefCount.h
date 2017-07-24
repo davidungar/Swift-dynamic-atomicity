@@ -72,6 +72,7 @@ extern struct DynamicAtomicityInstrumentation_dmu_ {
   // TODO: (dmu) factor these
   Counter incrNA, incrAt, incrNNA, incrNAt, tryIncrAndPinNA, tryIncrAndPinAt, tryIncrNA, tryIncrAt, decrUnpinShouldDNA, decrUnpinShouldDAt, decrShouldDNA, decrShouldDAt, decrShouldDNNA, decrShouldDNAt, decrFromOneAndDNA, isSafeToUseNAT, isSafeToUseNAF, isSafeForCAT, isSafeForCAF, beSafe,
       swift_beSafeForConcurrentAccess_dmu_entry,
+      swift_beSafeForConcurrentAccess_dmu_null,
       swift_beSafeForConcurrentAccess_dmu_recursion;
   
   // TODO: (dmu) blech!! Paper deadline. Use FUNC so caller can know which is which

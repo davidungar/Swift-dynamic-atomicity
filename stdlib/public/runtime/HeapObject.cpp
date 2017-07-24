@@ -308,8 +308,10 @@ SWIFT_CC(DefaultCC_IMPL) {
 SWIFT_RT_ENTRY_IMPL_VISIBILITY
 extern "C"
 void SWIFT_RT_ENTRY_IMPL(swift_beSafeForConcurrentAccess_dmu_)(HeapObject *object) {
-  if (object == nullptr)
+  if (object == nullptr) {
+    dynamicAtomicityInstrumentation_dmu_.swift_beSafeForConcurrentAccess_dmu_null.bump();
     return; // TODO: (dmu) Can this check be optimized out by using compile-time type info?
+  }
 
   dynamicAtomicityInstrumentation_dmu_.swift_beSafeForConcurrentAccess_dmu_entry.bump();
   if (object->refCount.isSafeForConcurrentAccess_dmu_()) {
