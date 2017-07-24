@@ -51,7 +51,7 @@ typedef struct {
 
 // dmu
 enum NonatomicBenchmarkOptions_dmu_ {
-  baseline_dmu,             // should introduce no overhead
+  baseline_dmu_,            // should introduce no overhead
   alwaysNonatomic_dmu_,     // unsafe, but omits bit check
   nonatomicIfBitSet_dmu_,   // for benchmarking before bit is ever set;
   nonatomicIfBitClear_dmu_  // the eventual target scheme
@@ -90,6 +90,32 @@ extern struct DynamicAtomicityInstrumentation_dmu_ {
   }
   Value_t bytesPerValue() { return sizeof(Counter); }
   Value_t numberOfValues() { return sizeof(*this) / sizeof(Counter); }
+  void    setTestValues() {
+    const Value_t startLine = __LINE__ + 1;
+    incrNA                                          .value = __LINE__ - startLine;
+    incrAt                                          .value = __LINE__ - startLine;
+    incrNNA                                         .value = __LINE__ - startLine;
+    incrNAt                                         .value = __LINE__ - startLine;
+    tryIncrAndPinNA                                 .value = __LINE__ - startLine;
+    tryIncrAndPinAt                                 .value = __LINE__ - startLine;
+    tryIncrNA                                       .value = __LINE__ - startLine;
+    tryIncrAt                                       .value = __LINE__ - startLine;
+    decrUnpinShouldDNA                              .value = __LINE__ - startLine;
+    decrUnpinShouldDAt                              .value = __LINE__ - startLine;
+    decrShouldDNA                                   .value = __LINE__ - startLine;
+    decrShouldDAt                                   .value = __LINE__ - startLine;
+    decrShouldDNNA                                  .value = __LINE__ - startLine;
+    decrShouldDNAt                                  .value = __LINE__ - startLine;
+    decrFromOneAndDNA                               .value = __LINE__ - startLine;
+    isSafeToUseNAT                                  .value = __LINE__ - startLine;
+    isSafeToUseNAF                                  .value = __LINE__ - startLine;
+    isSafeForCAT                                    .value = __LINE__ - startLine;
+    isSafeForCAF                                    .value = __LINE__ - startLine;
+    beSafe                                          .value = __LINE__ - startLine;
+    swift_beSafeForConcurrentAccess_dmu_entry       .value = __LINE__ - startLine;
+    swift_beSafeForConcurrentAccess_dmu_null        .value = __LINE__ - startLine;
+    swift_beSafeForConcurrentAccess_dmu_recursion   .value = __LINE__ - startLine;
+  }
 } dynamicAtomicityInstrumentation_dmu_;
 
 
@@ -133,7 +159,7 @@ private:
   bool isSafeToUseNonatomic_dmu_() {
     bool r;
     switch (nonatomicOption_dmu_) {
-      case baseline_dmu:
+      case baseline_dmu_:
         r = false;
         break;
       case alwaysNonatomic_dmu_:
@@ -159,7 +185,7 @@ private:
   uint32_t expectedStateOfConcurrentlyAccessibleFlagWhenInAtomicVariant_dmu_() {
     assert( !isCountAlreadyInitialized || !isSafeToUseNonatomic_dmu_() ); // because in atomic variant
     switch (nonatomicOption_dmu_) {
-      case baseline_dmu:             return 0;
+      case baseline_dmu_:            return 0;
       case alwaysNonatomic_dmu_:     return 0;
       case nonatomicIfBitSet_dmu_:   return 0;
       case nonatomicIfBitClear_dmu_: return RC_MIGHT_BE_CONCURRENTLY_ACCESSED_FLAG_dmu_;
@@ -169,7 +195,7 @@ private:
   uint32_t expectedStateOfConcurrentlyAccessibleFlagWhenInNonatomicVariant_dmu_() {
     assert( !isCountAlreadyInitialized || isSafeToUseNonatomic_dmu_() ); // because in nonatomic variant
     switch (nonatomicOption_dmu_) {
-      case baseline_dmu:             return 0;
+      case baseline_dmu_:            return 0;
       case alwaysNonatomic_dmu_:     return 0;
       case nonatomicIfBitSet_dmu_:   return RC_MIGHT_BE_CONCURRENTLY_ACCESSED_FLAG_dmu_;
       case nonatomicIfBitClear_dmu_: return 0;
@@ -637,7 +663,12 @@ private:
   }
 };
 
-typedef StrongRefCount_t_dmu_<nonatomicIfBitClear_dmu_> StrongRefCount;
+
+# if 1
+  typedef StrongRefCount_t_dmu_<nonatomicIfBitClear_dmu_> StrongRefCount;
+#else // broken
+  typedef StrongRefCount_t_dmu_<baseline_dmu_> StrongRefCount;
+#endif
 
 
 

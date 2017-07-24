@@ -920,3 +920,6 @@ SWIFT_RUNTIME_EXPORT DynamicAtomicityInstrumentation_dmu_::Value_t swift_getByte
 SWIFT_RUNTIME_EXPORT DynamicAtomicityInstrumentation_dmu_::Value_t swift_getNumberOfDynamicAtomicityValues() {
   return dynamicAtomicityInstrumentation_dmu_.numberOfValues();
 }
+SWIFT_RUNTIME_EXPORT void swift_setTestDynamicAtomicityValues() {
+  dynamicAtomicityInstrumentation_dmu_.setTestValues();
+}
