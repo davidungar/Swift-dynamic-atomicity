@@ -1322,4 +1322,12 @@ swift_getTypeName(const Metadata *type, bool qualified);
 
 } // end namespace swift
 
+
+SWIFT_RUNTIME_EXPORT DynamicAtomicityInstrumentation_dmu_::Value_t* swift_getDynamicAtomicityValues();
+SWIFT_RUNTIME_EXPORT DynamicAtomicityInstrumentation_dmu_::Value_t  swift_getBytesPerDynamicAtomicityValue();
+SWIFT_RUNTIME_EXPORT DynamicAtomicityInstrumentation_dmu_::Value_t  swift_getNumberOfDynamicAtomicityValues();
+SWIFT_RUNTIME_EXPORT void                                           swift_setTestDynamicAtomicityValues();
+
+
+
 #endif /* SWIFT_RUNTIME_ALLOC_H */

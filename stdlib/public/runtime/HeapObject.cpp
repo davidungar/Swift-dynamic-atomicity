@@ -308,11 +308,18 @@ SWIFT_CC(DefaultCC_IMPL) {
 SWIFT_RT_ENTRY_IMPL_VISIBILITY
 extern "C"
 void SWIFT_RT_ENTRY_IMPL(swift_beSafeForConcurrentAccess_dmu_)(HeapObject *object) {
-  if (object == nullptr)
+  if (object == nullptr) {
+    dynamicAtomicityInstrumentation_dmu_.swift_beSafeForConcurrentAccess_dmu_null.bump();
     return; // TODO: (dmu) Can this check be optimized out by using compile-time type info?
+  }
+
+  dynamicAtomicityInstrumentation_dmu_.swift_beSafeForConcurrentAccess_dmu_entry.bump();
   if (object->refCount.isSafeForConcurrentAccess_dmu_()) {
     return; // halt recursion,
   }
+    
+  dynamicAtomicityInstrumentation_dmu_.swift_beSafeForConcurrentAccess_dmu_recursion.bump();
+
   object->refCount.beSafeForConcurrentAccess(); // must set this first to break the recursion
   const HeapMetadata *md = object->metadata; // extra var for debugging
   const FullMetadata<HeapMetadata> *fmd = asFullMetadata(md); // extra var for debugging
@@ -901,3 +908,18 @@ template<> const void *StrongRefCount::nonatomicallyCounting_dmu_ = nullptr;
 template<> const void *StrongRefCount::atomicallyCounting_dmu_ = nullptr;
 template<> const void *StrongRefCount::culprit_dmu_ = nullptr;
 template<> const char *StrongRefCount::message_dmu_ = nullptr;
+
+DynamicAtomicityInstrumentation_dmu_ dynamicAtomicityInstrumentation_dmu_;
+
+SWIFT_RUNTIME_EXPORT DynamicAtomicityInstrumentation_dmu_::Value_t* swift_getDynamicAtomicityValues() {
+  return dynamicAtomicityInstrumentation_dmu_.asInts();
+}
+SWIFT_RUNTIME_EXPORT DynamicAtomicityInstrumentation_dmu_::Value_t swift_getBytesPerDynamicAtomicityValue() {
+  return dynamicAtomicityInstrumentation_dmu_.bytesPerValue();
+}
+SWIFT_RUNTIME_EXPORT DynamicAtomicityInstrumentation_dmu_::Value_t swift_getNumberOfDynamicAtomicityValues() {
+  return dynamicAtomicityInstrumentation_dmu_.numberOfValues();
+}
+SWIFT_RUNTIME_EXPORT void swift_setTestDynamicAtomicityValues() {
+  dynamicAtomicityInstrumentation_dmu_.setTestValues();
+}

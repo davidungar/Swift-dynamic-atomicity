@@ -51,11 +51,72 @@ typedef struct {
 
 // dmu
 enum NonatomicBenchmarkOptions_dmu_ {
-  baseline_dmu,             // should introduce no overhead
+  baseline_dmu_,            // should introduce no overhead
   alwaysNonatomic_dmu_,     // unsafe, but omits bit check
   nonatomicIfBitSet_dmu_,   // for benchmarking before bit is ever set;
   nonatomicIfBitClear_dmu_  // the eventual target scheme
 };
+
+
+extern struct DynamicAtomicityInstrumentation_dmu_ {
+  typedef int64_t Value_t;
+  struct Counter {
+    Counter(): value(0) {}
+    Value_t value;
+# if 0 // counting
+    void bump() { ++value; }
+# else
+    void bump() {}
+# endif
+  };
+  // TODO: (dmu) factor these
+  Counter incrNA, incrAt, incrNNA, incrNAt, tryIncrAndPinNA, tryIncrAndPinAt, tryIncrNA, tryIncrAt, decrUnpinShouldDNA, decrUnpinShouldDAt, decrShouldDNA, decrShouldDAt, decrShouldDNNA, decrShouldDNAt, decrFromOneAndDNA, isSafeToUseNAT, isSafeToUseNAF, isSafeForCAT, isSafeForCAF, beSafe,
+      swift_beSafeForConcurrentAccess_dmu_entry,
+      swift_beSafeForConcurrentAccess_dmu_null,
+      swift_beSafeForConcurrentAccess_dmu_recursion;
+  
+  // TODO: (dmu) blech!! Paper deadline. Use FUNC so caller can know which is which
+  Value_t *asInts() {
+    assert((Value_t*)this == (Value_t*)&incrNA.value);
+    assert((Value_t*)this + 1  ==  (Value_t*)&incrAt.value);
+    // check even when not debugging
+    if  (     (Value_t*)this == &incrNA.value
+         &&   (Value_t*)this + 1  ==  &incrAt.value
+         &&  *(Value_t*)this == incrNA.value)
+      ;
+    else abort();
+    
+    return (Value_t*)this;
+  }
+  Value_t bytesPerValue() { return sizeof(Counter); }
+  Value_t numberOfValues() { return sizeof(*this) / sizeof(Counter); }
+  void    setTestValues() {
+    const Value_t startLine = __LINE__ + 1;
+    incrNA                                          .value = __LINE__ - startLine;
+    incrAt                                          .value = __LINE__ - startLine;
+    incrNNA                                         .value = __LINE__ - startLine;
+    incrNAt                                         .value = __LINE__ - startLine;
+    tryIncrAndPinNA                                 .value = __LINE__ - startLine;
+    tryIncrAndPinAt                                 .value = __LINE__ - startLine;
+    tryIncrNA                                       .value = __LINE__ - startLine;
+    tryIncrAt                                       .value = __LINE__ - startLine;
+    decrUnpinShouldDNA                              .value = __LINE__ - startLine;
+    decrUnpinShouldDAt                              .value = __LINE__ - startLine;
+    decrShouldDNA                                   .value = __LINE__ - startLine;
+    decrShouldDAt                                   .value = __LINE__ - startLine;
+    decrShouldDNNA                                  .value = __LINE__ - startLine;
+    decrShouldDNAt                                  .value = __LINE__ - startLine;
+    decrFromOneAndDNA                               .value = __LINE__ - startLine;
+    isSafeToUseNAT                                  .value = __LINE__ - startLine;
+    isSafeToUseNAF                                  .value = __LINE__ - startLine;
+    isSafeForCAT                                    .value = __LINE__ - startLine;
+    isSafeForCAF                                    .value = __LINE__ - startLine;
+    beSafe                                          .value = __LINE__ - startLine;
+    swift_beSafeForConcurrentAccess_dmu_entry       .value = __LINE__ - startLine;
+    swift_beSafeForConcurrentAccess_dmu_null        .value = __LINE__ - startLine;
+    swift_beSafeForConcurrentAccess_dmu_recursion   .value = __LINE__ - startLine;
+  }
+} dynamicAtomicityInstrumentation_dmu_;
 
 
 #if defined(__linux__)
@@ -96,19 +157,27 @@ private:
 
   // start dmu
   bool isSafeToUseNonatomic_dmu_() {
+    bool r;
     switch (nonatomicOption_dmu_) {
-      case baseline_dmu:
-        return false;
+      case baseline_dmu_:
+        r = false;
+        break;
       case alwaysNonatomic_dmu_:
-        return true;
+        r = true;
+        break;
       case nonatomicIfBitSet_dmu_: // just a crazy option for benchmarking
-        return   __atomic_load_n(&refCount, __ATOMIC_RELAXED)  &  RC_MIGHT_BE_CONCURRENTLY_ACCESSED_FLAG_dmu_;
+        r =   __atomic_load_n(&refCount, __ATOMIC_RELAXED)  &  RC_MIGHT_BE_CONCURRENTLY_ACCESSED_FLAG_dmu_;
+        break;
       case nonatomicIfBitClear_dmu_:
         // The real McCoy.
         // No need for atomicity because I assume that the reference count increment happens AFTER
         // the flag is set, and the flag setting is NOT RELAXED
-        return !(__atomic_load_n(&refCount, __ATOMIC_RELAXED)  &  RC_MIGHT_BE_CONCURRENTLY_ACCESSED_FLAG_dmu_);
+        r =  !(__atomic_load_n(&refCount, __ATOMIC_RELAXED)  &  RC_MIGHT_BE_CONCURRENTLY_ACCESSED_FLAG_dmu_);
+        break;
     }
+    (r ? &dynamicAtomicityInstrumentation_dmu_.isSafeToUseNAT : &dynamicAtomicityInstrumentation_dmu_.isSafeToUseNAF)
+      ->bump();
+    return r;
   }
   
   
@@ -116,7 +185,7 @@ private:
   uint32_t expectedStateOfConcurrentlyAccessibleFlagWhenInAtomicVariant_dmu_() {
     assert( !isCountAlreadyInitialized || !isSafeToUseNonatomic_dmu_() ); // because in atomic variant
     switch (nonatomicOption_dmu_) {
-      case baseline_dmu:             return 0;
+      case baseline_dmu_:            return 0;
       case alwaysNonatomic_dmu_:     return 0;
       case nonatomicIfBitSet_dmu_:   return 0;
       case nonatomicIfBitClear_dmu_: return RC_MIGHT_BE_CONCURRENTLY_ACCESSED_FLAG_dmu_;
@@ -126,7 +195,7 @@ private:
   uint32_t expectedStateOfConcurrentlyAccessibleFlagWhenInNonatomicVariant_dmu_() {
     assert( !isCountAlreadyInitialized || isSafeToUseNonatomic_dmu_() ); // because in nonatomic variant
     switch (nonatomicOption_dmu_) {
-      case baseline_dmu:             return 0;
+      case baseline_dmu_:            return 0;
       case alwaysNonatomic_dmu_:     return 0;
       case nonatomicIfBitSet_dmu_:   return RC_MIGHT_BE_CONCURRENTLY_ACCESSED_FLAG_dmu_;
       case nonatomicIfBitClear_dmu_: return 0;
@@ -204,12 +273,14 @@ private:
       incrementNonAtomic();
       return;
     }
+    dynamicAtomicityInstrumentation_dmu_.incrAt.bump();
     startingAtomicCount_dmu_();
     __atomic_fetch_add(&refCount, RC_ONE, __ATOMIC_RELAXED);
     finishedAtomicCount_dmu_();
   }
 
   void incrementNonAtomic() {
+    dynamicAtomicityInstrumentation_dmu_.incrNA.bump();
     startingNonatomicCount_dmu_();
     uint32_t val = __atomic_load_n(&refCount, __ATOMIC_RELAXED);
     val += RC_ONE;
@@ -223,12 +294,14 @@ private:
       incrementNonAtomic(n);
       return;
     }
+    dynamicAtomicityInstrumentation_dmu_.incrNAt.bump();
     startingAtomicCount_dmu_();
     __atomic_fetch_add(&refCount, n << RC_FLAGS_COUNT, __ATOMIC_RELAXED);
     finishedAtomicCount_dmu_();
   }
 
   void incrementNonAtomic(uint32_t n) {
+    dynamicAtomicityInstrumentation_dmu_.incrNNA.bump();
     startingNonatomicCount_dmu_();
     uint32_t val = __atomic_load_n(&refCount, __ATOMIC_RELAXED);
     val += n << RC_FLAGS_COUNT;
@@ -249,6 +322,7 @@ private:
     if (isSafeToUseNonatomic_dmu_()) {
       return tryIncrementAndPinNonAtomic();
     }
+    dynamicAtomicityInstrumentation_dmu_.tryIncrAndPinAt.bump();
     startingAtomicCount_dmu_();
     uint32_t oldval = __atomic_load_n(&refCount, __ATOMIC_RELAXED);
     while (true) {
@@ -271,6 +345,7 @@ private:
   }
 
   bool tryIncrementAndPinNonAtomic() {
+    dynamicAtomicityInstrumentation_dmu_.tryIncrAndPinNA.bump();
     startingNonatomicCount_dmu_();
     uint32_t oldval = __atomic_load_n(&refCount, __ATOMIC_RELAXED);
     // If the flag is already set, just fail.
@@ -291,6 +366,7 @@ private:
     if (isSafeToUseNonatomic_dmu_()) {
       return tryIncrementNonAtomic();
     }
+    dynamicAtomicityInstrumentation_dmu_.tryIncrAt.bump();
     startingAtomicCount_dmu_();
     // FIXME: this could be better on LL/SC architectures like arm64
     uint32_t oldval = __atomic_fetch_add(&refCount, RC_ONE, __ATOMIC_RELAXED);
@@ -306,6 +382,7 @@ private:
 
   // Increment the reference count, unless the object is deallocating.
   bool tryIncrementNonAtomic() {
+    dynamicAtomicityInstrumentation_dmu_.tryIncrNA.bump();
     startingNonatomicCount_dmu_();
     uint32_t oldval = __atomic_load_n(&refCount, __ATOMIC_RELAXED);
     if (oldval & RC_DEALLOCATING_FLAG) {
@@ -325,10 +402,12 @@ private:
     if (isSafeToUseNonatomic_dmu_()) {
       return decrementAndUnpinShouldDeallocateNonAtomic();
     }
+    dynamicAtomicityInstrumentation_dmu_.decrUnpinShouldDAt.bump();
     return doDecrementShouldDeallocate<true>();
   }
 
   bool decrementAndUnpinShouldDeallocateNonAtomic() {
+    dynamicAtomicityInstrumentation_dmu_.decrUnpinShouldDNA.bump();
     return doDecrementShouldDeallocateNonAtomic<true>();
   }
 
@@ -338,10 +417,13 @@ private:
     if (isSafeToUseNonatomic_dmu_()) {
       return decrementShouldDeallocateNonAtomic();
     }
+    dynamicAtomicityInstrumentation_dmu_.decrShouldDAt.bump();
     return doDecrementShouldDeallocate<false>();
   }
 
   bool decrementShouldDeallocateNonAtomic() {
+    // TODO: (dmu) use __FUNC__ instead of naming counters
+    dynamicAtomicityInstrumentation_dmu_.decrShouldDNA.bump();
     return doDecrementShouldDeallocateNonAtomic<false>();
   }
 
@@ -349,6 +431,7 @@ private:
     if (isSafeToUseNonatomic_dmu_()) {
       return doDecrementShouldDeallocateNNonAtomic<false>(n);
     }
+    dynamicAtomicityInstrumentation_dmu_.decrShouldDNAt.bump();
     return doDecrementShouldDeallocateN<false>(n);
   }
 
@@ -356,6 +439,7 @@ private:
   //
   // Precondition: the reference count must be 1
   void decrementFromOneAndDeallocateNonAtomic() {
+    dynamicAtomicityInstrumentation_dmu_.decrFromOneAndDNA.bump();
     startingNonatomicCount_dmu_();
     assert(refCount == RC_ONE && "Expect a count of 1");
     __atomic_store_n(&refCount, RC_DEALLOCATING_FLAG, __ATOMIC_RELAXED);
@@ -363,6 +447,7 @@ private:
   }
 
   bool decrementShouldDeallocateNNonAtomic(uint32_t n) {
+    dynamicAtomicityInstrumentation_dmu_.decrShouldDNNA.bump();
     return doDecrementShouldDeallocateNNonAtomic<false>(n);
   }
 
@@ -401,12 +486,16 @@ private:
   }
 
   bool isSafeForConcurrentAccess_dmu_() {
-    return expectedStateOfConcurrentlyAccessibleFlagWhenInAtomicVariant_dmu_<false>()
+    bool r = expectedStateOfConcurrentlyAccessibleFlagWhenInAtomicVariant_dmu_<false>()
           ==   (__atomic_load_n(&refCount, __ATOMIC_RELAXED)  &  RC_MIGHT_BE_CONCURRENTLY_ACCESSED_FLAG_dmu_);
+    (r ? &dynamicAtomicityInstrumentation_dmu_.isSafeForCAT : &dynamicAtomicityInstrumentation_dmu_.isSafeForCAF)
+    ->bump();
+    return r;
   }
   // When something in the heap can be accessed by >1 thread, the bit must be set
   // Need not be atomic because this must happen BEFORE the object gets shared by another thread
   void beSafeForConcurrentAccess() {
+    dynamicAtomicityInstrumentation_dmu_.beSafe.bump();
     startingNonatomicCount_dmu_();
     uint32_t oldval = __atomic_load_n(&refCount, __ATOMIC_RELAXED);
     // Make sure that other threads see this:
@@ -574,7 +663,12 @@ private:
   }
 };
 
+
+# if 1
 typedef StrongRefCount_t_dmu_<nonatomicIfBitClear_dmu_> StrongRefCount;
+#else // broken
+  typedef StrongRefCount_t_dmu_<baseline_dmu_> StrongRefCount;
+#endif
 
 
 

@@ -1961,6 +1961,7 @@ private:
       case ValueKind::ProjectValueBufferInst:
       case ValueKind::OpenExistentialAddrInst:
       case ValueKind::UncheckedEnumDataInst:
+      case ValueKind::PointerToAddressInst:
         v = firstOperand;
         if (trace) fprintf(stderr, "TRACE following first operand %s: %d\n", __FILE__, __LINE__);
         return OutermostAggregateResult_dmu_();
@@ -1980,10 +1981,6 @@ private:
         return OutermostAggregateResult_dmu_( vArg, foundOutermostAggregate, firstOperand);
       }
         
-      case ValueKind::PointerToAddressInst:
-        v = firstOperand;
-        return OutermostAggregateResult_dmu_();
-        
       case ValueKind::AllocValueBufferInst:
       case ValueKind::UncheckedTakeEnumDataAddrInst:
       case ValueKind::ProjectExistentialBoxInst:
@@ -1996,6 +1993,24 @@ private:
           v->getType().print(llvm::errs());
         }
         return OutermostAggregateResult_dmu_( vArg, k, v);
+      }
+        
+      case ValueKind::BuiltinInst:
+      {
+        if (trace) {
+          fprintf(stderr, "TRACE my value %s: %d %d\n", __FILE__, __LINE__, v->getType().isReferenceCounted(M));
+          v->getType().print(llvm::errs());
+        }
+        if (!v->getType().isReferenceCounted(M))
+          return OutermostAggregateResult_dmu_(vArg, noOutermostAggregateExists, v);
+        BuiltinInst *BI = cast<BuiltinInst>(v);
+        llvm::Optional<BuiltinValueKind> kindOrNot = BI->getBuiltinKind();
+        if ( kindOrNot )  {
+          BuiltinValueKind kind = *kindOrNot;
+        // TODO: (dmu) do something cleverer here; follow to outer aggregate
+        }
+        if (trace) fprintf(stderr, "TRACE dontKnowWhatThisInstDoes %s: %d\n", __FILE__, __LINE__);
+        return OutermostAggregateResult_dmu_(vArg, dontKnowWhatThisInstDoes, v);
       }
         
       case ValueKind::ApplyInst:  {
@@ -3695,6 +3710,12 @@ llvm::Value *IRGenSILFunction::emitAddressContainedIn_dmu_(llvm::Value *v) {
 void IRGenSILFunction::emitVisitRefsInValuesAssignedTo_dmu_(SILValue const  &srcSILValue,
                                                             SILValue const &destSILValue,
                                                             bool isDestIndirect)  {
+  // skip the dest test if src has no refs -- an optimization
+  SILType srcType = srcSILValue->getType().getObjectType();
+  const TypeInfo &srcTI = getTypeInfo(srcType);
+  if (srcTI.isPOD(ResilienceExpansion::Maximal) == IsPOD_t::IsPOD) {
+    return;
+  }
   
   SILType destType = destSILValue->getType().getObjectType();
   const TypeInfo &destTI = getTypeInfo(destType);
