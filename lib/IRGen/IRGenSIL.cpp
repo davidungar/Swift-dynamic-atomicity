@@ -3707,6 +3707,12 @@ llvm::Value *IRGenSILFunction::emitAddressContainedIn_dmu_(llvm::Value *v) {
 void IRGenSILFunction::emitVisitRefsInValuesAssignedTo_dmu_(SILValue const  &srcSILValue,
                                                             SILValue const &destSILValue,
                                                             bool isDestIndirect)  {
+  // skip the dest test if src has no refs -- an optimization
+  SILType srcType = srcSILValue->getType().getObjectType();
+  const TypeInfo &srcTI = getTypeInfo(srcType);
+  if (srcTI.isPOD(ResilienceExpansion::Maximal) == IsPOD_t::IsPOD) {
+    return;
+  }
   
   SILType destType = destSILValue->getType().getObjectType();
   const TypeInfo &destTI = getTypeInfo(destType);
@@ -3720,7 +3726,7 @@ void IRGenSILFunction::emitVisitRefsInValuesAssignedTo_dmu_(SILValue const  &src
   ConditionalDominanceScope condition(*this); // a shot in the dark
 
   TRACE_DMU_(*this);
-
+//skip if src is POD
   llvm::Value *cond = destTI.checkHolder_dmu_(*this, Address(destAddress, Alignment(8)), destType); // need destType??
 
   
