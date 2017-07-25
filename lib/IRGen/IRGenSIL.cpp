@@ -1981,7 +1981,6 @@ private:
       case ValueKind::UncheckedTakeEnumDataAddrInst:
       case ValueKind::ProjectExistentialBoxInst:
       case ValueKind::UncheckedAddrCastInst:
-      case ValueKind::BuiltinInst:
       {
         auto k = v->getType().isReferenceCounted(M)
         ? foundOutermostAggregate : noOutermostAggregateExists;
@@ -1990,6 +1989,24 @@ private:
           v->getType().print(llvm::errs());
         }
         return OutermostAggregateResult_dmu_( vArg, k, v);
+      }
+            
+      case ValueKind::BuiltinInst:
+      {
+        if (trace) {
+          fprintf(stderr, "TRACE my value %s: %d %d\n", __FILE__, __LINE__, v->getType().isReferenceCounted(M));
+          v->getType().print(llvm::errs());
+        }
+        if (!v->getType().isReferenceCounted(M))
+          return OutermostAggregateResult_dmu_(vArg, noOutermostAggregateExists, v);
+        BuiltinInst *BI = cast<BuiltinInst>(v);
+        llvm::Optional<BuiltinValueKind> kindOrNot = BI->getBuiltinKind();
+        if ( kindOrNot )  {
+          BuiltinValueKind kind = *kindOrNot;
+        // TODO: (dmu) do something cleverer here; follow to outer aggregate
+        }
+        if (trace) fprintf(stderr, "TRACE dontKnowWhatThisInstDoes %s: %d\n", __FILE__, __LINE__);
+        return OutermostAggregateResult_dmu_(vArg, dontKnowWhatThisInstDoes, v);
       }
         
       case ValueKind::ApplyInst:  {
