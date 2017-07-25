@@ -1981,6 +1981,7 @@ private:
       case ValueKind::UncheckedTakeEnumDataAddrInst:
       case ValueKind::ProjectExistentialBoxInst:
       case ValueKind::UncheckedAddrCastInst:
+      case ValueKind::BuiltinInst:
       {
         auto k = v->getType().isReferenceCounted(M)
         ? foundOutermostAggregate : noOutermostAggregateExists;
