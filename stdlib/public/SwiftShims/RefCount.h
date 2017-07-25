@@ -63,7 +63,7 @@ extern struct DynamicAtomicityInstrumentation_dmu_ {
   struct Counter {
     Counter(): value(0) {}
     Value_t value;
-# if 1 // counting
+# if 0 // counting
     void bump() { ++value; }
 # else
     void bump() {}
