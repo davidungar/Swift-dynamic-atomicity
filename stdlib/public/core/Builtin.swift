@@ -740,7 +740,7 @@ public func withoutActuallyEscaping<ClosureType, ResultType>(
 
 
 @_versioned
-// for instrumentation: @inline(never)
+@inline(never)
 internal func ifIsSafeForConcurrentAccess_dmu_<S>( dest: AnyObject, makeSafe src: S
   // , file: String = #file, line: Int = -1
   ) {
