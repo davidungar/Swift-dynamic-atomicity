@@ -3707,7 +3707,13 @@ llvm::Value *IRGenSILFunction::emitAddressContainedIn_dmu_(llvm::Value *v) {
 void IRGenSILFunction::emitVisitRefsInValuesAssignedTo_dmu_(SILValue const  &srcSILValue,
                                                             SILValue const &destSILValue,
                                                             bool isDestIndirect)  {
-  
+  // skip the dest test if src has no refs -- an optimization
+  SILType srcType = srcSILValue->getType().getObjectType();
+  const TypeInfo &srcTI = getTypeInfo(srcType);
+  if (srcTI.isPOD(ResilienceExpansion::Maximal) == IsPOD_t::IsPOD) {
+    return;
+  }
+
   SILType destType = destSILValue->getType().getObjectType();
   const TypeInfo &destTI = getTypeInfo(destType);
   
