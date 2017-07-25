@@ -3726,7 +3726,7 @@ void IRGenSILFunction::emitVisitRefsInValuesAssignedTo_dmu_(SILValue const  &src
   ConditionalDominanceScope condition(*this); // a shot in the dark
 
   TRACE_DMU_(*this);
-//skip if src is POD
+
   llvm::Value *cond = destTI.checkHolder_dmu_(*this, Address(destAddress, Alignment(8)), destType); // need destType??
 
   
