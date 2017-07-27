@@ -1079,11 +1079,11 @@ void SILGenFunction::emitPatternBinding(PatternBindingDecl *PBD,
 }
 
 void SILGenFunction::visitPatternBindingDecl(PatternBindingDecl *PBD) {
-
   // Allocate the variables and build up an Initialization over their
   // allocated storage.
   for (unsigned i : indices(PBD->getPatternList())) {
-    bool isGlobalInMain_dmu_ = !PBD->getPattern(i)->getSingleVar()->getDeclContext()->isLocalContext();
+    auto var = PBD->getPattern(i)->getSingleVar();
+    bool isGlobalInMain_dmu_ = var != nullptr  &&  !var->getDeclContext()->isLocalContext();
     if (isGlobalInMain_dmu_)
       SGM.emitGlobalInitialization(PBD, i); // use lazy initialization, even for globals in main
     else
