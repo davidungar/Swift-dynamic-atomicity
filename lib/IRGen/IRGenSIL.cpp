@@ -1929,7 +1929,8 @@ private:
         return foundOutermostAggregate;
         
       case ValueKind::GlobalAddrInst:
-        diagnoseGlobal(IGF, cast<GlobalAddrInst>(v));
+        if (GENERATE_DYNAMIC_ATOMICITY_DIAGNOSTICS_DMU_)
+          diagnoseGlobal(IGF, cast<GlobalAddrInst>(v));
         if (trace) fprintf(stderr, "TRACE no operands: allocBox global %s: %d\n", __FILE__, __LINE__);
         return outermostAggregateIsAccessedConcurrently;
         
@@ -2109,7 +2110,8 @@ public:
         case dontKnowBecauseNoOperands:
         case dontKnowBecauseNotAnInstruction:
         case dontKnowBecauseNotDefinitelyReferenceCounted:
-          oar.printBacktrace(IGF);
+          if (GENERATE_DYNAMIC_ATOMICITY_DIAGNOSTICS_DMU_)
+            oar.printBacktrace(IGF);
           break;
       }
     }
@@ -2427,7 +2429,7 @@ static void diagnoseConservativeArgumentsToNonSwiftCallees_dmu_(IRGenSILFunction
       // NOTE: isIndirectConvention tests for more than just Out
       if (site.getArgumentConvention(index).isIndirectConvention())
         IGF.IGM.getSwiftModule()->getASTContext().Diags.diagnose(sl, diag::not_handling_inout_to_non_Swift_dmu_, fnName);
-      else
+      else if (GENERATE_DYNAMIC_ATOMICITY_DIAGNOSTICS_DMU_)
         IGF.IGM.getSwiftModule()->getASTContext().Diags.diagnose(sl, diag::conservative_for_argument_of_nonSwift_dmu_, fnName);
     }
   }
@@ -2444,7 +2446,8 @@ void IRGenSILFunction::makeArgumentsOfNonSwiftCalleeSafeForConcurrentAccess_dmu_
     if (args[index]->getType().isTrivial(M))
       continue;
     emitVisitRefsInInitialValues_dmu_(args[index]);
-    diagnoseConservativeArgumentsToNonSwiftCallees_dmu_(*this, site);
+    if (GENERATE_DYNAMIC_ATOMICITY_DIAGNOSTICS_DMU_)
+      diagnoseConservativeArgumentsToNonSwiftCallees_dmu_(*this, site);
   }
 }
 

@@ -20,6 +20,9 @@
 
 #include "swift/AST/DiagnosticsCommon.h"
 
+// TODO: (dmu) turn into a run-time command flag
+# define GENERATE_DYNAMIC_ATOMICITY_DIAGNOSTICS_DMU_ 0
+
 namespace swift {
   namespace diag {
   // Declare common diagnostics objects with their appropriate types.
