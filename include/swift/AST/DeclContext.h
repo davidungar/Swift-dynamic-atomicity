@@ -222,6 +222,12 @@ public:
     return getContextKind() <= DeclContextKind::Last_LocalDeclContextKind;
   }
   
+  /// When treating (global) top-level variables in main.swift as global,
+  /// for example for Dynamic Atomicity, this test works better than isLocalContext.
+  bool isLocalContextExcludingGlobalsInMain_dmu_() const {
+    return isLocalContext()  &&  getContextKind() != DeclContextKind::TopLevelCodeDecl;
+  }
+  
   /// isModuleContext - Return true if this is a subclass of Module.
   bool isModuleContext() const {
     return getContextKind() == DeclContextKind::Module;

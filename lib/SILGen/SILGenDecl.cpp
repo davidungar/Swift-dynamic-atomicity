@@ -1038,8 +1038,8 @@ InitializationPtr SILGenFunction::emitInitializationForVarDecl(VarDecl *vd, bool
   // If this is a global variable, initialize it without allocations or
   // cleanups.
   InitializationPtr Result;
-  if (!vd->getDeclContext()->isLocalContext()) {
-    assert(forLazyGlobalInitializer && "all global initialization must be lazy, even in main for thread-biasing");
+  if (!vd->getDeclContext()->isLocalContextExcludingGlobalsInMain_dmu_()) {
+    assert(forLazyGlobalInitialzer_dmu_ && "all global initialization must be lazy, even in main for thread-biasing");
     auto *silG = SGM.getSILGlobalVariable(vd, NotForDefinition);
     B.createAllocGlobal(vd, silG);
     SILValue addr = B.createGlobalAddr(vd, silG);
@@ -1081,9 +1081,10 @@ void SILGenFunction::emitPatternBinding(PatternBindingDecl *PBD,
 void SILGenFunction::visitPatternBindingDecl(PatternBindingDecl *PBD) {
   // Allocate the variables and build up an Initialization over their
   // allocated storage.
+  
+  bool isGlobalInMain_dmu_ = PBD->getDeclContext()->getContextKind() == DeclContextKind::TopLevelCodeDecl;
+
   for (unsigned i : indices(PBD->getPatternList())) {
-    auto var = PBD->getPattern(i)->getSingleVar();
-    bool isGlobalInMain_dmu_ = var != nullptr  &&  !var->getDeclContext()->isLocalContext();
     if (isGlobalInMain_dmu_)
       SGM.emitGlobalInitialization(PBD, i); // use lazy initialization, even for globals in main
     else
