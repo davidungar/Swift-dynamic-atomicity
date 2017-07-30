@@ -84,7 +84,7 @@ static bool isGlobalLazilyInitialized(VarDecl *var) {
   if (!sourceFileContext)
     return true;
 
-  return !sourceFileContext->isScriptMode();
+  return !sourceFileContext->isScriptModeAndNotMain_dmu_();
 }
 
 ManagedValue

@@ -1010,6 +1010,20 @@ public:
     llvm_unreachable("bad SourceFileKind");
   }
   
+  bool isScriptModeAndNotMain_dmu_() const {
+    switch (Kind) {
+      case SourceFileKind::REPL:
+        return true;
+        
+      case SourceFileKind::Main:
+      case SourceFileKind::Library:
+      case SourceFileKind::SIL:
+        return false;
+    }
+    llvm_unreachable("bad SourceFileKind");
+  }
+
+  
   ClassDecl *getMainClass() const override {
     return MainClass;
   }
