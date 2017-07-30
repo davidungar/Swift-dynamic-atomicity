@@ -1492,10 +1492,10 @@ public:
   void visitFuncDecl(FuncDecl *D);
   void visitPatternBindingDecl(PatternBindingDecl *D);
 
-  void emitPatternBinding(PatternBindingDecl *D, unsigned entry, bool forLazyGlobalInitialzer);
+  void emitPatternBinding(PatternBindingDecl *D, unsigned entry, bool forLazyGlobalInitialzer_dmu_);
   
   std::unique_ptr<Initialization>
-  emitPatternBindingInitialization(Pattern *P, JumpDest failureDest, bool forLazyGlobalInitializer);
+  emitPatternBindingInitialization(Pattern *P, JumpDest failureDest, bool forLazyGlobalInitialzer_dmu_);
     
   void visitNominalTypeDecl(NominalTypeDecl *D) {
     // No lowering support needed.
@@ -1515,7 +1515,7 @@ public:
   void visitVarDecl(VarDecl *D);
 
   /// Emit an Initialization for a 'var' or 'let' decl in a pattern.
-  std::unique_ptr<Initialization> emitInitializationForVarDecl(VarDecl *vd, bool forLazyGlobalInitializer);
+  std::unique_ptr<Initialization> emitInitializationForVarDecl(VarDecl *vd, bool forLazyGlobalInitialzer_dmu_);
   
   /// Emit the allocation for a local variable, provides an Initialization
   /// that can be used to initialize it, and registers cleanups in the active

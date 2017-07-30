@@ -927,10 +927,10 @@ struct InitializationForPattern
   /// This is invalid for irrefutable pattern initializations.
   JumpDest patternFailDest;
   
-  bool forLazyGlobalInitializer;
+  bool forLazyGlobalInitialzer_dmu_;
 
-  InitializationForPattern(SILGenFunction &SGF, JumpDest patternFailDest, bool forLazyGlobalInitializer)
-    : SGF(SGF), patternFailDest(patternFailDest), forLazyGlobalInitializer(forLazyGlobalInitializer) {}
+  InitializationForPattern(SILGenFunction &SGF, JumpDest patternFailDest, bool forLazyGlobalInitialzer_dmu_)
+    : SGF(SGF), patternFailDest(patternFailDest), forLazyGlobalInitialzer_dmu_(forLazyGlobalInitialzer_dmu_) {}
 
   // Paren, Typed, and Var patterns are noops, just look through them.
   InitializationPtr visitParenPattern(ParenPattern *P) {
@@ -958,7 +958,7 @@ struct InitializationForPattern
       return InitializationPtr(new BlackHoleInitialization());
     }
 
-    return SGF.emitInitializationForVarDecl(P->getDecl(), forLazyGlobalInitializer);
+    return SGF.emitInitializationForVarDecl(P->getDecl(), forLazyGlobalInitialzer_dmu_);
   }
 
   // Bind a tuple pattern by aggregating the component variables into a
@@ -1003,7 +1003,7 @@ struct InitializationForPattern
 
 } // end anonymous namespace
 
-InitializationPtr SILGenFunction::emitInitializationForVarDecl(VarDecl *vd, bool forLazyGlobalInitializer) {
+InitializationPtr SILGenFunction::emitInitializationForVarDecl(VarDecl *vd, bool forLazyGlobalInitialzer_dmu_) {
   // If this is a computed variable, we don't need to do anything here.
   // We'll generate the getter and setter when we see their FuncDecls.
   if (!vd->hasStorage())
@@ -1062,11 +1062,11 @@ InitializationPtr SILGenFunction::emitInitializationForVarDecl(VarDecl *vd, bool
 
 void SILGenFunction::emitPatternBinding(PatternBindingDecl *PBD,
                                         unsigned pbdEntry,
-                                        bool forLazyGlobalInitializer) {
+                                        bool forLazyGlobalInitialzer_dmu_) {
   auto &entry = PBD->getPatternList()[pbdEntry];
   auto initialization = emitPatternBindingInitialization(entry.getPattern(),
                                                          JumpDest::invalid(),
-                                                         forLazyGlobalInitializer);
+                                                         forLazyGlobalInitialzer_dmu_);
 
   // If an initial value expression was specified by the decl, emit it into
   // the initialization. Otherwise, mark it uninitialized for DI to resolve.
@@ -1205,8 +1205,8 @@ void SILGenFunction::emitStmtCondition(StmtCondition Cond,
 InitializationPtr
 SILGenFunction::emitPatternBindingInitialization(Pattern *P,
                                                  JumpDest failureDest,
-                                                 bool forLazyGlobalInitializer) {
-  return InitializationForPattern(*this, failureDest, forLazyGlobalInitializer).visit(P);
+                                                 bool forLazyGlobalInitialzer_dmu_) {
+  return InitializationForPattern(*this, failureDest, forLazyGlobalInitialzer_dmu_).visit(P);
 }
 
 /// Enter a cleanup to deallocate the given location.
