@@ -523,7 +523,7 @@ void AttributeEarlyChecker::visitLazyAttr(LazyAttr *attr) {
   // static property (which is already lazily initialized).
   if (VD->isStatic() ||
       (varDC->isModuleScopeContext() &&
-       !varDC->getParentSourceFile()->isScriptMode()))
+       !varDC->getParentSourceFile()->isScriptModeAndNotMain_dmu_()))
     return diagnoseAndRemoveAttr(attr, diag::lazy_on_already_lazy_global);
 
   // lazy must have an initializer, and the pattern binding must be a simple
@@ -2029,8 +2029,9 @@ TypeChecker::diagnosticIfDeclCannotBePotentiallyUnavailable(const Decl *D) {
   // Do not permit potential availability of script-mode global variables;
   // their initializer expression is not lazily evaluated, so this would
   // not be safe.
+  // Except ones in main that are now lazily evaluated. (dmu)
   if (isa<VarDecl>(D) && DC->isModuleScopeContext() &&
-      DC->getParentSourceFile()->isScriptMode()) {
+      DC->getParentSourceFile()->isScriptModeAndNotMain_dmu_()) {
     return diag::availability_global_script_no_potential;
   }
 
